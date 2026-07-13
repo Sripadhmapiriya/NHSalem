@@ -101,12 +101,11 @@ export default function AdminLogin() {
 
           {/* Brand */}
           <div className="flex flex-col items-center mb-8">
-            <div className="w-20 h-20 rounded-full flex items-center justify-center mb-5 overflow-hidden"
-              style={{ background: 'linear-gradient(145deg, #0B1E3D, #1E3A5F)', boxShadow: '0 4px 20px rgba(11,30,61,0.4)' }}>
+            <div className="w-20 h-20 rounded-full flex items-center justify-center mb-5 overflow-hidden bg-black border border-outline-variant/20 shadow-lg">
               <img
-                src="/crest.png"
+                src="/crest.jpg"
                 alt="NH Salem Sea Foods"
-                className="w-full h-full object-contain p-1"
+                className="w-full h-full object-contain p-2"
               />
             </div>
             <h1 className="font-serif text-3xl font-extrabold text-admin-navy tracking-tight leading-tight">

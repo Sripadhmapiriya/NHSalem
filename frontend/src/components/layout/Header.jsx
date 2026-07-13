@@ -9,12 +9,12 @@ import useDebounce from '@/hooks/useDebounce'
 import { getProducts } from '@/services/api'
 
 const NAV_LINKS = [
-  { label: 'Fish', slug: 'fish' },
-  { label: 'Prawns', slug: 'prawns-shrimp' },
-  { label: 'Crabs', slug: 'crabs' },
-  { label: 'Lobster', slug: 'lobster' },
-  { label: 'Dry Fish', slug: 'dry-fish' },
-  { label: 'Combos', slug: 'combos' },
+  { label: 'Fish', slug: 'fish', emoji: '🐟' },
+  { label: 'Prawns', slug: 'prawns-shrimp', emoji: '🍤' },
+  { label: 'Crabs', slug: 'crabs', emoji: '🦀' },
+  { label: 'Lobster', slug: 'lobster', emoji: '🦞' },
+  { label: 'Dry Fish', slug: 'dry-fish', emoji: '🧂' },
+  { label: 'Combos', slug: 'combos', emoji: '🍱' },
 ]
 
 /**
@@ -86,31 +86,55 @@ export default function Header({ onLoginClick }) {
 
   return (
     <header
-      className={`sticky top-0 z-50 transition-all duration-300 ${
-        scrolled ? 'glass shadow-nav' : 'bg-white border-b border-outline-variant/30'
+      className={`sticky top-0 z-50 transition-all duration-300 w-full ${
+        scrolled
+          ? 'bg-white/95 backdrop-blur-md shadow-md border-b border-outline-variant/30 py-1.5'
+          : 'bg-white border-b border-outline-variant/20 py-3'
       }`}
     >
-      <div className="container-max flex items-center gap-4 py-3">
+      {/* Top Deck Accent Bar (Hidden on Mobile) */}
+      {!scrolled && (
+        <div className="bg-primary text-white text-[11px] font-semibold py-1.5 px-4 hidden md:block border-b border-white/10 mb-2.5 -mt-3">
+          <div className="container-max flex justify-between items-center">
+            <div className="flex items-center gap-1.5 opacity-90">
+              <span className="material-symbols-outlined text-[14px]">location_on</span>
+              <span>Delivering Fresh across Salem, Tamil Nadu</span>
+            </div>
+            <div className="animate-pulse text-amber-300">
+              ✨ Use code <span className="font-bold">FRESH100</span> for free delivery on orders above ₹499!
+            </div>
+            <div className="flex items-center gap-4 opacity-90">
+              <Link to="/about" className="hover:text-amber-200 transition-colors">Our Story</Link>
+              <span>|</span>
+              <Link to="/stores" className="hover:text-amber-200 transition-colors">Stores</Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="container-max flex items-center justify-between gap-4">
         {/* Logo */}
         <Link
           to="/"
-          className="flex items-center gap-3 flex-shrink-0 select-none hover:opacity-90 transition-opacity"
+          className="flex items-center gap-3 flex-shrink-0 select-none hover:opacity-95 transition-opacity"
           aria-label="NH Salem Sea Foods — Home"
         >
-          <img
-            src="/crest.png"
-            alt="NH Salem Sea Foods Crest"
-            className="w-10 h-10 object-contain flex-shrink-0"
-          />
+          <div className="relative flex items-center justify-center bg-black rounded-full overflow-hidden w-11 h-11 border border-outline-variant/40 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-[1.02] p-0.5">
+            <img
+              src="/crest.jpg"
+              alt="NH Salem Sea Foods Crest"
+              className="w-full h-full object-contain flex-shrink-0"
+            />
+          </div>
           <div className="hidden sm:block text-left pl-3 border-l border-outline-variant/30">
-            <p className="font-serif text-headline-sm font-extrabold text-primary leading-tight tracking-tight">NH Salem</p>
-            <p className="text-[10px] font-bold text-on-surface-variant tracking-[0.22em] uppercase leading-none mt-0.5">Sea Foods</p>
+            <p className="font-serif text-headline-sm font-black text-primary leading-tight tracking-tight">NH Salem</p>
+            <p className="text-[10px] font-bold text-on-surface-variant tracking-[0.25em] uppercase leading-none mt-0.5">Sea Foods</p>
           </div>
         </Link>
 
         {/* Desktop Nav */}
         <nav
-          className="hidden md:flex items-center gap-1 flex-1 justify-center"
+          className="hidden md:flex items-center gap-1 px-2.5 py-1.5 bg-surface-container-low/60 border border-outline-variant/40 rounded-full shadow-inner-sm"
           aria-label="Product categories"
         >
           {NAV_LINKS.map((link) => (
@@ -118,126 +142,130 @@ export default function Header({ onLoginClick }) {
               key={link.slug}
               to={`/category/${link.slug}`}
               className={({ isActive }) =>
-                `px-3 py-2 rounded-full text-label-md font-semibold transition-all ${
+                `px-3 py-1.5 rounded-full text-label-md font-bold transition-all duration-250 flex items-center gap-1.5 ${
                   isActive
-                    ? 'bg-primary text-on-primary'
-                    : 'text-on-surface-variant hover:text-primary hover:bg-surface-container'
+                    ? 'bg-gradient-to-r from-primary to-blue-700 text-white shadow-sm shadow-primary/25 scale-[1.02]'
+                    : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-low'
                 }`
               }
             >
-              {link.label}
+              <span className="text-[14px] leading-none">{link.emoji}</span>
+              <span>{link.label}</span>
             </NavLink>
           ))}
           <NavLink
             to="/subscriptions"
             className={({ isActive }) =>
-              `px-3 py-2 rounded-full text-label-md font-semibold transition-all ml-1 ${
+              `px-3.5 py-1.5 rounded-full text-label-md font-bold transition-all duration-250 ml-1 flex items-center gap-1.5 ${
                 isActive
-                  ? 'bg-secondary-container text-on-secondary-container'
+                  ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-sm shadow-amber-600/25 scale-[1.02]'
                   : 'text-secondary hover:bg-secondary-container/20'
               }`
             }
           >
-            ✦ Subscribe
+            <span className="text-[14px] leading-none">✦</span>
+            <span>Subscribe</span>
           </NavLink>
         </nav>
 
-        {/* Right icons */}
-        <div className="flex items-center gap-1 ml-auto md:ml-0">
-          {/* Search */}
-          <div ref={searchRef} className="relative">
-            {searchOpen ? (
-              <div className="flex items-center gap-2">
-                <div className="relative">
-                  <SearchInput
-                    id="header-search"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search seafood…"
-                    className="w-56 sm:w-72"
+        {/* Right icons / control deck */}
+        <div className="flex items-center gap-2 ml-auto md:ml-0">
+          <div className="flex items-center gap-1 px-1.5 py-1 bg-surface-container-low/70 border border-outline-variant/30 rounded-full shadow-inner-sm">
+            {/* Search */}
+            <div ref={searchRef} className="relative">
+              {searchOpen ? (
+                <div className="flex items-center gap-2">
+                  <div className="relative">
+                    <SearchInput
+                      id="header-search"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search seafood…"
+                      className="w-44 sm:w-60 text-[13px]"
+                    />
+                    {/* Dropdown results */}
+                    <AnimatePresence>
+                      {searchResults.length > 0 && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -8 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute top-full left-0 right-0 mt-2 bg-white rounded-[16px] shadow-stat border border-outline-variant/30 overflow-hidden z-50"
+                        >
+                          {searchResults.map((p) => (
+                            <button
+                              key={p.id}
+                              onClick={() => {
+                                navigate(`/product/${p.id}`)
+                                setSearchOpen(false)
+                                setSearchQuery('')
+                                setSearchResults([])
+                              }}
+                              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-surface-container-low transition-colors text-left"
+                            >
+                              <img
+                                src={p.image}
+                                alt=""
+                                className="w-10 h-10 rounded-[8px] object-cover flex-shrink-0"
+                              />
+                              <div className="min-w-0">
+                                <p className="text-label-md text-on-surface font-semibold truncate">{p.name}</p>
+                                <p className="text-label-sm text-on-surface-variant">
+                                  ₹{p.basePrice?.toLocaleString()}
+                                </p>
+                              </div>
+                            </button>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                  <IconButton
+                    icon="close"
+                    aria-label="Close search"
+                    onClick={() => { setSearchOpen(false); setSearchQuery(''); setSearchResults([]) }}
                   />
-                  {/* Dropdown results */}
-                  <AnimatePresence>
-                    {searchResults.length > 0 && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -8 }}
-                        transition={{ duration: 0.15 }}
-                        className="absolute top-full left-0 right-0 mt-2 bg-white rounded-[16px] shadow-stat border border-outline-variant/30 overflow-hidden z-50"
-                      >
-                        {searchResults.map((p) => (
-                          <button
-                            key={p.id}
-                            onClick={() => {
-                              navigate(`/product/${p.id}`)
-                              setSearchOpen(false)
-                              setSearchQuery('')
-                              setSearchResults([])
-                            }}
-                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-surface-container-low transition-colors text-left"
-                          >
-                            <img
-                              src={p.image}
-                              alt=""
-                              className="w-10 h-10 rounded-[8px] object-cover flex-shrink-0"
-                            />
-                            <div className="min-w-0">
-                              <p className="text-label-md text-on-surface font-semibold truncate">{p.name}</p>
-                              <p className="text-label-sm text-on-surface-variant">
-                                ₹{p.basePrice?.toLocaleString()}
-                              </p>
-                            </div>
-                          </button>
-                        ))}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
                 </div>
+              ) : (
                 <IconButton
-                  icon="close"
-                  aria-label="Close search"
-                  onClick={() => { setSearchOpen(false); setSearchQuery(''); setSearchResults([]) }}
+                  icon="search"
+                  aria-label="Open search"
+                  onClick={() => setSearchOpen(true)}
                 />
-              </div>
-            ) : (
-              <IconButton
-                icon="search"
-                aria-label="Open search"
-                onClick={() => setSearchOpen(true)}
-              />
-            )}
-          </div>
+              )}
+            </div>
 
-          {/* Wishlist */}
-          <Link to="/cart" aria-label={`Wishlist, ${wishlistCount} items`}>
-            <IconButton
-              icon="favorite"
-              aria-label={`Wishlist (${wishlistCount} items)`}
-              badge={wishlistCount}
-              as="div"
-            />
-          </Link>
-
-          {/* Cart */}
-          <Link to="/cart" aria-label={`Shopping cart, ${totalItems} items`}>
-            <motion.div
-              animate={totalItems > 0 ? { scale: [1, 1.2, 1] } : {}}
-              transition={{ duration: 0.3 }}
-            >
+            {/* Wishlist */}
+            <Link to="/cart" aria-label={`Wishlist, ${wishlistCount} items`}>
               <IconButton
-                icon="shopping_cart"
-                aria-label={`Cart (${totalItems} items)`}
-                badge={totalItems}
+                icon="favorite"
+                aria-label={`Wishlist (${wishlistCount} items)`}
+                badge={wishlistCount}
                 as="div"
               />
-            </motion.div>
-          </Link>
+            </Link>
+
+            {/* Cart */}
+            <Link to="/cart" aria-label={`Shopping cart, ${totalItems} items`}>
+              <motion.div
+                animate={totalItems > 0 ? { scale: [1, 1.2, 1] } : {}}
+                transition={{ duration: 0.3 }}
+              >
+                <IconButton
+                  icon="shopping_cart"
+                  aria-label={`Cart (${totalItems} items)`}
+                  badge={totalItems}
+                  as="div"
+                />
+              </motion.div>
+            </Link>
+          </div>
 
           {/* Track Order */}
           <button
             onClick={() => setTrackModalOpen(true)}
-            className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-outline-variant/30 bg-surface-container-low hover:bg-surface-container hover:border-primary/30 transition-all cursor-pointer select-none focus:outline-none"
+            className="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-outline-variant/30 bg-surface-container-low hover:bg-surface-container hover:border-primary/40 transition-all cursor-pointer select-none focus:outline-none"
             aria-label="Track your order live"
           >
             <motion.span
@@ -255,7 +283,7 @@ export default function Header({ onLoginClick }) {
           {user ? (
             <button
               onClick={() => { if (confirm('Would you like to log out?')) logout() }}
-              className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-outline-variant/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/30 transition-all cursor-pointer select-none focus:outline-none"
+              className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-outline-variant/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/30 transition-all cursor-pointer select-none focus:outline-none animate-fade-in"
               aria-label={`Logged in as ${user.name}. Click to log out.`}
             >
               <div className="w-5 h-5 rounded-full flex items-center justify-center bg-primary text-white text-[10px] font-bold uppercase">
@@ -268,15 +296,15 @@ export default function Header({ onLoginClick }) {
           ) : (
             <button
               onClick={onLoginClick}
-              className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-outline-variant/30 bg-surface-container-low hover:bg-surface-container hover:border-primary/30 transition-all cursor-pointer select-none focus:outline-none"
+              className="hidden md:flex items-center gap-2 px-4 py-1.5 rounded-full border border-outline-variant/30 bg-primary hover:bg-primary/95 text-white shadow-sm hover:shadow transition-all cursor-pointer select-none focus:outline-none"
               aria-label="Account login"
             >
-              <div className="w-5 h-5 rounded-full flex items-center justify-center bg-primary-container/20">
-                <span className="material-symbols-outlined text-primary font-bold animate-pulse" style={{ fontSize: '14px' }}>
+              <div className="w-5 h-5 rounded-full flex items-center justify-center bg-white/20">
+                <span className="material-symbols-outlined text-white font-bold" style={{ fontSize: '12px' }}>
                   person
                 </span>
               </div>
-              <span className="text-label-sm font-bold text-on-surface-variant">Log In</span>
+              <span className="text-label-sm font-bold">Log In</span>
             </button>
           )}
 
@@ -307,12 +335,13 @@ export default function Header({ onLoginClick }) {
                   to={`/category/${link.slug}`}
                   onClick={() => setMobileMenuOpen(false)}
                   className={({ isActive }) =>
-                    `px-4 py-3 rounded-[12px] text-body-md font-semibold transition-colors ${
+                    `px-4 py-3 rounded-[12px] text-body-md font-semibold transition-colors flex items-center gap-2 ${
                       isActive ? 'bg-primary text-on-primary' : 'text-on-surface hover:bg-surface-container'
                     }`
                   }
                 >
-                  {link.label}
+                  <span className="text-[16px]">{link.emoji}</span>
+                  <span>{link.label}</span>
                 </NavLink>
               ))}
               <NavLink

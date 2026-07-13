@@ -11,10 +11,10 @@ export default function NotFound() {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
-          className="w-32 h-32 bg-white border border-outline-variant/30 rounded-full flex items-center justify-center mx-auto mb-8 shadow-stat overflow-hidden p-3"
+          className="w-32 h-32 bg-black border border-outline-variant/30 rounded-full flex items-center justify-center mx-auto mb-8 shadow-stat overflow-hidden p-3"
         >
           <img
-            src="/crest.png"
+            src="/crest.jpg"
             alt="NH Salem Sea Foods Crest"
             className="w-full h-full object-contain"
           />

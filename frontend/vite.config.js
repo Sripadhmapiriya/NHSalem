@@ -22,9 +22,9 @@ try {
     fs.mkdirSync(lobsterDir, { recursive: true })
   }
   
-  fs.copyFileSync(path.join(artifactDir, 'media__1783751029845.jpg'), path.join(publicDir, 'crest.jpg'))
+  fs.copyFileSync(path.join(currentConversationDir, 'media__1783946179032.jpg'), path.join(publicDir, 'crest.jpg'))
   fs.copyFileSync(path.join(artifactDir, 'media__1783751060566.jpg'), path.join(publicDir, 'poster.jpg'))
-  fs.copyFileSync(path.join(publicDir, 'crest.jpg'), path.join(publicDir, 'crest.png'))
+  fs.copyFileSync(path.join(currentConversationDir, 'transparent_logo_1783946595114.png'), path.join(publicDir, 'crest.png'))
 
   const crabFileMap = {
     'media__1783943803798.png': 'soft-shell-mangrove-crab.png',
