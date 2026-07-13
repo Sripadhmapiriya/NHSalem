@@ -36,18 +36,19 @@ function getOptionalUser(req) {
 }
 
 async function formatOrderDetails(orderRow) {
-  const itemsRes = await pool.query(
-    `SELECT oi.price, oi.quantity, oi.product_name as name, oi.weight, p.image, p.slug
-     FROM order_items oi
-     LEFT JOIN products p ON oi.product_id = p.id
-     WHERE oi.order_id = $1`,
-    [orderRow.id]
-  )
-
-  const stagesRes = await pool.query(
-    'SELECT stage_key as id, label, icon, completed_at as "completedAt" FROM order_stages WHERE order_id = $1 ORDER BY (CASE WHEN stage_key = \'confirmed\' THEN 1 WHEN stage_key = \'packed\' THEN 2 WHEN stage_key = \'out_for_delivery\' THEN 3 ELSE 4 END) ASC',
-    [orderRow.id]
-  )
+  const [itemsRes, stagesRes] = await Promise.all([
+    pool.query(
+      `SELECT oi.price, oi.quantity, oi.product_name as name, oi.weight, p.image, p.slug
+       FROM order_items oi
+       LEFT JOIN products p ON oi.product_id = p.id
+       WHERE oi.order_id = $1`,
+      [orderRow.id]
+    ),
+    pool.query(
+      'SELECT stage_key as id, label, icon, completed_at as "completedAt" FROM order_stages WHERE order_id = $1 ORDER BY (CASE WHEN stage_key = \'confirmed\' THEN 1 WHEN stage_key = \'packed\' THEN 2 WHEN stage_key = \'out_for_delivery\' THEN 3 ELSE 4 END) ASC',
+      [orderRow.id]
+    )
+  ])
 
   return {
     id: orderRow.order_number,
@@ -77,6 +78,78 @@ async function formatOrderDetails(orderRow) {
       completedAt: s.completedAt ? new Date(s.completedAt).toISOString() : null
     }))
   }
+}
+
+async function getOrdersDetailed(ordersRows) {
+  if (ordersRows.length === 0) return []
+
+  const orderIds = ordersRows.map(o => o.id)
+
+  const [itemsRes, stagesRes] = await Promise.all([
+    pool.query(
+      `SELECT oi.order_id, oi.price, oi.quantity, oi.product_name as name, oi.weight, p.image, p.slug
+       FROM order_items oi
+       LEFT JOIN products p ON oi.product_id = p.id
+       WHERE oi.order_id = ANY($1)`,
+      [orderIds]
+    ),
+    pool.query(
+      `SELECT order_id, stage_key as id, label, icon, completed_at as "completedAt"
+       FROM order_stages
+       WHERE order_id = ANY($1)
+       ORDER BY (CASE WHEN stage_key = 'confirmed' THEN 1 WHEN stage_key = 'packed' THEN 2 WHEN stage_key = 'out_for_delivery' THEN 3 ELSE 4 END) ASC`,
+      [orderIds]
+    )
+  ])
+
+  // Group items by order_id
+  const itemsByOrder = {}
+  itemsRes.rows.forEach(item => {
+    if (!itemsByOrder[item.order_id]) {
+      itemsByOrder[item.order_id] = []
+    }
+    itemsByOrder[item.order_id].push({
+      name: item.name,
+      weight: item.weight,
+      price: Number(item.price),
+      quantity: Number(item.quantity),
+      image: item.image || null,
+      slug: item.slug || null
+    })
+  })
+
+  // Group stages by order_id
+  const stagesByOrder = {}
+  stagesRes.rows.forEach(s => {
+    if (!stagesByOrder[s.order_id]) {
+      stagesByOrder[s.order_id] = []
+    }
+    stagesByOrder[s.order_id].push({
+      id: s.id,
+      label: s.label,
+      icon: s.icon,
+      completedAt: s.completedAt ? new Date(s.completedAt).toISOString() : null
+    })
+  })
+
+  return ordersRows.map(orderRow => ({
+    id: orderRow.order_number,
+    dbId: orderRow.id,
+    status: orderRow.status,
+    placedAt: orderRow.placed_at,
+    estimatedDelivery: orderRow.estimated_delivery,
+    address: typeof orderRow.address === 'string' ? JSON.parse(orderRow.address) : orderRow.address,
+    items: itemsByOrder[orderRow.id] || [],
+    subtotal: Number(orderRow.subtotal),
+    discount: Number(orderRow.discount),
+    shipping: Number(orderRow.shipping),
+    total: Number(orderRow.total),
+    freshnessScore: orderRow.freshness_score,
+    catchTime: orderRow.catch_time,
+    paymentMethod: orderRow.payment_method,
+    paymentStatus: orderRow.payment_status,
+    stages: stagesByOrder[orderRow.id] || []
+  }))
 }
 
 // ── POST /api/orders ──────────────────────────────────────────────────────────
@@ -197,12 +270,7 @@ router.post('/orders', asyncHandler(async (req, res) => {
 // ── GET /api/orders/mine ──────────────────────────────────────────────────────
 router.get('/orders/mine', requireUser, asyncHandler(async (req, res) => {
   const result = await pool.query('SELECT * FROM orders WHERE user_id = $1 ORDER BY placed_at DESC', [req.user.id])
-  
-  const orders = []
-  for (const row of result.rows) {
-    orders.push(await formatOrderDetails(row))
-  }
-
+  const orders = await getOrdersDetailed(result.rows)
   res.json({ success: true, orders })
 }))
 
@@ -231,12 +299,7 @@ router.get('/orders/:orderId', asyncHandler(async (req, res) => {
 // GET /api/admin/orders
 router.get('/admin/orders', requireAdmin, asyncHandler(async (req, res) => {
   const result = await pool.query('SELECT * FROM orders ORDER BY placed_at DESC')
-  
-  const orders = []
-  for (const row of result.rows) {
-    orders.push(await formatOrderDetails(row))
-  }
-
+  const orders = await getOrdersDetailed(result.rows)
   res.json({
     success: true,
     orders

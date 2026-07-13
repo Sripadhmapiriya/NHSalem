@@ -65,13 +65,13 @@ async function generateUniqueRecipeSlug(title, id = null) {
 }
 
 // ── GET /api/recipes ──────────────────────────────────────────────────────────
-router.get('/', asyncHandler(async (req, res) => {
+router.get('/recipes', asyncHandler(async (req, res) => {
   const result = await pool.query("SELECT * FROM recipes WHERE status = 'published' ORDER BY created_at DESC")
   res.json(result.rows.map(formatRecipe))
 }))
 
 // ── GET /api/recipes/:slug ────────────────────────────────────────────────────
-router.get('/:slug', asyncHandler(async (req, res) => {
+router.get('/recipes/:slug', asyncHandler(async (req, res) => {
   const { slug } = req.params
   
   const result = await pool.query('SELECT * FROM recipes WHERE slug = $1', [slug])

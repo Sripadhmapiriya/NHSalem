@@ -16,13 +16,13 @@ const citySchema = z.object({
 })
 
 // GET /api/cities (lists all cities)
-router.get('/', asyncHandler(async (req, res) => {
+router.get('/cities', asyncHandler(async (req, res) => {
   const result = await pool.query('SELECT * FROM cities ORDER BY status ASC, name ASC')
   res.json(result.rows)
 }))
 
 // GET /api/cities/:pincode (checks delivery availability for a pincode)
-router.get('/:pincode', asyncHandler(async (req, res) => {
+router.get('/cities/:pincode', asyncHandler(async (req, res) => {
   const { pincode } = req.params
 
   const result = await pool.query("SELECT * FROM cities WHERE pincode = $1 AND status = 'live'", [pincode])
@@ -46,13 +46,13 @@ router.get('/:pincode', asyncHandler(async (req, res) => {
 // ── Admin Endpoints ──
 
 // GET /api/admin/cities
-router.get('/admin', requireAdmin, asyncHandler(async (req, res) => {
+router.get('/admin/cities', requireAdmin, asyncHandler(async (req, res) => {
   const result = await pool.query('SELECT * FROM cities ORDER BY name ASC')
   res.json({ success: true, cities: result.rows })
 }))
 
 // POST /api/admin/cities
-router.post('/admin', requireAdmin, asyncHandler(async (req, res) => {
+router.post('/admin/cities', requireAdmin, asyncHandler(async (req, res) => {
   const c = citySchema.parse(req.body)
 
   const check = await pool.query('SELECT id FROM cities WHERE id = $1', [c.id])
@@ -71,7 +71,7 @@ router.post('/admin', requireAdmin, asyncHandler(async (req, res) => {
 }))
 
 // PUT /api/admin/cities/:id
-router.put('/admin/:id', requireAdmin, asyncHandler(async (req, res) => {
+router.put('/admin/cities/:id', requireAdmin, asyncHandler(async (req, res) => {
   const { id } = req.params
   const c = citySchema.parse(req.body)
 
@@ -92,7 +92,7 @@ router.put('/admin/:id', requireAdmin, asyncHandler(async (req, res) => {
 }))
 
 // DELETE /api/admin/cities/:id
-router.delete('/admin/:id', requireAdmin, asyncHandler(async (req, res) => {
+router.delete('/admin/cities/:id', requireAdmin, asyncHandler(async (req, res) => {
   const { id } = req.params
 
   const result = await pool.query('DELETE FROM cities WHERE id = $1 RETURNING id', [id])

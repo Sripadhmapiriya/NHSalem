@@ -33,7 +33,7 @@ function formatInquiry(r) {
 }
 
 // POST /api/wholesale (Public submission)
-router.post('/', asyncHandler(async (req, res) => {
+router.post('/wholesale', asyncHandler(async (req, res) => {
   const body = wholesaleSchema.parse(req.body)
 
   const result = await pool.query(
@@ -59,7 +59,7 @@ router.post('/', asyncHandler(async (req, res) => {
 }))
 
 // GET /api/admin/wholesale (Admin list)
-router.get('/admin', requireAdmin, asyncHandler(async (req, res) => {
+router.get('/admin/wholesale', requireAdmin, asyncHandler(async (req, res) => {
   const result = await pool.query('SELECT * FROM wholesale_inquiries ORDER BY created_at DESC')
   res.json({
     success: true,
@@ -68,7 +68,7 @@ router.get('/admin', requireAdmin, asyncHandler(async (req, res) => {
 }))
 
 // POST /api/admin/wholesale (Admin create)
-router.post('/admin', requireAdmin, asyncHandler(async (req, res) => {
+router.post('/admin/wholesale', requireAdmin, asyncHandler(async (req, res) => {
   const body = wholesaleSchema.parse(req.body)
 
   const result = await pool.query(
@@ -91,7 +91,7 @@ router.post('/admin', requireAdmin, asyncHandler(async (req, res) => {
 }))
 
 // PUT /api/admin/wholesale/:id (Admin update)
-router.put('/admin/:id', requireAdmin, asyncHandler(async (req, res) => {
+router.put('/admin/wholesale/:id', requireAdmin, asyncHandler(async (req, res) => {
   const { id } = req.params
   const body = wholesaleSchema.parse(req.body)
 
@@ -122,7 +122,7 @@ router.put('/admin/:id', requireAdmin, asyncHandler(async (req, res) => {
 }))
 
 // DELETE /api/admin/wholesale/:id (Admin delete)
-router.delete('/admin/:id', requireAdmin, asyncHandler(async (req, res) => {
+router.delete('/admin/wholesale/:id', requireAdmin, asyncHandler(async (req, res) => {
   const { id } = req.params
 
   const result = await pool.query('DELETE FROM wholesale_inquiries WHERE id = $1 RETURNING id', [id])

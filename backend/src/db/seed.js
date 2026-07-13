@@ -9,7 +9,7 @@ import { SUBSCRIPTION_PLANS } from '../../../frontend/src/mock/subscriptions.js'
 import { CITIES } from '../../../frontend/src/mock/cities.js'
 import { FAQS } from '../../../frontend/src/mock/faqs.js'
 import { RECIPES } from '../../../frontend/src/mock/recipes.js'
-import { ADMIN_REVIEWS, ADMIN_WHOLESALE, ADMIN_ORDERS, ADMIN_CUSTOMERS } from '../../../frontend/src/mock/adminData.js'
+import { ADMIN_REVIEWS, ADMIN_WHOLESALE, ADMIN_ORDERS, ADMIN_CUSTOMERS, ADMIN_PROMOTIONS } from '../../../frontend/src/mock/adminData.js'
 
 dotenv.config()
 
@@ -33,6 +33,17 @@ async function runSeed() {
     console.log('Seeding transaction started...')
     await client.query('BEGIN')
 
+    console.log('Clearing existing data (truncating)...')
+    await client.query(
+      `TRUNCATE TABLE 
+        order_stages, order_items, orders, cart_items, 
+        subscriptions, subscription_plans, promotions, 
+        reviews, products, categories, admins, users, 
+        wholesale_inquiries, recipes, cities, faqs, 
+        newsletter_subscribers 
+       CASCADE`
+    )
+
     // 1. Seed Admins
     console.log('Seeding admins...')
     const adminPasswordHash = await bcrypt.hash('admin123', 10)
@@ -52,7 +63,7 @@ async function runSeed() {
       `INSERT INTO users (name, email, phone, password_hash)
        VALUES ($1, $2, $3, $4)
        ON CONFLICT (email) DO NOTHING`,
-      ['NH Salem User', 'user@nhsalem.com', '9876543210', userPasswordHash]
+      ['NH Salem User', 'user@nhsalem.com', '9876500000', userPasswordHash]
     )
 
     // Seed mock customers
@@ -187,11 +198,10 @@ async function runSeed() {
     console.log('Seeding subscription plans...')
     for (const plan of SUBSCRIPTION_PLANS) {
       await client.query(
-        `INSERT INTO subscription_plans (id, slug, name, tagline, price, period, savings, highlights, color, badge, is_popular, status)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        `INSERT INTO subscription_plans (slug, name, tagline, price, period, savings, highlights, color, badge, is_popular, status)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
          ON CONFLICT (slug) DO NOTHING`,
         [
-          plan.id, // slug as ID is safe here, as it matches isPopular logic on client
           plan.id,
           plan.name,
           plan.tagline || null,
@@ -414,11 +424,17 @@ async function runSeed() {
     await client.query('COMMIT')
     console.log('Database successfully seeded!')
   } catch (err) {
-    await client.query('ROLLBACK')
+    try {
+      await client.query('ROLLBACK')
+    } catch (e) {
+      // Ignore rollback failure if transaction didn't start
+    }
     console.error('Seeding transaction failed, rolled back.', err)
     process.exit(1)
   } finally {
-    await client.end()
+    try {
+      await client.end()
+    } catch (e) {}
   }
 }
 

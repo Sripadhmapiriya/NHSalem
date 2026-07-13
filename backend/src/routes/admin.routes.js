@@ -53,60 +53,53 @@ router.get('/auth/me', requireAdmin, asyncHandler(async (req, res) => {
 
 // Dashboard stats
 router.get('/dashboard/stats', requireAdmin, asyncHandler(async (req, res) => {
-  // 1. Today's Revenue
-  const todayRevenueRes = await pool.query(
-    `SELECT COALESCE(SUM(total), 0) as total 
-     FROM orders 
-     WHERE placed_at >= CURRENT_DATE AND status != 'cancelled'`
-  )
-  const todayRevenue = Number(todayRevenueRes.rows[0].total)
+  // Generate promises for all queries to run in parallel
+  const kpiPromises = [
+    pool.query(`SELECT COALESCE(SUM(total), 0) as total FROM orders WHERE placed_at >= CURRENT_DATE AND status != 'cancelled'`),
+    pool.query("SELECT COUNT(*) as count FROM orders WHERE placed_at >= CURRENT_DATE"),
+    pool.query("SELECT COUNT(*) as count FROM users"),
+    pool.query("SELECT COUNT(*) as count FROM orders WHERE status NOT IN ('delivered', 'cancelled')"),
+    pool.query(`
+      SELECT oi.product_name as name, COALESCE(SUM(oi.quantity), 0) as sales, COALESCE(SUM(oi.price * oi.quantity), 0) as revenue
+      FROM order_items oi
+      JOIN orders o ON oi.order_id = o.id
+      WHERE o.placed_at >= NOW() - INTERVAL '7 days' AND o.status != 'cancelled'
+      GROUP BY oi.product_name
+      ORDER BY sales DESC
+      LIMIT 5
+    `)
+  ]
 
-  // 2. Today's Orders
-  const todayOrdersRes = await pool.query(
-    "SELECT COUNT(*) as count FROM orders WHERE placed_at >= CURRENT_DATE"
-  )
-  const todayOrders = Number(todayOrdersRes.rows[0].count)
-
-  // 3. Active Customers (total users count)
-  const activeCustomersRes = await pool.query("SELECT COUNT(*) as count FROM users")
-  const activeCustomers = Number(activeCustomersRes.rows[0].count)
-
-  // 4. Pending Orders
-  const pendingOrdersRes = await pool.query(
-    "SELECT COUNT(*) as count FROM orders WHERE status NOT IN ('delivered', 'cancelled')"
-  )
-  const pendingOrders = Number(pendingOrdersRes.rows[0].count)
-
-  // 5. Weekly Revenue and Orders (last 7 days, including today)
-  // Let's generate a list of dates for the last 7 days and query sums
-  const weeklyRevenue = []
-  const weeklyOrders = []
+  // Add the 7 weekly stats queries
   for (let i = 6; i >= 0; i--) {
-    const revRes = await pool.query(
-      `SELECT COALESCE(SUM(total), 0) as total, COUNT(*) as count 
-       FROM orders 
-       WHERE DATE(placed_at) = CURRENT_DATE - $1 AND status != 'cancelled'`,
-      [i]
+    kpiPromises.push(
+      pool.query(
+        `SELECT COALESCE(SUM(total), 0) as total, COUNT(*) as count 
+         FROM orders 
+         WHERE placed_at::date = CURRENT_DATE - $1::integer AND status != 'cancelled'`,
+        [i]
+      )
     )
-    weeklyRevenue.push(Number(revRes.rows[0].total))
-    weeklyOrders.push(Number(revRes.rows[0].count))
   }
 
-  // 6. Top Products This Week
-  const topProductsRes = await pool.query(
-    `SELECT oi.product_name as name, COALESCE(SUM(oi.quantity), 0) as sales, COALESCE(SUM(oi.price * oi.quantity), 0) as revenue
-     FROM order_items oi
-     JOIN orders o ON oi.order_id = o.id
-     WHERE o.placed_at >= NOW() - INTERVAL '7 days' AND o.status != 'cancelled'
-     GROUP BY oi.product_name
-     ORDER BY sales DESC
-     LIMIT 5`
-  )
-  let topProducts = topProductsRes.rows.map(r => ({
+  // Run all 12 queries concurrently
+  const results = await Promise.all(kpiPromises)
+
+  const todayRevenue = Number(results[0].rows[0].total)
+  const todayOrders = Number(results[1].rows[0].count)
+  const activeCustomers = Number(results[2].rows[0].count)
+  const pendingOrders = Number(results[3].rows[0].count)
+  
+  const topProducts = results[4].rows.map(r => ({
     name: r.name,
     sales: Number(r.sales),
     revenue: Number(r.revenue)
   }))
+
+  // Extract weekly results (indexes 5 to 11)
+  const weeklyResults = results.slice(5)
+  const weeklyRevenue = weeklyResults.map(res => Number(res.rows[0].total))
+  const weeklyOrders = weeklyResults.map(res => Number(res.rows[0].count))
 
   // If no sales yet, fill with mock fallback products so chart doesn't look empty
   if (topProducts.length === 0) {
