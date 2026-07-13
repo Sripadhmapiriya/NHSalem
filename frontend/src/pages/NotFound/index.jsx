@@ -14,7 +14,7 @@ export default function NotFound() {
           className="w-32 h-32 bg-white border border-outline-variant/30 rounded-full flex items-center justify-center mx-auto mb-8 shadow-stat overflow-hidden p-3"
         >
           <img
-            src="/crest.jpg"
+            src="/crest.png"
             alt="NH Salem Sea Foods Crest"
             className="w-full h-full object-contain"
           />

@@ -14,6 +14,7 @@ import {
   formatCurrency,
   formatDate,
 } from '@/admin/AdminUI'
+import { SeafoodLoader } from '@/components/ui'
 
 export default function AdminCustomers() {
   const [customers, setCustomers] = useState([])
@@ -90,9 +91,7 @@ export default function AdminCustomers() {
 
       <AdminCard subtitle={`${filtered.length} customer${filtered.length !== 1 ? 's' : ''}`}>
         {loading ? (
-          <div className="text-center py-10 font-semibold text-admin-navy">
-            Loading customers...
-          </div>
+          <SeafoodLoader text="Loading customers..." className="py-8" />
         ) : (
           <AdminTable headers={['Customer', 'City', 'Orders', 'Total Spent', 'Joined', 'Last Order', 'Status']}>
             {filtered.map((c) => (

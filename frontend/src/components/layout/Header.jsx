@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { SearchInput, IconButton } from '@/components/ui'
+import { SearchInput, IconButton, Modal, Input, Button } from '@/components/ui'
 import useCartStore from '@/store/cartStore'
 import useWishlistStore from '@/store/wishlistStore'
 import useAuthStore from '@/store/authStore'
@@ -34,6 +34,27 @@ export default function Header({ onLoginClick }) {
   const { count: wishlistCount } = useWishlistStore()
   const { user, logout } = useAuthStore()
   const debouncedSearch = useDebounce(searchQuery, 300)
+
+  // Track Order Modal state
+  const [trackModalOpen, setTrackModalOpen] = useState(false)
+  const [orderIdInput, setOrderIdInput] = useState('')
+  const [trackError, setTrackError] = useState('')
+
+  const handleTrackSubmit = (e) => {
+    e.preventDefault()
+    if (!orderIdInput.trim()) {
+      setTrackError('Please enter an Order ID')
+      return
+    }
+    if (orderIdInput.trim().length < 4) {
+      setTrackError('Order ID must be at least 4 characters long')
+      return
+    }
+    setTrackError('')
+    setTrackModalOpen(false)
+    navigate(`/orders/${orderIdInput.trim()}`)
+    setOrderIdInput('')
+  }
 
   // Scroll glass effect
   useEffect(() => {
@@ -73,17 +94,17 @@ export default function Header({ onLoginClick }) {
         {/* Logo */}
         <Link
           to="/"
-          className="flex items-center gap-3.5 bg-white border border-outline-variant/30 rounded-[14px] p-2.5 flex-shrink-0 select-none hover:border-primary/30 transition-colors"
+          className="flex items-center gap-3 flex-shrink-0 select-none hover:opacity-90 transition-opacity"
           aria-label="NH Salem Sea Foods — Home"
         >
           <img
-            src="/crest.jpg"
+            src="/crest.png"
             alt="NH Salem Sea Foods Crest"
             className="w-10 h-10 object-contain flex-shrink-0"
           />
-          <div className="hidden sm:block text-left">
-            <p className="text-label-md font-bold text-primary leading-tight">NH Salem</p>
-            <p className="text-label-sm text-on-surface-variant leading-normal mt-0.5">Sea Foods</p>
+          <div className="hidden sm:block text-left pl-3 border-l border-outline-variant/30">
+            <p className="font-serif text-headline-sm font-extrabold text-primary leading-tight tracking-tight">NH Salem</p>
+            <p className="text-[10px] font-bold text-on-surface-variant tracking-[0.22em] uppercase leading-none mt-0.5">Sea Foods</p>
           </div>
         </Link>
 
@@ -215,10 +236,7 @@ export default function Header({ onLoginClick }) {
 
           {/* Track Order */}
           <button
-            onClick={() => {
-              const orderId = prompt('Enter your Order ID:')
-              if (orderId) navigate(`/orders/${orderId.trim()}`)
-            }}
+            onClick={() => setTrackModalOpen(true)}
             className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-outline-variant/30 bg-surface-container-low hover:bg-surface-container hover:border-primary/30 transition-all cursor-pointer select-none focus:outline-none"
             aria-label="Track your order live"
           >
@@ -305,6 +323,18 @@ export default function Header({ onLoginClick }) {
                 ✦ Subscribe
               </NavLink>
               <div className="border-t border-outline-variant/30 mt-2 pt-4 flex flex-col gap-1">
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    setTrackModalOpen(true)
+                  }}
+                  className="px-4 py-2.5 rounded-[12px] text-label-md text-on-surface-variant hover:bg-surface-container transition-colors flex items-center gap-2.5 text-left w-full cursor-pointer select-none"
+                >
+                  <span className="material-symbols-outlined text-primary font-bold" style={{ fontSize: '18px' }}>
+                    radar
+                  </span>
+                  Track Order
+                </button>
                 <NavLink to="/about" onClick={() => setMobileMenuOpen(false)} className="px-4 py-2.5 rounded-[12px] text-label-md text-on-surface-variant hover:bg-surface-container transition-colors">About Us</NavLink>
                 <NavLink to="/quality" onClick={() => setMobileMenuOpen(false)} className="px-4 py-2.5 rounded-[12px] text-label-md text-on-surface-variant hover:bg-surface-container transition-colors">Quality Promise</NavLink>
                 <NavLink to="/stores" onClick={() => setMobileMenuOpen(false)} className="px-4 py-2.5 rounded-[12px] text-label-md text-on-surface-variant hover:bg-surface-container transition-colors">Store Locator</NavLink>
@@ -336,6 +366,57 @@ export default function Header({ onLoginClick }) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Track Order Modal */}
+      <Modal
+        isOpen={trackModalOpen}
+        onClose={() => {
+          setTrackModalOpen(false)
+          setOrderIdInput('')
+          setTrackError('')
+        }}
+        title="Track Your Order"
+        id="track-order-modal"
+        size="sm"
+      >
+        <form onSubmit={handleTrackSubmit} className="space-y-4 pt-1">
+          <p className="text-body-md text-on-surface-variant mb-4 leading-relaxed">
+            Enter your Order ID (e.g., <span className="font-mono text-primary font-bold">NHS-39102</span>) to view its live status and fresh catch details.
+          </p>
+          <Input
+            id="track-order-id-input"
+            label="Order ID"
+            placeholder="e.g. NHS-39102"
+            value={orderIdInput}
+            onChange={(e) => {
+              setOrderIdInput(e.target.value)
+              if (trackError) setTrackError('')
+            }}
+            error={trackError}
+            required
+            autoFocus
+          />
+          <div className="flex justify-end gap-3 pt-2">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setTrackModalOpen(false)
+                setOrderIdInput('')
+                setTrackError('')
+              }}
+              type="button"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              type="submit"
+            >
+              Track Order
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </header>
   )
 }

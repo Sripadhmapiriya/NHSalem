@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ADMIN_SUBSCRIPTIONS, ADMIN_CUSTOMERS } from '@/mock/adminData'
 import useToastStore from '@/store/toastStore'
 import useSubscriptionPlanStore from '@/store/subscriptionPlanStore'
+import { SeafoodLoader } from '@/components/ui'
 import {
   AdminPage,
   AdminCard,
@@ -258,7 +259,11 @@ function PlanFormModal({ plan, onClose, onSubmit }) {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function AdminSubscriptions() {
   const { addToast } = useToastStore()
-  const { plans, addPlan, updatePlan } = useSubscriptionPlanStore()
+  const { plans, fetchPlans, addPlan, updatePlan, loading } = useSubscriptionPlanStore()
+
+  useEffect(() => {
+    fetchPlans()
+  }, [fetchPlans])
   
   const [activeTab, setActiveTab] = useState('subscriptions') // 'subscriptions' | 'plans'
 
@@ -653,31 +658,35 @@ export default function AdminSubscriptions() {
           </div>
 
           <AdminCard subtitle={`${plans.length} plan${plans.length !== 1 ? 's' : ''}`}>
-            <AdminTable headers={['Plan Name', 'Price', 'Billing Cycle', 'Features', 'Status', 'Actions']}>
-              {plans.map((p) => (
-                <Tr key={p.id}>
-                  <Td>
-                    <div>
-                      <p className="font-semibold text-admin-navy">{p.name}</p>
-                      {p.tagline && <p className="text-[11px] text-admin-text-sub">{p.tagline}</p>}
-                    </div>
-                  </Td>
-                  <Td><span className="font-bold">{formatCurrency(p.price)}</span></Td>
-                  <Td><span className="capitalize">{p.period}ly</span></Td>
-                  <Td>
-                    <span className="text-[12px] text-admin-text-sub">
-                      {p.highlights?.length || 0} features
-                    </span>
-                  </Td>
-                  <Td><StatusBadge status={p.status || 'active'} /></Td>
-                  <Td>
-                    <AdminBtn size="sm" variant="secondary" icon="edit" onClick={() => setPlanFormTarget(p)}>
-                      Edit Plan
-                    </AdminBtn>
-                  </Td>
-                </Tr>
-              ))}
-            </AdminTable>
+            {loading ? (
+              <SeafoodLoader text="Loading subscription plans..." className="py-8" />
+            ) : (
+              <AdminTable headers={['Plan Name', 'Price', 'Billing Cycle', 'Features', 'Status', 'Actions']}>
+                {plans.map((p) => (
+                  <Tr key={p.id}>
+                    <Td>
+                      <div>
+                        <p className="font-semibold text-admin-navy">{p.name}</p>
+                        {p.tagline && <p className="text-[11px] text-admin-text-sub">{p.tagline}</p>}
+                      </div>
+                    </Td>
+                    <Td><span className="font-bold">{formatCurrency(p.price)}</span></Td>
+                    <Td><span className="capitalize">{p.period}ly</span></Td>
+                    <Td>
+                      <span className="text-[12px] text-admin-text-sub">
+                        {p.highlights?.length || 0} features
+                      </span>
+                    </Td>
+                    <Td><StatusBadge status={p.status || 'active'} /></Td>
+                    <Td>
+                      <AdminBtn size="sm" variant="secondary" icon="edit" onClick={() => setPlanFormTarget(p)}>
+                        Edit Plan
+                      </AdminBtn>
+                    </Td>
+                  </Tr>
+                ))}
+              </AdminTable>
+            )}
           </AdminCard>
         </>
       )}

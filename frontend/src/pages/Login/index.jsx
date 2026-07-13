@@ -376,14 +376,17 @@ export default function LoginPage({ isModal = false, onSuccess }) {
       {/* Header */}
       <div className="text-center mb-2">
         <img
-          src="/crest.jpg"
+          src="/crest.png"
           alt="NH Salem Sea Foods Crest"
           className="w-20 h-20 object-contain mx-auto mb-4"
         />
         {!isModal && (
           <>
-            <h1 className="text-display-lg-mobile text-on-surface font-bold">Welcome to NH Salem</h1>
-            <p className="text-body-md text-on-surface-variant mt-2">
+            <h1 className="font-serif text-3xl font-extrabold text-primary tracking-tight">NH Salem</h1>
+            <span className="mt-1 text-[10px] font-bold tracking-[0.22em] uppercase text-on-surface-variant block">
+              Sea Foods
+            </span>
+            <p className="text-body-md text-on-surface-variant mt-3">
               Sign in to track orders, manage subscriptions, and get catch updates.
             </p>
           </>

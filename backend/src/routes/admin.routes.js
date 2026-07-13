@@ -67,7 +67,8 @@ router.get('/dashboard/stats', requireAdmin, asyncHandler(async (req, res) => {
       GROUP BY oi.product_name
       ORDER BY sales DESC
       LIMIT 5
-    `)
+    `),
+    pool.query("SELECT status, COUNT(*) as count FROM orders GROUP BY status")
   ]
 
   // Add the 7 weekly stats queries
@@ -82,7 +83,7 @@ router.get('/dashboard/stats', requireAdmin, asyncHandler(async (req, res) => {
     )
   }
 
-  // Run all 12 queries concurrently
+  // Run all 13 queries concurrently
   const results = await Promise.all(kpiPromises)
 
   const todayRevenue = Number(results[0].rows[0].total)
@@ -90,14 +91,28 @@ router.get('/dashboard/stats', requireAdmin, asyncHandler(async (req, res) => {
   const activeCustomers = Number(results[2].rows[0].count)
   const pendingOrders = Number(results[3].rows[0].count)
   
-  const topProducts = results[4].rows.map(r => ({
+  let topProducts = results[4].rows.map(r => ({
     name: r.name,
     sales: Number(r.sales),
     revenue: Number(r.revenue)
   }))
 
-  // Extract weekly results (indexes 5 to 11)
-  const weeklyResults = results.slice(5)
+  const statusRows = results[5].rows
+  const orderStatusBreakdown = {
+    confirmed: 0,
+    packed: 0,
+    out_for_delivery: 0,
+    delivered: 0,
+    cancelled: 0
+  }
+  statusRows.forEach(row => {
+    if (row.status in orderStatusBreakdown) {
+      orderStatusBreakdown[row.status] = Number(row.count)
+    }
+  })
+
+  // Extract weekly results (indexes 6 to 12)
+  const weeklyResults = results.slice(6)
   const weeklyRevenue = weeklyResults.map(res => Number(res.rows[0].total))
   const weeklyOrders = weeklyResults.map(res => Number(res.rows[0].count))
 
@@ -110,14 +125,6 @@ router.get('/dashboard/stats', requireAdmin, asyncHandler(async (req, res) => {
       { name: 'Hand-Cleaned Squid', sales: 0, revenue: 0 },
       { name: 'Jumbo Tiger Prawns', sales: 0, revenue: 0 }
     ]
-  }
-
-  // 7. Order Status Breakdown
-  const statuses = ['confirmed', 'packed', 'out_for_delivery', 'delivered', 'cancelled']
-  const orderStatusBreakdown = {}
-  for (const s of statuses) {
-    const statusRes = await pool.query("SELECT COUNT(*) as count FROM orders WHERE status = $1", [s])
-    orderStatusBreakdown[s] = Number(statusRes.rows[0].count)
   }
 
   res.json({

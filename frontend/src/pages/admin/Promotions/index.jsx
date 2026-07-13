@@ -14,6 +14,7 @@ import {
   FilterBar,
   formatDate,
 } from '@/admin/AdminUI'
+import { SeafoodLoader } from '@/components/ui'
 
 function FieldError({ message }) {
   if (!message) return null
@@ -377,9 +378,7 @@ export default function AdminPromotions() {
 
       <AdminCard subtitle={`${filtered.length} promotions`}>
         {loading ? (
-          <div className="text-center py-10 font-semibold text-admin-navy">
-            Loading promotions...
-          </div>
+          <SeafoodLoader text="Loading promotions..." className="py-8" />
         ) : (
           <AdminTable headers={['Code', 'Type', 'Value', 'Min. Order', 'Uses', 'Status', 'Expires', 'Actions']}>
             {filtered.map((p) => (

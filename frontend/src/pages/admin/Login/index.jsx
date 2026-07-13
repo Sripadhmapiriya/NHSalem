@@ -104,15 +104,15 @@ export default function AdminLogin() {
             <div className="w-20 h-20 rounded-full flex items-center justify-center mb-5 overflow-hidden"
               style={{ background: 'linear-gradient(145deg, #0B1E3D, #1E3A5F)', boxShadow: '0 4px 20px rgba(11,30,61,0.4)' }}>
               <img
-                src="/crest.jpg"
+                src="/crest.png"
                 alt="NH Salem Sea Foods"
                 className="w-full h-full object-contain p-1"
               />
             </div>
-            <h1 className="text-2xl font-bold text-admin-navy tracking-tight leading-tight">
+            <h1 className="font-serif text-3xl font-extrabold text-admin-navy tracking-tight leading-tight">
               NH Salem
             </h1>
-            <span className="mt-1 text-[10px] font-bold tracking-[0.2em] uppercase text-admin-text-sub">
+            <span className="mt-1 text-[10px] font-bold tracking-[0.22em] uppercase text-admin-text-sub">
               Global Admin Portal
             </span>
             {/* Gold accent line */}

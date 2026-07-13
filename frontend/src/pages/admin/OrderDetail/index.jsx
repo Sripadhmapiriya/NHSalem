@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import useToastStore from '@/store/toastStore'
 import { getAdminOrder, updateAdminOrderStatus } from '@/services/adminApi'
 import { AdminPage, AdminCard, StatusBadge, AdminBtn, formatCurrency, formatDate } from '@/admin/AdminUI'
+import { SeafoodLoader } from '@/components/ui'
 
 const STAGE_ICONS = {
   confirmed: 'check',
@@ -83,9 +84,7 @@ export default function AdminOrderDetail() {
   if (loading) {
     return (
       <AdminPage>
-        <div className="text-center py-20 font-semibold text-admin-navy">
-          Loading order details...
-        </div>
+        <SeafoodLoader text="Loading order details..." className="min-h-[50vh]" />
       </AdminPage>
     )
   }

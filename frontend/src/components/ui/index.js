@@ -18,3 +18,5 @@ export { default as ToastContainer, ToastItem } from './Toast'
 export { default as Skeleton, ProductCardSkeleton, RecipeCardSkeleton, PageSkeleton } from './Skeleton'
 export { default as OTPInput } from './OTPInput'
 export { default as QuantityStepper, ProgressStepper } from './Stepper'
+export { default as SeafoodLoader } from './SeafoodLoader'
+

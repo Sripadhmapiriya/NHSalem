@@ -76,6 +76,7 @@ export default {
       },
       fontFamily: {
         sans: ["Inter", "sans-serif"],
+        serif: ["'Playfair Display'", "serif"],
       },
       fontSize: {
         "display-lg": ["48px", { lineHeight: "56px", fontWeight: "700", letterSpacing: "-0.02em" }],

@@ -37,16 +37,16 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 lg:gap-8 pb-12 border-b border-white/10 items-start">
           {/* Brand block (taking up 2/5ths of the grid width) */}
           <div className="lg:col-span-2 flex flex-col items-start pt-2 lg:pt-3">
-            {/* Logo on white plate */}
-            <div className="inline-flex items-center gap-3.5 bg-white border border-outline-variant/30 rounded-[14px] p-2.5 mb-5 select-none">
+            {/* Logo on transparent background */}
+            <div className="inline-flex items-center gap-3.5 mb-5 select-none">
               <img
-                src="/crest.jpg"
+                src="/crest.png"
                 alt="NH Salem Sea Foods Crest"
                 className="w-10 h-10 object-contain flex-shrink-0"
               />
-              <div className="text-left">
-                <p className="text-label-md font-bold text-primary leading-tight">NH Salem</p>
-                <p className="text-label-sm text-on-surface-variant leading-normal mt-0.5">Sea Foods</p>
+              <div className="text-left pl-3 border-l border-white/20">
+                <p className="font-serif text-headline-sm font-extrabold text-white leading-tight tracking-tight">NH Salem</p>
+                <p className="text-[10px] font-bold text-white/50 tracking-[0.22em] uppercase leading-none mt-0.5">Sea Foods</p>
               </div>
             </div>
 

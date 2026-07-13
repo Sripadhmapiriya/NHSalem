@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getDashboardStats, getAdminOrders } from '@/services/adminApi'
 import { KpiCard, AdminCard, AdminPage, AdminTable, Tr, Td, StatusBadge, AdminBtn, formatCurrency, formatDate } from '@/admin/AdminUI'
+import { SeafoodLoader } from '@/components/ui'
 
 const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Today']
 
@@ -30,9 +31,7 @@ export default function AdminDashboard() {
   if (loading || !kpi) {
     return (
       <AdminPage>
-        <div className="text-center py-10 font-semibold text-admin-navy">
-          Loading dashboard statistics...
-        </div>
+        <SeafoodLoader text="Loading dashboard statistics..." className="min-h-[45vh]" />
       </AdminPage>
     )
   }

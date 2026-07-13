@@ -5,6 +5,22 @@ import morgan from 'morgan'
 import compression from 'compression'
 import rateLimit from 'express-rate-limit'
 import dotenv from 'dotenv'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+try {
+  const __dirname = path.dirname(fileURLToPath(import.meta.url))
+  const srcPath = path.resolve(__dirname, '../../frontend/public/crest.jpg')
+  const destPath = path.resolve(__dirname, '../../frontend/public/crest.png')
+  if (fs.existsSync(srcPath)) {
+    fs.copyFileSync(srcPath, destPath)
+    console.log('--- LOGO COPIED SUCCESSFULLY TO PNG ---')
+  }
+} catch (err) {
+  console.log('Logo copy script skipped:', err.message)
+}
+
 
 import errorHandler from './middleware/errorHandler.js'
 import authRoutes from './routes/auth.routes.js'

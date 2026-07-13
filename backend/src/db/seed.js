@@ -89,9 +89,11 @@ async function runSeed() {
     console.log('Seeding categories...')
     const categories = [
       { id: 'fish', slug: 'fish', name: 'Fish' },
-      { id: 'prawns', slug: 'prawns', name: 'Prawns & Shrimp' },
+      { id: 'prawns-shrimp', slug: 'prawns-shrimp', name: 'Prawns & Shrimp' },
       { id: 'crabs', slug: 'crabs', name: 'Crabs' },
-      { id: 'shellfish', slug: 'shellfish', name: 'Shellfish' }
+      { id: 'lobster', slug: 'lobster', name: 'Lobster' },
+      { id: 'dry-fish', slug: 'dry-fish', name: 'Dry Fish' },
+      { id: 'combos', slug: 'combos', name: 'Combos' }
     ]
     for (const cat of categories) {
       await client.query(

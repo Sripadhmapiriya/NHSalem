@@ -11,6 +11,7 @@ import {
   AdminBtn,
   AdminInput,
 } from '@/admin/AdminUI'
+import { SeafoodLoader } from '@/components/ui'
 
 function ReplyModal({ review, onClose, onSubmit }) {
   const [text, setText] = useState('')
@@ -217,9 +218,7 @@ export default function AdminReviews() {
 
       <AdminCard subtitle={`${filtered.length} review${filtered.length !== 1 ? 's' : ''}`}>
         {loading ? (
-          <div className="text-center py-10 font-semibold text-admin-navy">
-            Loading reviews...
-          </div>
+          <SeafoodLoader text="Loading reviews..." className="py-8" />
         ) : (
           <AdminTable headers={['Product', 'Reviewer', 'Rating', 'Review Details', 'Status', 'Actions']}>
             {filtered.map((r) => (

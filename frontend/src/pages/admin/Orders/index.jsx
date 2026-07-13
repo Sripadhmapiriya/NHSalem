@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getAdminOrders } from '@/services/adminApi'
 import { AdminPage, AdminCard, AdminTable, Tr, Td, StatusBadge, AdminBtn, AdminInput, FilterBar, formatCurrency, formatDate } from '@/admin/AdminUI'
+import { SeafoodLoader } from '@/components/ui'
 
 const ALL_STATUSES = ['all', 'confirmed', 'packed', 'out_for_delivery', 'delivered', 'cancelled']
 
@@ -60,9 +61,7 @@ export default function AdminOrders() {
 
       <AdminCard subtitle={`${filtered.length} order${filtered.length !== 1 ? 's' : ''}`}>
         {loading ? (
-          <div className="text-center py-10 font-semibold text-admin-navy">
-            Loading orders...
-          </div>
+          <SeafoodLoader text="Loading orders..." className="py-8" />
         ) : (
           <AdminTable headers={['Order ID', 'Customer', 'City', 'Items', 'Payment', 'Total', 'Date', 'Status', '']}>
             {filtered.map((o) => {

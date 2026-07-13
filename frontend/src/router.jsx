@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import Layout from '@/components/layout/Layout'
-import { PageSkeleton } from '@/components/ui/Skeleton'
+import { SeafoodLoader } from '@/components/ui'
 import AdminRoutes from '@/admin/router'
 
 // Lazy-load all customer-facing page components
@@ -21,7 +21,7 @@ const HelpCenter   = lazy(() => import('@/pages/HelpCenter'))
 const NotFound     = lazy(() => import('@/pages/NotFound'))
 
 function PageLoader() {
-  return <PageSkeleton />
+  return <SeafoodLoader text="Netting the latest updates…" className="min-h-[60vh]" />
 }
 
 /**

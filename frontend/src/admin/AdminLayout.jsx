@@ -53,13 +53,10 @@ export default function AdminLayout() {
       {/* Brand */}
       <div className="px-5 py-5 border-b border-white/8 flex-shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl overflow-hidden border-2 flex-shrink-0"
-            style={{ borderColor: 'rgba(201,162,39,0.4)', background: 'rgba(255,255,255,0.08)' }}>
-            <img src="/crest.jpg" alt="NH Salem" className="w-full h-full object-contain p-0.5" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-white font-bold text-[14px] leading-tight">NH Salem</p>
-            <p className="text-white/40 text-[9px] font-bold tracking-[0.18em] uppercase">Admin Portal</p>
+          <img src="/crest.png" alt="NH Salem" className="w-9 h-9 object-contain flex-shrink-0" />
+          <div className="min-w-0 pl-3 border-l border-white/10">
+            <p className="font-serif text-white font-extrabold text-[15px] leading-tight tracking-tight">NH Salem</p>
+            <p className="text-white/45 text-[9px] font-bold tracking-[0.18em] uppercase">Admin Portal</p>
           </div>
         </div>
       </div>

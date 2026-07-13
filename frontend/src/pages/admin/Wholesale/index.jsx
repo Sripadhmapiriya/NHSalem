@@ -19,6 +19,7 @@ import {
   FilterBar,
   formatDate,
 } from '@/admin/AdminUI'
+import { SeafoodLoader } from '@/components/ui'
 
 const PIPELINE_STAGES = ['new', 'contacted', 'negotiating', 'converted', 'closed']
 const INDUSTRIES = ['Restaurant', 'Catering', 'Retail', 'Hospitality', 'Cloud Kitchen', 'Other']
@@ -402,9 +403,7 @@ export default function AdminWholesale() {
         {/* Inquiries table */}
         <AdminCard className="lg:col-span-2" subtitle={`${filtered.length} customer${filtered.length !== 1 ? 's' : ''}`}>
           {loading ? (
-            <div className="text-center py-10 font-semibold text-admin-navy">
-              Loading wholesale inquiries...
-            </div>
+            <SeafoodLoader text="Loading wholesale inquiries..." className="py-8" />
           ) : (
             <AdminTable headers={['Business', 'Contact', 'Industry', 'Qty / wk', 'Date', 'Stage', 'Actions']}>
               {filtered.map((b) => (
