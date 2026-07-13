@@ -1,35 +1,51 @@
 import { create } from 'zustand'
-import SUBSCRIPTION_PLANS from '@/mock/subscriptions'
+import { getSubscriptionPlans } from '@/services/api'
+import { createAdminPlan, updateAdminPlan, deleteAdminPlan } from '@/services/adminApi'
 
 /**
- * Subscription Plan Store — in-memory state.
- * Initialised from static SUBSCRIPTION_PLANS mock array.
+ * Subscription Plan Store — dynamically synced with backend API.
  */
 const useSubscriptionPlanStore = create((set, get) => ({
-  plans: [...SUBSCRIPTION_PLANS],
+  plans: [],
+  loading: false,
+
+  /** Fetch plans from the backend */
+  fetchPlans: async () => {
+    set({ loading: true })
+    try {
+      const data = await getSubscriptionPlans()
+      set({ plans: data, loading: false })
+    } catch (err) {
+      console.error('Failed to fetch subscription plans:', err)
+      set({ loading: false })
+    }
+  },
 
   /** Add a new plan */
-  addPlan: (data) => {
-    const newPlan = {
-      id: data.id || `plan-${Date.now()}`,
-      ...data,
-      highlights: data.highlights || [],
-      price: Number(data.price),
-      isPopular: data.isPopular || false,
-    }
+  addPlan: async (data) => {
+    const newPlan = await createAdminPlan(data)
     set((state) => ({ plans: [...state.plans, newPlan] }))
     return newPlan
   },
 
   /** Update an existing plan */
-  updatePlan: (id, data) => {
+  updatePlan: async (id, data) => {
+    const updated = await updateAdminPlan(id, data)
     set((state) => ({
-      plans: state.plans.map((p) => (p.id === id ? { ...p, ...data, price: Number(data.price) } : p)),
+      plans: state.plans.map((p) => (p.id === id ? updated : p)),
+    }))
+  },
+
+  /** Delete an existing plan */
+  deletePlan: async (id) => {
+    await deleteAdminPlan(id)
+    set((state) => ({
+      plans: state.plans.filter((p) => p.id !== id)
     }))
   },
 
   /** Get a specific plan */
-  getPlan: (id) => get().plans.find((p) => p.id === id),
+  getPlan: (id) => get().plans.find((p) => p.id === id || p.slug === id),
 }))
 
 export default useSubscriptionPlanStore

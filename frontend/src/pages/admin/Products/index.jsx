@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useProductStore from '@/store/productStore'
 import {
@@ -19,8 +19,13 @@ const CATEGORIES = ['all', 'fish', 'prawns-shrimp', 'crabs', 'lobster']
 export default function AdminProducts() {
   const navigate = useNavigate()
   const products = useProductStore((s) => s.products)
+  const fetchProducts = useProductStore((s) => s.fetchProducts)
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('all')
+
+  useEffect(() => {
+    fetchProducts()
+  }, [fetchProducts])
 
   const filtered = products.filter((p) => {
     const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase())

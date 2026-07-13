@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { ADMIN_ORDERS } from '@/mock/adminData'
-import ORDERS from '@/mock/orders'
+import { useEffect, useState } from 'react'
+import useToastStore from '@/store/toastStore'
+import { getAdminOrder, updateAdminOrderStatus } from '@/services/adminApi'
 import { AdminPage, AdminCard, StatusBadge, AdminBtn, formatCurrency, formatDate } from '@/admin/AdminUI'
 
 const STAGE_ICONS = {
@@ -35,37 +36,59 @@ const getStepStyles = (done, active) => {
   }
 }
 
-// Merge mock order sources for detail view
-function getOrderDetail(id) {
-  // Try extended mock first
-  const admin = ADMIN_ORDERS.find((o) => o.id === id)
-  // Try tracking mock for stage data
-  const tracking = ORDERS[id]
-  if (!admin && !tracking) return null
-  return {
-    ...admin,
-    ...tracking,
-    id: id,
-    customer: admin?.customer ?? { name: tracking?.address?.name, phone: tracking?.address?.phone, email: '' },
-    address: tracking?.address ?? null,
-    stages: tracking?.stages ?? [],
-    items: tracking?.items ?? [],
-    total: tracking?.total ?? admin?.total,
-    subtotal: tracking?.subtotal ?? admin?.total,
-    shipping: tracking?.shipping ?? 0,
-    freshnessScore: tracking?.freshnessScore,
-    agent: tracking?.agent,
-    placedAt: admin?.placedAt ?? tracking?.placedAt,
-    status: admin?.status ?? tracking?.status,
-    paymentMethod: admin?.paymentMethod ?? 'N/A',
-    paymentStatus: admin?.paymentStatus ?? 'paid',
-  }
-}
-
 export default function AdminOrderDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const order = getOrderDetail(id)
+  const { addToast } = useToastStore()
+  const [order, setOrder] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [updating, setUpdating] = useState(false)
+
+  useEffect(() => {
+    async function loadOrder() {
+      setLoading(true)
+      try {
+        const data = await getAdminOrder(id)
+        setOrder(data)
+      } catch (err) {
+        console.error('Failed to load order:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadOrder()
+  }, [id])
+
+  const handleUpdateStatus = async () => {
+    if (!order) return
+    const STAGE_ORDER = ['confirmed', 'packed', 'out_for_delivery', 'delivered']
+    const currentIdx = STAGE_ORDER.indexOf(order.status)
+    if (currentIdx === -1 || currentIdx >= STAGE_ORDER.length - 1) return
+
+    const nextStatus = STAGE_ORDER[currentIdx + 1]
+    setUpdating(true)
+    try {
+      const res = await updateAdminOrderStatus(order.dbId || id, nextStatus)
+      if (res.success) {
+        setOrder(res.order)
+        addToast({ message: `Order status advanced to "${nextStatus.replace(/_/g, ' ')}"!`, type: 'success' })
+      }
+    } catch (err) {
+      addToast({ message: err.message || 'Failed to update order status', type: 'error' })
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <AdminPage>
+        <div className="text-center py-20 font-semibold text-admin-navy">
+          Loading order details...
+        </div>
+      </AdminPage>
+    )
+  }
 
   if (!order) {
     return (
@@ -91,9 +114,11 @@ export default function AdminOrderDetail() {
       }
       action={
         <>
-          <AdminBtn variant="secondary" icon="print">Print Invoice</AdminBtn>
+          <AdminBtn variant="secondary" icon="print" onClick={() => window.print()}>Print Invoice</AdminBtn>
           {order.status !== 'delivered' && order.status !== 'cancelled' && (
-            <AdminBtn variant="primary" icon="local_shipping">Update Status</AdminBtn>
+            <AdminBtn variant="primary" icon="local_shipping" disabled={updating} onClick={handleUpdateStatus}>
+              {updating ? 'Updating…' : 'Advance Fulfill Status'}
+            </AdminBtn>
           )}
         </>
       }
@@ -136,6 +161,7 @@ export default function AdminOrderDetail() {
                 <div className="px-5 py-3 bg-admin-seafoam/50 flex justify-end gap-8 text-[13px]">
                   <div className="text-right space-y-1">
                     <div className="flex justify-between gap-8 text-admin-text-sub"><span>Subtotal</span><span>{formatCurrency(order.subtotal)}</span></div>
+                    <div className="flex justify-between gap-8 text-admin-text-sub"><span>Discount</span><span>-{formatCurrency(order.discount)}</span></div>
                     <div className="flex justify-between gap-8 text-admin-text-sub"><span>Shipping</span><span>{order.shipping === 0 ? 'Free' : formatCurrency(order.shipping)}</span></div>
                     <div className="flex justify-between gap-8 font-bold text-admin-navy border-t border-admin-border/50 pt-1 mt-1"><span>Total</span><span>{formatCurrency(order.total)}</span></div>
                   </div>
@@ -216,10 +242,9 @@ export default function AdminOrderDetail() {
           {/* Customer */}
           <AdminCard title="Customer">
             <div className="p-4 space-y-2">
-              <p className="font-semibold text-admin-navy">{order.customer?.name}</p>
-              {order.customer?.email && <p className="text-[12px] text-admin-text-sub flex items-center gap-1"><span className="material-symbols-outlined" style={{ fontSize: '13px' }}>email</span>{order.customer.email}</p>}
-              {order.customer?.phone && <p className="text-[12px] text-admin-text-sub flex items-center gap-1"><span className="material-symbols-outlined" style={{ fontSize: '13px' }}>call</span>{order.customer.phone}</p>}
-              <AdminBtn size="sm" variant="secondary" icon="open_in_new" className="mt-2">View Profile</AdminBtn>
+              <p className="font-semibold text-admin-navy">{order.address?.name}</p>
+              {order.address?.email && <p className="text-[12px] text-admin-text-sub flex items-center gap-1"><span className="material-symbols-outlined" style={{ fontSize: '13px' }}>email</span>{order.address.email}</p>}
+              {order.address?.phone && <p className="text-[12px] text-admin-text-sub flex items-center gap-1"><span className="material-symbols-outlined" style={{ fontSize: '13px' }}>call</span>{order.address.phone}</p>}
             </div>
           </AdminCard>
 
@@ -228,22 +253,9 @@ export default function AdminOrderDetail() {
             <AdminCard title="Delivery Address">
               <div className="p-4 text-[13px] text-admin-text-sub space-y-0.5">
                 <p className="font-semibold text-admin-navy">{order.address.name}</p>
-                <p>{order.address.line1}</p>
+                <p>{order.address.street}</p>
                 <p>{order.address.city}, {order.address.state} — {order.address.pincode}</p>
                 <p>{order.address.phone}</p>
-              </div>
-            </AdminCard>
-          )}
-
-          {/* Delivery agent */}
-          {order.agent && (
-            <AdminCard title="Delivery Agent">
-              <div className="p-4 flex items-center gap-3">
-                <img src={order.agent.avatar} alt={order.agent.name} className="w-10 h-10 rounded-full border border-admin-border" />
-                <div>
-                  <p className="font-semibold text-admin-navy text-[13px]">{order.agent.name}</p>
-                  <p className="text-[12px] text-admin-text-sub">{order.agent.phone}</p>
-                </div>
               </div>
             </AdminCard>
           )}
@@ -251,7 +263,7 @@ export default function AdminOrderDetail() {
           {/* Payment */}
           <AdminCard title="Payment">
             <div className="p-4 text-[13px] space-y-1">
-              <div className="flex justify-between"><span className="text-admin-text-sub">Method</span><span className="font-semibold">{order.paymentMethod}</span></div>
+              <div className="flex justify-between"><span className="text-admin-text-sub">Method</span><span className="font-semibold capitalize">{order.paymentMethod}</span></div>
               <div className="flex justify-between items-center"><span className="text-admin-text-sub">Status</span><StatusBadge status={order.paymentStatus} /></div>
             </div>
           </AdminCard>

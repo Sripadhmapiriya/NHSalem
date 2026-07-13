@@ -1,7 +1,7 @@
-import { useState } from 'react'
-import { ADMIN_PROMOTIONS } from '@/mock/adminData'
+import { useState, useEffect } from 'react'
 import useProductStore from '@/store/productStore'
 import useToastStore from '@/store/toastStore'
+import { getAdminPromotions, createAdminPromotion, updateAdminPromotion } from '@/services/adminApi'
 import {
   AdminPage,
   AdminCard,
@@ -28,8 +28,10 @@ function FieldError({ message }) {
 export default function AdminPromotions() {
   const { addToast } = useToastStore()
   const products = useProductStore((s) => s.products)
+  const fetchProducts = useProductStore((s) => s.fetchProducts)
 
-  const [promotions, setPromotions] = useState(ADMIN_PROMOTIONS)
+  const [promotions, setPromotions] = useState([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [editingPromo, setEditingPromo] = useState(null)
@@ -50,6 +52,27 @@ export default function AdminPromotions() {
   // Inline validation errors
   const [errors, setErrors] = useState({})
 
+  // Fetch promotions and products on mount
+  useEffect(() => {
+    fetchProducts()
+    loadPromotions()
+  }, [fetchProducts])
+
+  const loadPromotions = async () => {
+    setLoading(true)
+    try {
+      const res = await getAdminPromotions()
+      if (res.success) {
+        setPromotions(res.promotions)
+      }
+    } catch (err) {
+      console.error(err)
+      addToast({ message: 'Failed to load promotions', type: 'error' })
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const filtered = promotions.filter(
     (p) =>
       !search ||
@@ -58,20 +81,31 @@ export default function AdminPromotions() {
   )
 
   // ── Pause / Resume handler ──────────────────────────────────────────────────
-  const handleToggleStatus = (promoId) => {
+  const handleToggleStatus = async (promoId) => {
+    const promo = promotions.find((p) => p.id === promoId)
+    if (!promo) return
+
     setActionLoadingId(promoId)
-    setTimeout(() => {
-      setPromotions((prev) =>
-        prev.map((p) => {
-          if (p.id === promoId) {
-            const next = p.status === 'active' ? 'paused' : 'active'
-            return { ...p, status: next }
-          }
-          return p
-        })
-      )
+    try {
+      const nextStatus = promo.status === 'active' ? 'paused' : 'active'
+      const updated = await updateAdminPromotion(promoId, {
+        code: promo.code,
+        type: promo.type,
+        discount_value: promo.value,
+        min_order: promo.minOrder,
+        description: promo.description,
+        status: nextStatus,
+        expires_at: promo.expiresAt || null,
+        usage_limit: promo.limit || null,
+        applicable_product_ids: promo.applicableProductIds || []
+      })
+      setPromotions((prev) => prev.map((p) => (p.id === promoId ? updated : p)))
+      addToast({ message: `Coupon status updated to ${nextStatus}.`, type: 'success' })
+    } catch (err) {
+      addToast({ message: err.message || 'Failed to update coupon status', type: 'error' })
+    } finally {
       setActionLoadingId(null)
-    }, 600)
+    }
   }
 
   // ── Open form for creating ──────────────────────────────────────────────────
@@ -98,10 +132,10 @@ export default function AdminPromotions() {
     setFormValue(promo.value)
     setFormMinOrder(promo.minOrder)
     setFormDesc(promo.description)
-    setFormStartDate(promo.startDate || '')
+    setFormStartDate('')
     setFormExpires(promo.expiresAt || '')
     setFormLimit(promo.limit || '')
-    setFormProducts(promo.applicableProducts || [])
+    setFormProducts(promo.applicableProductIds || [])
     setErrors({})
     setShowForm(true)
   }
@@ -128,7 +162,7 @@ export default function AdminPromotions() {
   }
 
   // ── Submit form ─────────────────────────────────────────────────────────────
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault()
     const errs = validate()
     if (Object.keys(errs).length > 0) {
@@ -138,49 +172,35 @@ export default function AdminPromotions() {
     setErrors({})
     setSubmitting(true)
 
-    setTimeout(() => {
+    const payload = {
+      code: formCode.trim().toUpperCase(),
+      type: formType,
+      discount_value: Number(formValue),
+      min_order: Number(formMinOrder),
+      description: formDesc.trim(),
+      status: editingPromo ? editingPromo.status : 'active',
+      expires_at: formExpires || null,
+      usage_limit: formLimit ? Number(formLimit) : null,
+      applicable_product_ids: formProducts
+    }
+
+    try {
       if (editingPromo) {
-        setPromotions((prev) =>
-          prev.map((p) =>
-            p.id === editingPromo.id
-              ? {
-                  ...p,
-                  code: formCode.trim().toUpperCase(),
-                  type: formType,
-                  value: Number(formValue),
-                  minOrder: Number(formMinOrder),
-                  description: formDesc.trim(),
-                  startDate: formStartDate || null,
-                  expiresAt: formExpires || null,
-                  limit: formLimit ? Number(formLimit) : null,
-                  applicableProducts: formProducts,
-                }
-              : p
-          )
-        )
-        addToast({ message: `Coupon "${formCode.toUpperCase()}" updated successfully.`, type: 'success' })
+        const updated = await updateAdminPromotion(editingPromo.id, payload)
+        setPromotions((prev) => prev.map((p) => (p.id === editingPromo.id ? updated : p)))
+        addToast({ message: `Coupon "${payload.code}" updated successfully.`, type: 'success' })
       } else {
-        const newPromo = {
-          id: `p${Date.now()}`,
-          code: formCode.trim().toUpperCase(),
-          type: formType,
-          value: Number(formValue),
-          minOrder: Number(formMinOrder),
-          uses: 0,
-          limit: formLimit ? Number(formLimit) : null,
-          status: 'active',
-          startDate: formStartDate || null,
-          expiresAt: formExpires || null,
-          description: formDesc.trim(),
-          applicableProducts: formProducts,
-        }
-        setPromotions((prev) => [newPromo, ...prev])
-        addToast({ message: `Coupon "${newPromo.code}" created successfully.`, type: 'success' })
+        const created = await createAdminPromotion(payload)
+        setPromotions((prev) => [created, ...prev])
+        addToast({ message: `Coupon "${payload.code}" created successfully.`, type: 'success' })
       }
-      setSubmitting(false)
       setShowForm(false)
       setEditingPromo(null)
-    }, 800)
+    } catch (err) {
+      addToast({ message: err.message || 'Failed to save promotion', type: 'error' })
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -230,7 +250,6 @@ export default function AdminPromotions() {
                 <input
                   type="number"
                   min={1}
-                  max={formType === 'percent' ? 100 : undefined}
                   placeholder="e.g. 50"
                   value={formValue}
                   onChange={(e) => { setFormValue(e.target.value); setErrors((prev) => ({ ...prev, value: '' })) }}
@@ -279,19 +298,6 @@ export default function AdminPromotions() {
                   placeholder="Unlimited if empty"
                   value={formLimit}
                   onChange={(e) => setFormLimit(e.target.value)}
-                  className="w-full px-3 py-2 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] focus:outline-none focus:border-admin-navy"
-                />
-              </div>
-
-              {/* Start Date */}
-              <div>
-                <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">
-                  Start Date
-                </label>
-                <input
-                  type="date"
-                  value={formStartDate}
-                  onChange={(e) => setFormStartDate(e.target.value)}
                   className="w-full px-3 py-2 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] focus:outline-none focus:border-admin-navy"
                 />
               </div>
@@ -370,53 +376,59 @@ export default function AdminPromotions() {
       </div>
 
       <AdminCard subtitle={`${filtered.length} promotions`}>
-        <AdminTable headers={['Code', 'Type', 'Value', 'Min. Order', 'Uses', 'Status', 'Expires', 'Actions']}>
-          {filtered.map((p) => (
-            <Tr key={p.id}>
-              <Td>
-                <div>
-                  <code className="font-bold text-admin-navy bg-admin-seafoam px-2 py-0.5 rounded text-[12px]">
-                    {p.code}
-                  </code>
-                  <p className="text-[10px] text-admin-text-sub mt-0.5 max-w-[160px] truncate">{p.description}</p>
-                </div>
-              </Td>
-              <Td className="capitalize">{p.type}</Td>
-              <Td>
-                <span className="font-semibold">
-                  {p.type === 'flat' ? `₹${p.value}` : `${p.value}%`}
-                </span>
-              </Td>
-              <Td>{p.minOrder > 0 ? `₹${p.minOrder}` : 'None'}</Td>
-              <Td>
-                <div>
-                  <span className="font-semibold">{p.uses}</span>
-                  {p.limit && <span className="text-admin-text-sub text-[11px]"> / {p.limit}</span>}
-                </div>
-              </Td>
-              <Td><StatusBadge status={p.status} /></Td>
-              <Td>{p.expiresAt ? formatDate(p.expiresAt) : <span className="text-admin-text-sub">—</span>}</Td>
-              <Td>
-                <div className="flex gap-1">
-                  <AdminBtn size="sm" variant="secondary" icon="edit" onClick={() => handleEditClick(p)}>
-                    Edit
-                  </AdminBtn>
-                  {p.status !== 'scheduled' && (
-                    <AdminBtn
-                      size="sm"
-                      variant={p.status === 'active' ? 'secondary' : 'primary'}
-                      disabled={actionLoadingId === p.id}
-                      icon={p.status === 'active' ? 'pause' : 'play_arrow'}
-                      onClick={() => handleToggleStatus(p.id)}
-                    >
-                      {actionLoadingId === p.id ? '…' : p.status === 'active' ? 'Pause' : 'Resume'}
+        {loading ? (
+          <div className="text-center py-10 font-semibold text-admin-navy">
+            Loading promotions...
+          </div>
+        ) : (
+          <AdminTable headers={['Code', 'Type', 'Value', 'Min. Order', 'Uses', 'Status', 'Expires', 'Actions']}>
+            {filtered.map((p) => (
+              <Tr key={p.id}>
+                <Td>
+                  <div>
+                    <code className="font-bold text-admin-navy bg-admin-seafoam px-2 py-0.5 rounded text-[12px]">
+                      {p.code}
+                    </code>
+                    <p className="text-[10px] text-admin-text-sub mt-0.5 max-w-[160px] truncate">{p.description}</p>
+                  </div>
+                </Td>
+                <Td className="capitalize">{p.type}</Td>
+                <Td>
+                  <span className="font-semibold">
+                    {p.type === 'flat' ? `₹${p.value}` : `${p.value}%`}
+                  </span>
+                </Td>
+                <Td>{p.minOrder > 0 ? `₹${p.minOrder}` : 'None'}</Td>
+                <Td>
+                  <div>
+                    <span className="font-semibold">{p.uses}</span>
+                    {p.limit && <span className="text-admin-text-sub text-[11px]"> / {p.limit}</span>}
+                  </div>
+                </Td>
+                <Td><StatusBadge status={p.status} /></Td>
+                <Td>{p.expiresAt ? formatDate(p.expiresAt) : <span className="text-admin-text-sub">—</span>}</Td>
+                <Td>
+                  <div className="flex gap-1">
+                    <AdminBtn size="sm" variant="secondary" icon="edit" onClick={() => handleEditClick(p)}>
+                      Edit
                     </AdminBtn>
-                  )}
-                </div>
-              </Td>
-            </Tr>
-          ))}
-        </AdminTable>
+                    {p.status !== 'scheduled' && (
+                      <AdminBtn
+                        size="sm"
+                        variant={p.status === 'active' ? 'secondary' : 'primary'}
+                        disabled={actionLoadingId === p.id}
+                        icon={p.status === 'active' ? 'pause' : 'play_arrow'}
+                        onClick={() => handleToggleStatus(p.id)}
+                      >
+                        {actionLoadingId === p.id ? '…' : p.status === 'active' ? 'Pause' : 'Resume'}
+                      </AdminBtn>
+                    )}
+                  </div>
+                </Td>
+              </Tr>
+            ))}
+          </AdminTable>
+        )}
       </AdminCard>
     </AdminPage>
   )

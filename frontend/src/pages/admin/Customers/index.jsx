@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { ADMIN_CUSTOMERS } from '@/mock/adminData'
+import { useEffect, useState } from 'react'
+import { getCustomers } from '@/services/adminApi'
 import {
   AdminPage,
   AdminCard,
@@ -15,42 +15,29 @@ import {
   formatDate,
 } from '@/admin/AdminUI'
 
-/**
- * CUSTOMERS PAGE — Status Column Reference
- * ─────────────────────────────────────────
- * The "Status" column reflects each customer's account lifecycle state.
- * Values and their meanings:
- *
- *   'active'   — Customer has placed at least one order and their account is
- *                in good standing. This is the most common state.
- *
- *   'inactive' — Customer registered but has not placed any recent orders, OR
- *                their account has been manually deactivated by an admin.
- *                Inactive customers can still log in but may not receive
- *                marketing emails (handled in the notification service).
- *
- *   'new'      — Customer has registered an account but has never placed an
- *                order (orders count = 0). This is a transient state that
- *                automatically upgrades to 'active' upon first order completion.
- *
- *   'suspended' — (Reserved for future use) Account is temporarily suspended
- *                 due to policy violations or payment disputes. Suspended
- *                 customers cannot log in or place orders.
- *
- * Status is set by:
- *   - The backend on order completion (new → active)
- *   - Admin manual override via the customer detail page (future feature)
- *   - Automated inactivity jobs (active → inactive after 180 days without orders)
- *
- * Rendering: StatusBadge renders each status with a distinct colour:
- *   active   → green   | inactive → grey  | new → blue  | suspended → red-grey
- */
-
 export default function AdminCustomers() {
+  const [customers, setCustomers] = useState([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
 
-  const filtered = ADMIN_CUSTOMERS.filter((c) => {
+  useEffect(() => {
+    async function loadCustomers() {
+      try {
+        const res = await getCustomers()
+        if (res.success) {
+          setCustomers(res.customers)
+        }
+      } catch (err) {
+        console.error('Failed to load customers:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadCustomers()
+  }, [])
+
+  const filtered = customers.filter((c) => {
     const matchSearch =
       !search ||
       c.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -60,11 +47,11 @@ export default function AdminCustomers() {
     return matchSearch && matchStatus
   })
 
-  const totalCustomers = ADMIN_CUSTOMERS.length
-  const activeCount = ADMIN_CUSTOMERS.filter((c) => c.status === 'active').length
-  const avgSpend = Math.round(
-    ADMIN_CUSTOMERS.reduce((sum, c) => sum + c.totalSpent, 0) / totalCustomers
-  )
+  const totalCustomers = customers.length
+  const activeCount = customers.filter((c) => c.status === 'active').length
+  const avgSpend = totalCustomers > 0 
+    ? Math.round(customers.reduce((sum, c) => sum + c.totalSpent, 0) / totalCustomers)
+    : 0
 
   return (
     <AdminPage>
@@ -94,11 +81,6 @@ export default function AdminCustomers() {
           icon="search"
           className="w-64"
         />
-        {/*
-          Status filter pills map to the lifecycle values documented above.
-          'suspended' is included here for future use even though no customers
-          currently have that status in the mock data.
-        */}
         <FilterBar
           options={['all', 'active', 'new', 'inactive', 'suspended']}
           active={statusFilter}
@@ -107,28 +89,33 @@ export default function AdminCustomers() {
       </div>
 
       <AdminCard subtitle={`${filtered.length} customer${filtered.length !== 1 ? 's' : ''}`}>
-        <AdminTable headers={['Customer', 'City', 'Orders', 'Total Spent', 'Joined', 'Last Order', 'Status']}>
-          {filtered.map((c) => (
-            <Tr key={c.id}>
-              <Td>
-                <div className="flex items-center gap-2.5">
-                  <Avatar name={c.name} />
-                  <div>
-                    <p className="font-semibold text-admin-navy">{c.name}</p>
-                    <p className="text-[11px] text-admin-text-sub">{c.email}</p>
+        {loading ? (
+          <div className="text-center py-10 font-semibold text-admin-navy">
+            Loading customers...
+          </div>
+        ) : (
+          <AdminTable headers={['Customer', 'City', 'Orders', 'Total Spent', 'Joined', 'Last Order', 'Status']}>
+            {filtered.map((c) => (
+              <Tr key={c.id}>
+                <Td>
+                  <div className="flex items-center gap-2.5">
+                    <Avatar name={c.name} />
+                    <div>
+                      <p className="font-semibold text-admin-navy">{c.name}</p>
+                      <p className="text-[11px] text-admin-text-sub">{c.email}</p>
+                    </div>
                   </div>
-                </div>
-              </Td>
-              <Td>{c.city}</Td>
-              <Td>{c.orders}</Td>
-              <Td><span className="font-semibold">{formatCurrency(c.totalSpent)}</span></Td>
-              <Td>{formatDate(c.joinedAt)}</Td>
-              <Td>{c.lastOrder ? formatDate(c.lastOrder) : <span className="text-admin-text-sub">—</span>}</Td>
-              {/* Status column — see top-of-file comment for full semantics */}
-              <Td><StatusBadge status={c.status} /></Td>
-            </Tr>
-          ))}
-        </AdminTable>
+                </Td>
+                <Td>{c.city}</Td>
+                <Td>{c.orders}</Td>
+                <Td><span className="font-semibold">{formatCurrency(c.totalSpent)}</span></Td>
+                <Td>{formatDate(c.joinedAt)}</Td>
+                <Td>{c.lastOrder ? formatDate(c.lastOrder) : <span className="text-admin-text-sub">—</span>}</Td>
+                <Td><StatusBadge status={c.status} /></Td>
+              </Tr>
+            ))}
+          </AdminTable>
+        )}
       </AdminCard>
     </AdminPage>
   )

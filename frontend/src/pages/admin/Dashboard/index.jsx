@@ -1,12 +1,42 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ADMIN_KPI, ADMIN_ORDERS } from '@/mock/adminData'
+import { getDashboardStats, getAdminOrders } from '@/services/adminApi'
 import { KpiCard, AdminCard, AdminPage, AdminTable, Tr, Td, StatusBadge, AdminBtn, formatCurrency, formatDate } from '@/admin/AdminUI'
 
 const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Today']
 
 export default function AdminDashboard() {
   const navigate = useNavigate()
-  const kpi = ADMIN_KPI
+  const [kpi, setKpi] = useState(null)
+  const [orders, setOrders] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadDashboardData() {
+      try {
+        const statsRes = await getDashboardStats()
+        const ordersRes = await getAdminOrders()
+        if (statsRes.success) setKpi(statsRes)
+        if (ordersRes.success) setOrders(ordersRes.orders)
+      } catch (err) {
+        console.error('Failed to load dashboard data:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadDashboardData()
+  }, [])
+
+  if (loading || !kpi) {
+    return (
+      <AdminPage>
+        <div className="text-center py-10 font-semibold text-admin-navy">
+          Loading dashboard statistics...
+        </div>
+      </AdminPage>
+    )
+  }
+
   const maxRevenue = Math.max(...kpi.weeklyRevenue)
   const maxOrders = Math.max(...kpi.weeklyOrders)
 
@@ -24,10 +54,9 @@ export default function AdminDashboard() {
         {/* Weekly Revenue Chart */}
         <AdminCard title="Weekly Revenue" className="lg:col-span-2">
           <div className="px-5 pt-4 pb-5">
-            {/* Revenue chart — explicit pixel heights so bars always render */}
             <div className="flex items-end gap-2" style={{ height: '128px' }}>
               {kpi.weeklyRevenue.map((v, i) => {
-                const barPx = Math.max(4, Math.round((v / maxRevenue) * 112)) // 112px max bar, 16px for label
+                const barPx = Math.max(4, Math.round((v / (maxRevenue || 1)) * 112))
                 const isToday = i === 6
                 return (
                   <div key={i} className="flex-1 flex flex-col items-center justify-end gap-1" style={{ height: '128px' }}>
@@ -48,7 +77,6 @@ export default function AdminDashboard() {
                 )
               })}
             </div>
-            {/* Revenue range labels */}
             <div className="flex justify-between mt-2">
               <span className="text-[9px] text-admin-text-sub">₹0</span>
               <span className="text-[9px] text-admin-text-sub font-semibold text-admin-gold">
@@ -64,7 +92,7 @@ export default function AdminDashboard() {
           <div className="p-5 space-y-3">
             {Object.entries(kpi.orderStatusBreakdown).map(([status, count]) => {
               const total = Object.values(kpi.orderStatusBreakdown).reduce((a, b) => a + b, 0)
-              const pct = Math.round((count / total) * 100)
+              const pct = total > 0 ? Math.round((count / total) * 100) : 0
               return (
                 <div key={status}>
                   <div className="flex justify-between mb-1">
@@ -103,17 +131,17 @@ export default function AdminDashboard() {
         {/* Recent Orders */}
         <AdminCard title="Recent Orders" action={<AdminBtn size="sm" variant="secondary" onClick={() => navigate('/admin/orders')}>View All</AdminBtn>}>
           <div className="divide-y divide-admin-border/30">
-            {ADMIN_ORDERS.slice(0, 5).map((o) => (
+            {orders.slice(0, 5).map((o) => (
               <div
-                key={o.id}
+                key={o.dbId}
                 className="px-4 py-3 hover:bg-admin-seafoam/60 cursor-pointer transition-colors"
-                onClick={() => navigate(`/admin/orders/${o.id}`)}
+                onClick={() => navigate(`/admin/orders/${o.dbId}`)}
               >
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-[12px] font-bold text-admin-navy">{o.id}</span>
                   <StatusBadge status={o.status} />
                 </div>
-                <p className="text-[11px] text-admin-text-sub">{o.customer.name} — {formatCurrency(o.total)}</p>
+                <p className="text-[11px] text-admin-text-sub">{o.address?.name || 'Customer'} — {formatCurrency(o.total)}</p>
               </div>
             ))}
           </div>

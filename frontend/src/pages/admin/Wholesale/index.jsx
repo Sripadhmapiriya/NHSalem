@@ -1,6 +1,11 @@
-import { useState } from 'react'
-import { ADMIN_WHOLESALE } from '@/mock/adminData'
+import { useState, useEffect } from 'react'
 import useToastStore from '@/store/toastStore'
+import {
+  getAdminWholesale,
+  createAdminWholesale,
+  updateAdminWholesale,
+  deleteAdminWholesale,
+} from '@/services/adminApi'
 import {
   AdminPage,
   AdminCard,
@@ -25,8 +30,8 @@ function WholesaleFormModal({ initial, onClose, onSave }) {
   const [businessName, setBusinessName] = useState(initial?.businessName ?? '')
   const [contact, setContact] = useState(initial?.contact ?? '')
   const [email, setEmail] = useState(initial?.email ?? '')
+  const [phone, setPhone] = useState(initial?.phone ?? '')
   const [industry, setIndustry] = useState(initial?.industry ?? 'Restaurant')
-  const [city, setCity] = useState(initial?.city ?? '')
   const [qty, setQty] = useState(initial?.qty ?? '')
   const [status, setStatus] = useState(initial?.status ?? 'new')
   const [notes, setNotes] = useState(initial?.notes ?? '')
@@ -39,29 +44,30 @@ function WholesaleFormModal({ initial, onClose, onSave }) {
     if (!contact.trim()) errs.contact = 'Contact person is required.'
     if (!email.trim()) errs.email = 'Email is required.'
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = 'Enter a valid email address.'
-    if (!city.trim()) errs.city = 'City is required.'
     return errs
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const errs = validate()
     if (Object.keys(errs).length > 0) { setErrors(errs); return }
     setSaving(true)
-    setTimeout(() => {
-      onSave({
-        id: initial?.id ?? `b${Date.now()}`,
+    try {
+      const payload = {
         businessName: businessName.trim(),
-        contact: contact.trim(),
+        contactName: contact.trim(),
         email: email.trim(),
+        phone: phone.trim() || '0000000000',
         industry,
-        city: city.trim(),
         qty: qty.trim(),
-        status,
-        notes: notes.trim(),
-        enquiryDate: initial?.enquiryDate ?? new Date().toISOString().split('T')[0],
-      })
+        specifications: notes.trim(),
+        status
+      }
+      await onSave(payload)
+    } catch (err) {
+      console.error(err)
+    } finally {
       setSaving(false)
-    }, 700)
+    }
   }
 
   const inputCls = (f) =>
@@ -99,51 +105,59 @@ function WholesaleFormModal({ initial, onClose, onSave }) {
               <input value={contact} onChange={(e) => { setContact(e.target.value); setErrors((p) => ({ ...p, contact: '' })) }} placeholder="Full name" className={inputCls('contact')} />
               <FieldError field="contact" />
             </div>
+
             {/* Email */}
             <div>
-              <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">Email *</label>
-              <input type="email" value={email} onChange={(e) => { setEmail(e.target.value); setErrors((p) => ({ ...p, email: '' })) }} placeholder="contact@business.com" className={inputCls('email')} />
+              <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">Email Address *</label>
+              <input type="email" value={email} onChange={(e) => { setEmail(e.target.value); setErrors((p) => ({ ...p, email: '' })) }} placeholder="name@business.com" className={inputCls('email')} />
               <FieldError field="email" />
             </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            {/* Phone */}
+            <div>
+              <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">Phone Number</label>
+              <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="e.g. +91 98765 43210" className="w-full px-3 py-2 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] focus:outline-none focus:border-admin-navy" />
+            </div>
+
             {/* Industry */}
             <div>
-              <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">Industry</label>
-              <select value={industry} onChange={(e) => setIndustry(e.target.value)} className="w-full px-3 py-2 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] focus:outline-none">
-                {INDUSTRIES.map((i) => <option key={i}>{i}</option>)}
+              <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">Industry Type</label>
+              <select value={industry} onChange={(e) => setIndustry(e.target.value)} className="w-full px-3 py-2 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] focus:outline-none focus:border-admin-navy">
+                {INDUSTRIES.map((ind) => <option key={ind} value={ind}>{ind}</option>)}
               </select>
             </div>
-            {/* City */}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            {/* Qty Required */}
             <div>
-              <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">City *</label>
-              <input value={city} onChange={(e) => { setCity(e.target.value); setErrors((p) => ({ ...p, city: '' })) }} placeholder="e.g. Bangalore" className={inputCls('city')} />
-              <FieldError field="city" />
+              <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">Est. Qty Required (kg/week)</label>
+              <input value={qty} onChange={(e) => setQty(e.target.value)} placeholder="e.g. 50-100 kg" className="w-full px-3 py-2 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] focus:outline-none focus:border-admin-navy" />
             </div>
-            {/* Qty */}
-            <div>
-              <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">Quantity Required</label>
-              <input value={qty} onChange={(e) => setQty(e.target.value)} placeholder="e.g. 50kg/week" className="w-full px-3 py-2 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] focus:outline-none" />
-            </div>
-            {/* Stage */}
+
+            {/* Status */}
             <div>
               <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">Pipeline Stage</label>
-              <select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full px-3 py-2 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] focus:outline-none capitalize">
-                {PIPELINE_STAGES.map((s) => <option key={s} value={s} className="capitalize">{s}</option>)}
+              <select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full px-3 py-2 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] focus:outline-none focus:border-admin-navy capitalize">
+                {PIPELINE_STAGES.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
           </div>
 
           {/* Notes */}
           <div>
-            <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">Notes</label>
-            <textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Internal notes…" className="w-full px-3 py-2 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] focus:outline-none resize-none" />
+            <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">Additional Specifications / Notes</label>
+            <textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="e.g. Requires clean-cut fillets, packing in thermocol boxes with dry ice." className="w-full px-3 py-2 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] focus:outline-none focus:border-admin-navy resize-none" />
           </div>
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-white border-t border-admin-border/40 px-6 py-4 flex gap-2 justify-end rounded-b-[20px]">
+        <div className="sticky bottom-0 bg-white border-t border-admin-border/40 px-6 py-4 flex gap-3 justify-end rounded-b-[20px]">
           <AdminBtn variant="secondary" onClick={onClose}>Cancel</AdminBtn>
-          <AdminBtn variant="primary" onClick={handleSave} disabled={saving} icon={saving ? 'sync' : 'save'}>
-            {saving ? 'Saving…' : isEdit ? 'Update Customer' : 'Create Customer'}
+          <AdminBtn variant="primary" onClick={handleSave} disabled={saving}>
+            {saving ? 'Saving…' : 'Save Customer'}
           </AdminBtn>
         </div>
       </div>
@@ -151,135 +165,223 @@ function WholesaleFormModal({ initial, onClose, onSave }) {
   )
 }
 
-// ── Add Note Modal ────────────────────────────────────────────────────────────
-function AddNoteModal({ businessName, onClose, onAdd }) {
+// ── Notes Modal ───────────────────────────────────────────────────────────────
+function AddNoteModal({ onClose, onSave }) {
   const [note, setNote] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  const handleSubmit = () => {
+    if (!note.trim()) return
+    setSaving(true)
+    setTimeout(() => {
+      onSave(note.trim())
+      setSaving(false)
+    }, 500)
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={onClose}>
-      <div className="bg-white rounded-[20px] shadow-[0_8px_40px_rgba(0,0,0,0.18)] w-full max-w-sm p-6" onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-[14px] font-bold text-admin-navy mb-4">Add Note — {businessName}</h3>
-        <textarea rows={4} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Add an internal note…" className="w-full px-3 py-2.5 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] focus:outline-none resize-none mb-4" />
-        <div className="flex gap-2">
-          <AdminBtn variant="secondary" onClick={onClose} className="flex-1 justify-center">Cancel</AdminBtn>
-          <AdminBtn variant="primary" onClick={() => note.trim() && onAdd(note.trim())} className="flex-1 justify-center">Save Note</AdminBtn>
+      <div className="bg-white rounded-[20px] shadow-[0_8px_40px_rgba(0,0,0,0.2)] w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+        <div className="px-6 py-4 border-b border-admin-border/40 flex justify-between items-center rounded-t-[20px]">
+          <h3 className="font-bold text-[14px] text-admin-navy">Add Consultation Note</h3>
+          <button onClick={onClose} className="text-admin-text-sub hover:text-admin-navy">
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>close</span>
+          </button>
+        </div>
+        <div className="p-6 space-y-4">
+          <textarea
+            required
+            rows={4}
+            placeholder="Write details from phone call, pricing discussion, or specific delivery logistics here…"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            className="w-full px-3 py-2 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] focus:outline-none focus:border-admin-navy resize-none"
+          />
+        </div>
+        <div className="px-6 py-4 border-t border-admin-border/40 flex gap-3 justify-end rounded-b-[20px]">
+          <AdminBtn variant="secondary" onClick={onClose}>Cancel</AdminBtn>
+          <AdminBtn variant="primary" onClick={handleSubmit} disabled={saving || !note.trim()}>
+            {saving ? 'Saving…' : 'Add Note'}
+          </AdminBtn>
         </div>
       </div>
     </div>
   )
 }
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
+// ── Main Component ────────────────────────────────────────────────────────────
 export default function AdminWholesale() {
   const { addToast } = useToastStore()
-  const [inquiries, setInquiries] = useState(ADMIN_WHOLESALE)
+  const [inquiries, setInquiries] = useState([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [selectedInquiry, setSelectedInquiry] = useState(null)
-  const [formModal, setFormModal] = useState(null) // null | { mode: 'create' } | { mode: 'edit', inquiry }
+  const [stageFilter, setStageFilter] = useState('all')
+
+  const [selectedInquiryId, setSelectedInquiryId] = useState(null)
+  const [formModal, setFormModal] = useState(null) // { mode: 'create'|'edit', inquiry?: obj }
   const [noteModal, setNoteModal] = useState(false)
 
+  useEffect(() => {
+    loadInquiries()
+  }, [])
+
+  const loadInquiries = async () => {
+    setLoading(true)
+    try {
+      const res = await getAdminWholesale()
+      if (res.success) {
+        setInquiries(res.inquiries)
+      }
+    } catch (err) {
+      console.error(err)
+      addToast({ message: 'Failed to load wholesale inquiries', type: 'error' })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Action Handlers
+  const handleSaveModal = async (formPayload) => {
+    try {
+      if (formModal.mode === 'edit') {
+        const updated = await updateAdminWholesale(formModal.inquiry.id, formPayload)
+        setInquiries((prev) => prev.map((item) => (item.id === formModal.inquiry.id ? updated : item)))
+        addToast({ message: `Wholesale business "${formPayload.businessName}" updated successfully.`, type: 'success' })
+      } else {
+        const created = await createAdminWholesale(formPayload)
+        setInquiries((prev) => [created, ...prev])
+        addToast({ message: `New wholesale customer "${formPayload.businessName}" created.`, type: 'success' })
+      }
+      setFormModal(null)
+    } catch (err) {
+      addToast({ message: err.message || 'Failed to save customer details', type: 'error' })
+    }
+  }
+
+  const handleDelete = async (inquiry) => {
+    if (!window.confirm(`Permanently remove ${inquiry.businessName} from the database?`)) return
+    try {
+      await deleteAdminWholesale(inquiry.id)
+      setInquiries((prev) => prev.filter((item) => item.id !== inquiry.id))
+      if (selectedInquiryId === inquiry.id) setSelectedInquiryId(null)
+      addToast({ message: `Customer profile for ${inquiry.businessName} deleted.`, type: 'info' })
+    } catch (err) {
+      addToast({ message: err.message || 'Failed to delete customer profile', type: 'error' })
+    }
+  }
+
+  const handleMoveStage = async (id, nextStage) => {
+    const original = inquiries.find((item) => item.id === id)
+    if (!original) return
+    try {
+      const payload = {
+        businessName: original.businessName,
+        contactName: original.contact,
+        email: original.email,
+        phone: original.phone || '0000000000',
+        industry: original.industry,
+        qty: original.qty,
+        specifications: original.notes,
+        status: nextStage
+      }
+      const updated = await updateAdminWholesale(id, payload)
+      setInquiries((prev) => prev.map((item) => (item.id === id ? updated : item)))
+      addToast({ message: `Pipeline stage moved to ${nextStage}.`, type: 'success' })
+    } catch (err) {
+      addToast({ message: err.message || 'Failed to update pipeline stage', type: 'error' })
+    }
+  }
+
+  const handleAddNoteText = async (noteText) => {
+    const original = inquiries.find((item) => item.id === selectedInquiryId)
+    if (!original) return
+    const appendedNotes = original.notes 
+      ? `${original.notes}\n\n[Note - ${new Date().toLocaleDateString('en-IN')}]: ${noteText}`
+      : `[Note - ${new Date().toLocaleDateString('en-IN')}]: ${noteText}`
+
+    try {
+      const payload = {
+        businessName: original.businessName,
+        contactName: original.contact,
+        email: original.email,
+        phone: original.phone || '0000000000',
+        industry: original.industry,
+        qty: original.qty,
+        specifications: appendedNotes,
+        status: original.status
+      }
+      const updated = await updateAdminWholesale(selectedInquiryId, payload)
+      setInquiries((prev) => prev.map((item) => (item.id === selectedInquiryId ? updated : item)))
+      setNoteModal(false)
+      addToast({ message: 'Consultation note appended successfully.', type: 'success' })
+    } catch (err) {
+      addToast({ message: err.message || 'Failed to append consultation note', type: 'error' })
+    }
+  }
+
+  // Filters
   const filtered = inquiries.filter((b) => {
     const matchSearch =
       !search ||
       b.businessName.toLowerCase().includes(search.toLowerCase()) ||
       b.contact.toLowerCase().includes(search.toLowerCase()) ||
-      b.industry.toLowerCase().includes(search.toLowerCase())
-    const matchStatus = statusFilter === 'all' || b.status === statusFilter
-    return matchSearch && matchStatus
+      b.email.toLowerCase().includes(search.toLowerCase())
+    const matchStage = stageFilter === 'all' || b.status === stageFilter
+    return matchSearch && matchStage
   })
 
-  const byStage = (stage) => inquiries.filter((b) => b.status === stage).length
-
-  // Sync selectedInquiry with latest state
-  const currentSelected = selectedInquiry
-    ? inquiries.find((i) => i.id === selectedInquiry.id)
-    : null
-
-  // ── CRUD Handlers ───────────────────────────────────────────────────────────
-
-  const handleSave = (data) => {
-    if (formModal?.mode === 'edit') {
-      setInquiries((prev) => prev.map((i) => (i.id === data.id ? data : i)))
-      if (selectedInquiry?.id === data.id) setSelectedInquiry(data)
-      addToast({ message: `${data.businessName} updated.`, type: 'success' })
-    } else {
-      setInquiries((prev) => [data, ...prev])
-      addToast({ message: `${data.businessName} added as a wholesale customer.`, type: 'success' })
-    }
-    setFormModal(null)
-  }
-
-  const handleDelete = (inquiry) => {
-    if (!window.confirm(`Remove ${inquiry.businessName} from wholesale customers?`)) return
-    setInquiries((prev) => prev.filter((i) => i.id !== inquiry.id))
-    if (selectedInquiry?.id === inquiry.id) setSelectedInquiry(null)
-    addToast({ message: `${inquiry.businessName} removed.`, type: 'info' })
-  }
-
-  const handleMoveStage = (inquiryId, newStage) => {
-    setInquiries((prev) =>
-      prev.map((i) => (i.id === inquiryId ? { ...i, status: newStage } : i))
-    )
-    const inq = inquiries.find((i) => i.id === inquiryId)
-    addToast({ message: `${inq?.businessName} moved to "${newStage}".`, type: 'success' })
-  }
-
-  const handleAddNote = (noteText) => {
-    const timestamp = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
-    const newNote = `[${timestamp}] ${noteText}`
-    setInquiries((prev) =>
-      prev.map((i) => {
-        if (i.id === currentSelected.id) {
-          const existing = i.notes ? `${i.notes}\n${newNote}` : newNote
-          return { ...i, notes: existing }
-        }
-        return i
-      })
-    )
-    setNoteModal(false)
-    addToast({ message: 'Note added.', type: 'success' })
-  }
+  // Selected object matching
+  const currentSelected = inquiries.find((item) => item.id === selectedInquiryId) || null
 
   return (
     <AdminPage>
-      {/* Form Modal */}
+      {/* Modals */}
       {formModal && (
         <WholesaleFormModal
           initial={formModal.mode === 'edit' ? formModal.inquiry : null}
           onClose={() => setFormModal(null)}
-          onSave={handleSave}
+          onSave={handleSaveModal}
         />
       )}
-
-      {/* Note Modal */}
-      {noteModal && currentSelected && (
+      {noteModal && (
         <AddNoteModal
-          businessName={currentSelected.businessName}
           onClose={() => setNoteModal(false)}
-          onAdd={handleAddNote}
+          onSave={handleAddNoteText}
         />
       )}
 
-      {/* Pipeline Kanban Summary */}
-      <div className="flex gap-3 mb-5 overflow-x-auto pb-1">
-        {PIPELINE_STAGES.map((stage) => (
-          <div
-            key={stage}
-            className="flex-shrink-0 bg-white rounded-[12px] border border-admin-border/60 px-4 py-3 min-w-[120px] text-center cursor-pointer hover:border-admin-navy/40 transition-colors"
-            onClick={() => setStatusFilter(stage === statusFilter ? 'all' : stage)}
-          >
-            <p className="text-xl font-bold text-admin-navy">{byStage(stage)}</p>
-            <StatusBadge status={stage} />
-          </div>
-        ))}
+      {/* Stats Cards */}
+      <div className="grid grid-cols-4 gap-4 mb-5">
+        <div className="bg-white rounded-[14px] border border-admin-border/60 p-4 text-center">
+          <p className="text-2xl font-bold text-admin-navy">{inquiries.length}</p>
+          <p className="text-[11px] text-admin-text-sub mt-0.5">Total Leads</p>
+        </div>
+        <div className="bg-white rounded-[14px] border border-admin-border/60 p-4 text-center">
+          <p className="text-2xl font-bold text-admin-gold">
+            {inquiries.filter((b) => b.status === 'new').length}
+          </p>
+          <p className="text-[11px] text-admin-text-sub mt-0.5">New</p>
+        </div>
+        <div className="bg-white rounded-[14px] border border-admin-border/60 p-4 text-center">
+          <p className="text-2xl font-bold text-admin-navy">
+            {inquiries.filter((b) => b.status === 'negotiating').length}
+          </p>
+          <p className="text-[11px] text-admin-text-sub mt-0.5">Negotiating</p>
+        </div>
+        <div className="bg-white rounded-[14px] border border-admin-border/60 p-4 text-center">
+          <p className="text-2xl font-bold text-admin-success">
+            {inquiries.filter((b) => b.status === 'converted').length}
+          </p>
+          <p className="text-[11px] text-admin-text-sub mt-0.5">Converted</p>
+        </div>
       </div>
 
-      {/* Toolbar */}
-      <div className="flex flex-wrap gap-3 items-center justify-between mb-5">
+      {/* Actions and filter row */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
         <div className="flex flex-wrap gap-3 items-center">
           <AdminInput
             id="wholesale-search"
-            placeholder="Search business, contact, industry…"
+            placeholder="Search business, contact, email…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             icon="search"
@@ -287,66 +389,68 @@ export default function AdminWholesale() {
           />
           <FilterBar
             options={['all', ...PIPELINE_STAGES]}
-            active={statusFilter}
-            onSelect={setStatusFilter}
+            active={stageFilter}
+            onSelect={setStageFilter}
           />
         </div>
-        {/* New Customer button */}
         <AdminBtn icon="add" onClick={() => setFormModal({ mode: 'create' })}>
-          New Customer
+          Add Customer
         </AdminBtn>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Inquiries table */}
         <AdminCard className="lg:col-span-2" subtitle={`${filtered.length} customer${filtered.length !== 1 ? 's' : ''}`}>
-          <AdminTable headers={['Business', 'Contact', 'Industry', 'City', 'Qty / wk', 'Date', 'Stage', 'Actions']}>
-            {filtered.map((b) => (
-              <Tr
-                key={b.id}
-                onClick={() => setSelectedInquiry(b)}
-                className={selectedInquiry?.id === b.id ? 'bg-admin-seafoam/80' : ''}
-              >
-                <Td>
-                  <div className="flex items-center gap-2">
-                    <Avatar name={b.businessName} />
-                    <span className="font-semibold text-[12px] text-admin-navy">{b.businessName}</span>
-                  </div>
-                </Td>
-                <Td>
-                  <p className="text-[12px]">{b.contact}</p>
-                  <p className="text-[11px] text-admin-text-sub">{b.email}</p>
-                </Td>
-                <Td>{b.industry}</Td>
-                <Td>{b.city}</Td>
-                <Td><span className="font-semibold">{b.qty || '—'}</span></Td>
-                <Td><span className="text-[11px]">{formatDate(b.enquiryDate)}</span></Td>
-                <Td><StatusBadge status={b.status} /></Td>
-                <Td>
-                  <div className="flex gap-1">
-                    {/* Edit */}
-                    <AdminBtn
-                      size="sm"
-                      variant="secondary"
-                      icon="edit"
-                      onClick={(e) => { e.stopPropagation(); setFormModal({ mode: 'edit', inquiry: b }) }}
-                    >
-                      Edit
-                    </AdminBtn>
-                    {/* Delete */}
-                    <AdminBtn
-                      size="sm"
-                      variant="danger"
-                      icon="delete"
-                      onClick={(e) => { e.stopPropagation(); handleDelete(b) }}
-                    >
-                      Delete
-                    </AdminBtn>
-                  </div>
-                </Td>
-              </Tr>
-            ))}
-          </AdminTable>
+          {loading ? (
+            <div className="text-center py-10 font-semibold text-admin-navy">
+              Loading wholesale inquiries...
+            </div>
+          ) : (
+            <AdminTable headers={['Business', 'Contact', 'Industry', 'Qty / wk', 'Date', 'Stage', 'Actions']}>
+              {filtered.map((b) => (
+                <Tr
+                  key={b.id}
+                  onClick={() => setSelectedInquiryId(b.id)}
+                  className={selectedInquiryId === b.id ? 'bg-admin-seafoam/80' : ''}
+                >
+                  <Td>
+                    <div className="flex items-center gap-2">
+                      <Avatar name={b.businessName} />
+                      <span className="font-semibold text-[12px] text-admin-navy">{b.businessName}</span>
+                    </div>
+                  </Td>
+                  <Td>
+                    <p className="text-[12px]">{b.contact}</p>
+                    <p className="text-[11px] text-admin-text-sub">{b.email}</p>
+                  </Td>
+                  <Td>{b.industry}</Td>
+                  <Td><span className="font-semibold">{b.qty || '—'}</span></Td>
+                  <Td><span className="text-[11px]">{formatDate(b.enquiryDate)}</span></Td>
+                  <Td><StatusBadge status={b.status} /></Td>
+                  <Td>
+                    <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                      <AdminBtn
+                        size="sm"
+                        variant="secondary"
+                        icon="edit"
+                        onClick={() => setFormModal({ mode: 'edit', inquiry: b })}
+                      >
+                        Edit
+                      </AdminBtn>
+                      <AdminBtn
+                        size="sm"
+                        variant="danger"
+                        icon="delete"
+                        onClick={() => handleDelete(b)}
+                      >
+                        Delete
+                      </AdminBtn>
+                    </div>
+                  </Td>
+                </Tr>
+              ))}
+            </AdminTable>
+          )}
         </AdminCard>
 
         {/* Detail panel */}
@@ -354,7 +458,7 @@ export default function AdminWholesale() {
           <AdminCard
             title={currentSelected.businessName}
             action={
-              <button onClick={() => setSelectedInquiry(null)}>
+              <button onClick={() => setSelectedInquiryId(null)}>
                 <span className="material-symbols-outlined text-admin-text-sub hover:text-admin-navy" style={{ fontSize: '18px' }}>close</span>
               </button>
             }
@@ -364,8 +468,8 @@ export default function AdminWholesale() {
                 {[
                   ['Contact', currentSelected.contact],
                   ['Email', currentSelected.email],
+                  ['Phone', currentSelected.phone || '—'],
                   ['Industry', currentSelected.industry],
-                  ['City', currentSelected.city],
                   ['Qty Required', currentSelected.qty || '—'],
                   ['Enquiry Date', formatDate(currentSelected.enquiryDate)],
                 ].map(([label, value]) => (

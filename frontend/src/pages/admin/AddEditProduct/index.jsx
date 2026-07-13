@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import useProductStore from '@/store/productStore'
@@ -15,22 +15,20 @@ const ALL_BADGES = [
   { type: 'limited', label: 'LIMITED TIME' },
 ]
 
-/**
- * Shared create / edit form for products.
- * /admin/products/new      → create mode (addProduct via productStore)
- * /admin/products/:id/edit → edit mode  (updateProduct via productStore)
- *
- * On success, a toast notification is shown and the user is redirected
- * to the products listing where the new/updated product appears immediately
- * (because AdminProducts now reads from the same Zustand store).
- */
 export default function AdminAddEditProduct() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { addToast } = useToastStore()
-  const { addProduct, updateProduct, getProduct } = useProductStore()
+  const { addProduct, updateProduct, getProduct, fetchProducts, products } = useProductStore()
 
   const isNew = !id || id === 'new'
+
+  useEffect(() => {
+    if (products.length === 0) {
+      fetchProducts()
+    }
+  }, [products.length, fetchProducts])
+
   const existing = isNew ? null : getProduct(id)
 
   const [selectedBadges, setSelectedBadges] = useState(
@@ -57,6 +55,23 @@ export default function AdminAddEditProduct() {
         }
       : { category: 'fish', freshnessScore: 90 },
   })
+
+  // Re-run setSelectedBadges when existing changes/loads
+  useEffect(() => {
+    if (existing?.badges) {
+      setSelectedBadges(existing.badges.map(b => b.type))
+    }
+  }, [existing])
+
+  if (!isNew && !existing) {
+    return (
+      <AdminPage>
+        <div className="text-center py-10 font-semibold text-admin-navy">
+          Loading product...
+        </div>
+      </AdminPage>
+    )
+  }
 
   const toggleBadge = (type) => {
     setSelectedBadges((prev) =>
