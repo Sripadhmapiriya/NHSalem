@@ -1,0 +1,222 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Custom Properties ───────────────────────────────────────────────── */
+:root {
+  --color-primary: #000516;
+  --color-secondary-container: #fed255;
+  --color-tertiary-accent: #e15b42;
+  --color-success: #2E7D32;
+  --radius-card: 28px;
+  --radius-pill: 9999px;
+  --shadow-card: 0 4px 20px rgba(0, 5, 22, 0.15);
+  --shadow-stat: 0 8px 32px rgba(0, 5, 22, 0.3);
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  --transition-slow: 400ms ease;
+}
+
+/* ─── Base Reset ──────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #fbf8fc;
+  color: #1b1b1e;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+/* ─── Material Symbols ────────────────────────────────────────────────── */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  line-height: 1;
+  user-select: none;
+  vertical-align: middle;
+}
+
+.material-symbols-outlined.filled {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* ─── Scrollbar ───────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f5f3f6; }
+::-webkit-scrollbar-thumb { background: #c5c6cf; border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: #75777f; }
+
+/* ─── Selection ───────────────────────────────────────────────────────── */
+::selection {
+  background-color: #b6c6ee;
+  color: #000516;
+}
+
+/* ─── Focus Ring ──────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid #4e5e81;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ─── Utility Classes ─────────────────────────────────────────────────── */
+.container-max {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+@media (max-width: 768px) {
+  .container-max { padding: 0 16px; }
+}
+
+/* Skeleton shimmer animation */
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #efedf0 25%, #e4e2e5 50%, #efedf0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Glass morphism utility */
+.glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(197, 198, 207, 0.3);
+}
+
+/* Nav glass transition */
+.nav-transparent {
+  background: transparent;
+  border-bottom: 1px solid transparent;
+}
+
+/* Card base */
+.card-base {
+  background: #ffffff;
+  border-radius: 28px;
+  box-shadow: 0 4px 20px rgba(0, 5, 22, 0.15);
+}
+
+/* Image aspect ratio helpers */
+.aspect-product { aspect-ratio: 4 / 3; }
+.aspect-hero { aspect-ratio: 16 / 9; }
+.aspect-recipe { aspect-ratio: 3 / 2; }
+
+/* Progress ring animation */
+@keyframes ring-fill {
+  from { stroke-dashoffset: var(--ring-full); }
+  to { stroke-dashoffset: var(--ring-target); }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─── Page Transition ─────────────────────────────────────────────────── */
+.page-enter { opacity: 0; transform: translateY(8px); }
+.page-enter-active { opacity: 1; transform: translateY(0); transition: opacity 200ms ease, transform 200ms ease; }
+
+/* ─── Toast Stack ─────────────────────────────────────────────────────── */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast-container > * { pointer-events: auto; }
+
+/* ─── Typography helpers ──────────────────────────────────────────────── */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ─── Drag-scroll carousel ────────────────────────────────────────────── */
+.carousel-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.carousel-scroll::-webkit-scrollbar { display: none; }
+.carousel-item { scroll-snap-align: start; }
+
+/* ─── Premium Dual Range Slider ────────────────────────────────────────── */
+.dual-range-input {
+  pointer-events: none;
+  position: absolute;
+  height: 0;
+  width: 100%;
+  outline: none;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  z-index: 30;
+}
+.dual-range-input::-webkit-slider-thumb {
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #D3A25D; /* Brass/Gold knob */
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 5, 22, 0.3);
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-appearance: none;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+.dual-range-input::-webkit-slider-thumb:active {
+  transform: scale(1.25);
+  box-shadow: 0 4px 12px rgba(0, 5, 22, 0.4);
+}
+.dual-range-input::-moz-range-thumb {
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #D3A25D;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 5, 22, 0.3);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+.dual-range-input::-moz-range-thumb:active {
+  transform: scale(1.25);
+  box-shadow: 0 4px 12px rgba(0, 5, 22, 0.4);
+}
