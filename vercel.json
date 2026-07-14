@@ -1,9 +1,23 @@
 {
-  "installCommand": "cd frontend && npm install --no-package-lock",
-  "buildCommand": "cd frontend && npm run build",
-  "outputDirectory": "frontend/dist",
-  "framework": "vite",
+  "version": 2,
+  "builds": [
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    },
+    {
+      "src": "backend/server.js",
+      "use": "@vercel/node"
+    }
+  ],
   "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "backend/server.js"
+    },
     {
       "handle": "filesystem"
     },
