@@ -53,8 +53,8 @@ export default function AdminLayout() {
       {/* Brand */}
       <div className="px-5 py-5 border-b border-white/8 flex-shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-black flex items-center justify-center overflow-hidden border border-white/10 p-0.5 flex-shrink-0">
-            <img src="/crest.jpg" alt="NH Salem" className="w-full h-full object-contain" />
+          <div className="w-9 h-9 flex items-center justify-center p-0.5 flex-shrink-0">
+            <img src="/crest.png" alt="NH Salem" className="w-full h-full object-contain" />
           </div>
           <div className="min-w-0 pl-3 border-l border-white/10">
             <p className="font-serif text-white font-extrabold text-[15px] leading-tight tracking-tight">NH Salem</p>

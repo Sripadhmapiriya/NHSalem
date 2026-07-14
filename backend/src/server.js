@@ -9,17 +9,7 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-try {
-  const __dirname = path.dirname(fileURLToPath(import.meta.url))
-  const srcPath = path.resolve(__dirname, '../../frontend/public/crest.jpg')
-  const destPath = path.resolve(__dirname, '../../frontend/public/crest.png')
-  if (fs.existsSync(srcPath)) {
-    fs.copyFileSync(srcPath, destPath)
-    console.log('--- LOGO COPIED SUCCESSFULLY TO PNG ---')
-  }
-} catch (err) {
-  console.log('Logo copy script skipped:', err.message)
-}
+
 
 
 import errorHandler from './middleware/errorHandler.js'
@@ -89,6 +79,44 @@ app.use('/api/admin/reviews', productRoutes) // we can mount review admin paths 
 // 3. Centralized error handling
 app.use(errorHandler)
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`NH Salem Sea Foods Server is running on port ${PORT}`)
+  try {
+    const poolModule = await import('./db/pool.js');
+    const pool = poolModule.default;
+    console.log('Startup DB Verification: Checking variants column and category additions...');
+    await pool.query(`
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS variants JSONB NOT NULL DEFAULT '[]';
+    `);
+    await pool.query(`
+      INSERT INTO categories (id, slug, name) 
+      VALUES 
+        ('combos', 'combos', 'Combos'),
+        ('dried-fish', 'dried-fish', 'Dried Fish')
+      ON CONFLICT (id) DO NOTHING;
+    `);
+
+    // Add unique constraints to users table
+    try {
+      await pool.query(`
+        ALTER TABLE users ADD CONSTRAINT users_email_unique UNIQUE (email);
+      `);
+      console.log('Unique constraint added: users_email_unique');
+    } catch (dbErr) {
+      console.log('Unique constraint users_email_unique already exists or could not be added.');
+    }
+
+    try {
+      await pool.query(`
+        ALTER TABLE users ADD CONSTRAINT users_phone_unique UNIQUE (phone);
+      `);
+      console.log('Unique constraint added: users_phone_unique');
+    } catch (dbErr) {
+      console.log('Unique constraint users_phone_unique already exists or could not be added.');
+    }
+
+    console.log('Startup DB Verification: Completed.');
+  } catch (err) {
+    console.error('Startup DB Verification failed:', err.message);
+  }
 })

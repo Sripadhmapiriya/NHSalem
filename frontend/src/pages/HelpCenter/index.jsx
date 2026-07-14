@@ -22,7 +22,7 @@ const SITEMAP = [
   { label: 'Prawns & Shrimp', to: '/category/prawns-shrimp' },
   { label: 'Crabs', to: '/category/crabs' },
   { label: 'Lobster', to: '/category/lobster' },
-  { label: 'Dry Fish', to: '/category/dry-fish' },
+  { label: 'Dried Fish', to: '/category/dried-fish' },
   { label: 'Combos', to: '/category/combos' },
   { label: 'Subscriptions', to: '/subscriptions' },
   { label: 'Track Order', to: '/orders/NHS-77421' },

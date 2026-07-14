@@ -13,7 +13,7 @@ const NAV_LINKS = [
   { label: 'Prawns', slug: 'prawns-shrimp', emoji: '🍤' },
   { label: 'Crabs', slug: 'crabs', emoji: '🦀' },
   { label: 'Lobster', slug: 'lobster', emoji: '🦞' },
-  { label: 'Dry Fish', slug: 'dry-fish', emoji: '🧂' },
+  { label: 'Dried Fish', slug: 'dried-fish', emoji: '🧂' },
   { label: 'Combos', slug: 'combos', emoji: '🍱' },
 ]
 
@@ -28,6 +28,7 @@ export default function Header({ onLoginClick }) {
   const [searchResults, setSearchResults] = useState([])
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const searchRef = useRef(null)
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
   const navigate = useNavigate()
 
   const { totalItems } = useCartStore()
@@ -119,9 +120,9 @@ export default function Header({ onLoginClick }) {
           className="flex items-center gap-3 flex-shrink-0 select-none hover:opacity-95 transition-opacity"
           aria-label="NH Salem Sea Foods — Home"
         >
-          <div className="relative flex items-center justify-center bg-black rounded-full overflow-hidden w-11 h-11 border border-outline-variant/40 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-[1.02] p-0.5">
+          <div className="relative flex items-center justify-center w-11 h-11 transition-all duration-300 hover:scale-[1.02] p-0.5">
             <img
-              src="/crest.jpg"
+              src="/crest.png"
               alt="NH Salem Sea Foods Crest"
               className="w-full h-full object-contain flex-shrink-0"
             />
@@ -282,7 +283,7 @@ export default function Header({ onLoginClick }) {
           {/* AuthControl */}
           {user ? (
             <button
-              onClick={() => { if (confirm('Would you like to log out?')) logout() }}
+              onClick={() => setLogoutConfirmOpen(true)}
               className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-outline-variant/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/30 transition-all cursor-pointer select-none focus:outline-none animate-fade-in"
               aria-label={`Logged in as ${user.name}. Click to log out.`}
             >
@@ -376,7 +377,7 @@ export default function Header({ onLoginClick }) {
                     Hi, {user.name} 👋
                   </div>
                   <button
-                    onClick={() => { setMobileMenuOpen(false); if (confirm('Would you like to log out?')) logout() }}
+                    onClick={() => { setMobileMenuOpen(false); setLogoutConfirmOpen(true) }}
                     className="py-3 bg-surface-container-highest border border-outline-variant/50 text-on-surface rounded-full text-label-md font-semibold flex items-center justify-center gap-2"
                   >
                     Log Out
@@ -445,6 +446,39 @@ export default function Header({ onLoginClick }) {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* Logout Confirmation Modal */}
+      <Modal
+        isOpen={logoutConfirmOpen}
+        onClose={() => setLogoutConfirmOpen(false)}
+        title="Confirm Log Out"
+        id="logout-confirm-modal"
+        size="sm"
+      >
+        <div className="p-5 text-center space-y-4">
+          <p className="text-body-md text-on-surface-variant">
+            Are you sure you want to log out of your account?
+          </p>
+          <div className="flex gap-3 justify-center pt-2">
+            <button
+              onClick={() => setLogoutConfirmOpen(false)}
+              className="px-5 py-2.5 rounded-full border border-outline-variant text-sm font-semibold text-on-surface hover:bg-surface-container-low transition-colors focus:outline-none cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                setLogoutConfirmOpen(false)
+                logout()
+                navigate('/')
+              }}
+              className="px-5 py-2.5 rounded-full bg-red-600 hover:bg-red-700 text-white text-sm font-semibold shadow-sm transition-colors focus:outline-none cursor-pointer"
+            >
+              Log Out
+            </button>
+          </div>
+        </div>
       </Modal>
     </header>
   )

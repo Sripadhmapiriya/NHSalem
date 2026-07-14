@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import useAuthStore from '@/store/authStore'
 import useToastStore from '@/store/toastStore'
-import { loginWithEmail, loginWithPhone } from '@/services/api'
+import { loginWithEmail, loginWithPhone, registerUser } from '@/services/api'
 
 // ── Validation schemas ────────────────────────────────────────────────────────
 
@@ -18,6 +18,17 @@ const emailSchema = z.object({
 const phoneSchema = z.object({
   phone:    z.string().regex(/^\d{10}$/, 'Enter a valid 10-digit mobile number'),
   password: z.string().min(1, 'Password is required'),
+})
+
+const registerSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email('Enter a valid email address (e.g. name@domain.com)'),
+  phone: z.string().regex(/^\d{10}$/, 'Phone number must be exactly 10 digits'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  confirmPassword: z.string().min(1, 'Please confirm your password')
+}).refine(data => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"]
 })
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -339,6 +350,220 @@ function PhoneForm({ onSuccess }) {
   )
 }
 
+// ── Register form ─────────────────────────────────────────────────────────────
+
+function RegisterForm({ onSuccess }) {
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [serverError, setServerError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const { setUser } = useAuthStore()
+  const { addToast } = useToastStore()
+
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: zodResolver(registerSchema),
+    defaultValues: { name: '', email: '', phone: '', password: '', confirmPassword: '' }
+  })
+
+  const onSubmit = async (values) => {
+    setLoading(true)
+    setServerError('')
+    const payload = {
+      name: values.name,
+      email: values.email,
+      phone: values.phone,
+      password: values.password
+    }
+    const result = await registerUser(payload)
+    setLoading(false)
+    if (result.success) {
+      setUser(result.user, result.token)
+      addToast({ message: `Welcome, ${result.user.name}! Account created successfully. 🎉`, type: 'success' })
+      onSuccess?.()
+    } else {
+      setServerError(result.message)
+    }
+  }
+
+  const inputCls = (hasError) =>
+    `flex-1 bg-transparent text-sm font-medium text-on-surface placeholder:text-outline/70 focus:outline-none disabled:opacity-60 ${hasError ? 'text-red-700' : ''}`
+
+  const wrapCls = (hasError) =>
+    `flex items-center gap-3 px-4 py-3 rounded-full border bg-surface-container-low transition-all duration-150 ${
+      hasError
+        ? 'border-red-400 ring-2 ring-red-400/20'
+        : 'border-outline-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15'
+    }`
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+      {/* Full Name */}
+      <div>
+        <label htmlFor="reg-name" className="block text-label-md font-semibold text-on-surface mb-1">
+          Full Name <span className="text-red-500">*</span>
+        </label>
+        <div className={wrapCls(!!errors.name)}>
+          <span className="material-symbols-outlined text-outline flex-shrink-0 leading-none" style={{ fontSize: '18px' }}>
+            person
+          </span>
+          <input
+            id="reg-name"
+            type="text"
+            placeholder="John Doe"
+            disabled={loading}
+            {...register('name')}
+            className={inputCls(!!errors.name)}
+          />
+        </div>
+        <FieldError message={errors.name?.message} />
+      </div>
+
+      {/* Email */}
+      <div>
+        <label htmlFor="reg-email" className="block text-label-md font-semibold text-on-surface mb-1">
+          Email Address <span className="text-red-500">*</span>
+        </label>
+        <div className={wrapCls(!!errors.email)}>
+          <span className="material-symbols-outlined text-outline flex-shrink-0 leading-none" style={{ fontSize: '18px' }}>
+            alternate_email
+          </span>
+          <input
+            id="reg-email"
+            type="email"
+            placeholder="name@example.com"
+            disabled={loading}
+            {...register('email')}
+            className={inputCls(!!errors.email)}
+          />
+        </div>
+        <FieldError message={errors.email?.message} />
+      </div>
+
+      {/* Phone */}
+      <div>
+        <label htmlFor="reg-phone" className="block text-label-md font-semibold text-on-surface mb-1">
+          Mobile Number <span className="text-red-500">*</span>
+        </label>
+        <div className={wrapCls(!!errors.phone)}>
+          <span className="flex items-center px-2 border-r border-outline-variant text-sm text-on-surface-variant flex-shrink-0 mr-1">
+            +91
+          </span>
+          <input
+            id="reg-phone"
+            type="tel"
+            inputMode="numeric"
+            maxLength={10}
+            placeholder="10-digit mobile number"
+            disabled={loading}
+            {...register('phone', {
+              onChange: (e) => {
+                e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10)
+              },
+            })}
+            className={inputCls(!!errors.phone)}
+          />
+        </div>
+        <FieldError message={errors.phone?.message} />
+      </div>
+
+      {/* Password */}
+      <div>
+        <label htmlFor="reg-password" className="block text-label-md font-semibold text-on-surface mb-1">
+          Password <span className="text-red-500">*</span>
+        </label>
+        <div className={wrapCls(!!errors.password)}>
+          <span className="material-symbols-outlined text-outline flex-shrink-0 leading-none" style={{ fontSize: '18px' }}>
+            lock
+          </span>
+          <input
+            id="reg-password"
+            type={showPassword ? 'text' : 'password'}
+            placeholder="••••••••"
+            disabled={loading}
+            {...register('password')}
+            className={inputCls(!!errors.password)}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((v) => !v)}
+            className="text-outline hover:text-on-surface transition-colors flex-shrink-0"
+          >
+            <span className="material-symbols-outlined leading-none" style={{ fontSize: '18px' }}>
+              {showPassword ? 'visibility_off' : 'visibility'}
+            </span>
+          </button>
+        </div>
+        <FieldError message={errors.password?.message} />
+      </div>
+
+      {/* Confirm Password */}
+      <div>
+        <label htmlFor="reg-confirm-password" className="block text-label-md font-semibold text-on-surface mb-1">
+          Confirm Password <span className="text-red-500">*</span>
+        </label>
+        <div className={wrapCls(!!errors.confirmPassword)}>
+          <span className="material-symbols-outlined text-outline flex-shrink-0 leading-none" style={{ fontSize: '18px' }}>
+            lock_reset
+          </span>
+          <input
+            id="reg-confirm-password"
+            type={showConfirmPassword ? 'text' : 'password'}
+            placeholder="••••••••"
+            disabled={loading}
+            {...register('confirmPassword')}
+            className={inputCls(!!errors.confirmPassword)}
+          />
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword((v) => !v)}
+            className="text-outline hover:text-on-surface transition-colors flex-shrink-0"
+          >
+            <span className="material-symbols-outlined leading-none" style={{ fontSize: '18px' }}>
+              {showConfirmPassword ? 'visibility_off' : 'visibility'}
+            </span>
+          </button>
+        </div>
+        <FieldError message={errors.confirmPassword?.message} />
+      </div>
+
+      {/* Server Error */}
+      <AnimatePresence>
+        {serverError && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            className="flex items-start gap-2.5 px-4 py-3 rounded-[12px] bg-red-50 border border-red-200"
+          >
+            <span className="material-symbols-outlined text-red-500 flex-shrink-0 mt-0.5" style={{ fontSize: '16px' }}>warning</span>
+            <p className="text-[12px] font-medium text-red-700 leading-snug">{serverError}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Submit */}
+      <button
+        type="submit"
+        disabled={loading}
+        className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-full font-bold text-sm text-white tracking-wide transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:opacity-70 disabled:cursor-not-allowed"
+        style={{ background: 'linear-gradient(135deg, #0B4F3C, #0f6b52)', boxShadow: '0 4px 20px rgba(11,79,60,0.35)' }}
+      >
+        {loading ? (
+          <>
+            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            Creating account…
+          </>
+        ) : (
+          <>
+            Register & Sign In
+            <span className="material-symbols-outlined leading-none" style={{ fontSize: '16px' }}>arrow_forward</span>
+          </>
+        )}
+      </button>
+    </form>
+  )
+}
+
 // ── Main Login Page ───────────────────────────────────────────────────────────
 
 /**
@@ -362,6 +587,7 @@ function PhoneForm({ onSuccess }) {
 export default function LoginPage({ isModal = false, onSuccess }) {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('email') // 'email' | 'phone'
+  const [mode, setMode] = useState('login') // 'login' | 'register'
 
   const handleSuccess = () => {
     if (onSuccess) {
@@ -375,9 +601,9 @@ export default function LoginPage({ isModal = false, onSuccess }) {
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center mb-2">
-        <div className="w-20 h-20 bg-black rounded-full overflow-hidden flex items-center justify-center border border-outline-variant/30 shadow-sm mx-auto mb-4 p-2">
+        <div className="w-20 h-20 flex items-center justify-center mx-auto mb-4 p-2">
           <img
-            src="/crest.jpg"
+            src="/crest.png"
             alt="NH Salem Sea Foods Crest"
             className="w-full h-full object-contain"
           />
@@ -389,48 +615,86 @@ export default function LoginPage({ isModal = false, onSuccess }) {
               Sea Foods
             </span>
             <p className="text-body-md text-on-surface-variant mt-3">
-              Sign in to track orders, manage subscriptions, and get catch updates.
+              {mode === 'login' 
+                ? 'Sign in to track orders, manage subscriptions, and get catch updates.'
+                : 'Create an account to start ordering fresh seafood catches.'
+              }
             </p>
           </>
         )}
       </div>
 
       {/* Tab switcher */}
-      <div className="flex bg-surface-container-low rounded-full p-1 border border-outline-variant/40">
-        <TabButton active={activeTab === 'email'} onClick={() => setActiveTab('email')}>
-          <span className="material-symbols-outlined mr-1 align-middle" style={{ fontSize: '14px' }}>alternate_email</span>
-          Email
-        </TabButton>
-        <TabButton active={activeTab === 'phone'} onClick={() => setActiveTab('phone')}>
-          <span className="material-symbols-outlined mr-1 align-middle" style={{ fontSize: '14px' }}>phone</span>
-          Phone
-        </TabButton>
-      </div>
+      {mode === 'login' && (
+        <div className="flex bg-surface-container-low rounded-full p-1 border border-outline-variant/40">
+          <TabButton active={activeTab === 'email'} onClick={() => setActiveTab('email')}>
+            <span className="material-symbols-outlined mr-1 align-middle" style={{ fontSize: '14px' }}>alternate_email</span>
+            Email
+          </TabButton>
+          <TabButton active={activeTab === 'phone'} onClick={() => setActiveTab('phone')}>
+            <span className="material-symbols-outlined mr-1 align-middle" style={{ fontSize: '14px' }}>phone</span>
+            Phone
+          </TabButton>
+        </div>
+      )}
 
       {/* Animated form panels */}
       <AnimatePresence mode="wait">
-        {activeTab === 'email' ? (
-          <motion.div
-            key="email-tab"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.18 }}
-          >
-            <EmailForm onSuccess={handleSuccess} />
-          </motion.div>
+        {mode === 'login' ? (
+          activeTab === 'email' ? (
+            <motion.div
+              key="email-login-tab"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.18 }}
+            >
+              <EmailForm onSuccess={handleSuccess} />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="phone-login-tab"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.18 }}
+            >
+              <PhoneForm onSuccess={handleSuccess} />
+            </motion.div>
+          )
         ) : (
           <motion.div
-            key="phone-tab"
+            key="register-tab"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.18 }}
           >
-            <PhoneForm onSuccess={handleSuccess} />
+            <RegisterForm onSuccess={handleSuccess} />
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Toggle link */}
+      <div className="text-center">
+        {mode === 'login' ? (
+          <button
+            type="button"
+            onClick={() => setMode('register')}
+            className="text-sm font-semibold text-primary hover:underline"
+          >
+            Don't have an account? Sign Up
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setMode('login')}
+            className="text-sm font-semibold text-primary hover:underline"
+          >
+            Already have an account? Sign In
+          </button>
+        )}
+      </div>
 
       {/* Footer links */}
       <p className="text-label-sm text-on-surface-variant text-center">

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useForm } from 'react-hook-form'
@@ -10,6 +10,7 @@ import Chip from '@/components/ui/Chip'
 import Input from '@/components/ui/Input'
 import useCart from '@/store/cartStore'
 import useToastStore from '@/store/toastStore'
+import useAuthStore from '@/store/authStore'
 import { placeOrder } from '@/services/api'
 
 const CHECKOUT_STEPS = [
@@ -47,6 +48,14 @@ const upiSchema = z.object({
 
 export default function Checkout() {
   const navigate = useNavigate()
+  const { user } = useAuthStore()
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/')
+    }
+  }, [user, navigate])
+
   const { items, subtotal, discount, total, clearCart } = useCart()
   const { addToast } = useToastStore()
 

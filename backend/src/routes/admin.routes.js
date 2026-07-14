@@ -149,20 +149,40 @@ router.get('/customers', requireAdmin, asyncHandler(async (req, res) => {
   // Let's get distinct customers and aggregate spent / orders
   const result = await pool.query(
     `SELECT 
-       u.id, 
+       u.id::text as id, 
        u.name, 
        u.email, 
        COALESCE(u.phone, '') as phone, 
-       'Bangalore' as city, -- Mock city fallback or pull from last order
+       'Bangalore' as city, 
        COUNT(o.id) as orders,
        COALESCE(SUM(o.total), 0) as "totalSpent",
        TO_CHAR(u.created_at, 'YYYY-MM-DD') as "joinedAt",
        'active' as status,
-       TO_CHAR(MAX(o.placed_at), 'YYYY-MM-DD') as "lastOrder"
+       TO_CHAR(MAX(o.placed_at), 'YYYY-MM-DD') as "lastOrder",
+       u.created_at as raw_joined
      FROM users u
      LEFT JOIN orders o ON u.id = o.user_id
      GROUP BY u.id, u.name, u.email, u.phone, u.created_at
-     ORDER BY u.created_at DESC`
+
+     UNION ALL
+
+     SELECT 
+       'guest-' || md5(COALESCE(address->>'email', address->>'name', '')) as id,
+       COALESCE(address->>'name', 'Guest Customer') as name,
+       COALESCE(address->>'email', '') as email,
+       COALESCE(address->>'phone', '') as phone,
+       COALESCE(address->>'city', 'Bangalore') as city,
+       COUNT(o2.id) as orders,
+       COALESCE(SUM(o2.total), 0) as "totalSpent",
+       TO_CHAR(MIN(o2.placed_at), 'YYYY-MM-DD') as "joinedAt",
+       'guest' as status,
+       TO_CHAR(MAX(o2.placed_at), 'YYYY-MM-DD') as "lastOrder",
+       MIN(o2.placed_at) as raw_joined
+     FROM orders o2
+     WHERE o2.user_id IS NULL OR NOT EXISTS (SELECT 1 FROM users u2 WHERE u2.id = o2.user_id)
+     GROUP BY address->>'name', address->>'email', address->>'phone', address->>'city'
+     
+     ORDER BY raw_joined DESC`
   )
   
   res.json({

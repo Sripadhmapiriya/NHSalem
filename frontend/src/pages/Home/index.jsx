@@ -305,7 +305,7 @@ export default function Home() {
               { label: 'Prawns', slug: 'prawns-shrimp', icon: 'restaurant', color: 'bg-orange-50' },
               { label: 'Crabs', slug: 'crabs', icon: 'emoji_food_beverage', color: 'bg-red-50' },
               { label: 'Lobster', slug: 'lobster', icon: 'local_dining', color: 'bg-amber-50' },
-              { label: 'Dry Fish', slug: 'dry-fish', icon: 'grain', color: 'bg-yellow-50' },
+              { label: 'Dried Fish', slug: 'dried-fish', icon: 'grain', color: 'bg-yellow-50' },
               { label: 'Combos', slug: 'combos', icon: 'inventory_2', color: 'bg-emerald-50' },
             ].map((cat, i) => (
               <motion.div

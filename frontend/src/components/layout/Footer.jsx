@@ -13,7 +13,7 @@ const FOOTER_LINKS = {
     { label: 'Prawns & Shrimp', to: '/category/prawns-shrimp' },
     { label: 'Crabs', to: '/category/crabs' },
     { label: 'Lobster', to: '/category/lobster' },
-    { label: 'Dry Fish', to: '/category/dry-fish' },
+    { label: 'Dried Fish', to: '/category/dried-fish' },
     { label: 'Combos', to: '/category/combos' },
     { label: 'Shellfish', to: '/category/shellfish' },
   ],
@@ -39,9 +39,9 @@ export default function Footer() {
           <div className="lg:col-span-2 flex flex-col items-start pt-2 lg:pt-3">
             {/* Logo on transparent background */}
             <div className="inline-flex items-center gap-3.5 mb-5 select-none">
-              <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center overflow-hidden border border-white/10 p-0.5 flex-shrink-0">
+              <div className="w-10 h-10 flex items-center justify-center p-0.5 flex-shrink-0">
                 <img
-                  src="/crest.jpg"
+                  src="/crest.png"
                   alt="NH Salem Sea Foods Crest"
                   className="w-full h-full object-contain"
                 />

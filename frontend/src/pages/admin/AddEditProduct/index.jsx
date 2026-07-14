@@ -5,7 +5,16 @@ import useProductStore from '@/store/productStore'
 import useToastStore from '@/store/toastStore'
 import { AdminPage, AdminCard, AdminBtn } from '@/admin/AdminUI'
 
-const CATEGORIES = ['fish', 'prawns-shrimp', 'crabs', 'lobster']
+const CATEGORIES = ['fish', 'prawns-shrimp', 'crabs', 'lobster', 'dried-fish', 'combos']
+
+const CATEGORY_LABELS = {
+  'fish': 'Fish',
+  'prawns-shrimp': 'Prawns & Shrimp',
+  'crabs': 'Crabs',
+  'lobster': 'Lobster',
+  'dried-fish': 'Dried Fish',
+  'combos': 'Combos'
+}
 
 const ALL_BADGES = [
   { type: 'fresh', label: 'Fresh Today' },
@@ -35,6 +44,45 @@ export default function AdminAddEditProduct() {
     existing?.badges?.map((b) => b.type) || []
   )
   const [saving, setSaving] = useState(false)
+
+  // Variants state management
+  const [variants, setVariants] = useState(existing?.variants || existing?.weights || [])
+  const [newVarLabel, setNewVarLabel] = useState('')
+  const [newVarValue, setNewVarValue] = useState('')
+  const [newVarPrice, setNewVarPrice] = useState('')
+  const [newVarOrigPrice, setNewVarOrigPrice] = useState('')
+
+  const handleAddVariant = () => {
+    if (!newVarLabel.trim()) {
+      addToast({ message: 'Variant label is required', type: 'warning' })
+      return
+    }
+    if (!newVarPrice.trim()) {
+      addToast({ message: 'Variant price is required', type: 'warning' })
+      return
+    }
+    const newVar = {
+      label: newVarLabel.trim(),
+      value: newVarValue ? Number(newVarValue) : undefined,
+      price: Number(newVarPrice),
+      originalPrice: newVarOrigPrice ? Number(newVarOrigPrice) : undefined
+    }
+    setVariants([...variants, newVar])
+    setNewVarLabel('')
+    setNewVarValue('')
+    setNewVarPrice('')
+    setNewVarOrigPrice('')
+  }
+
+  const handleRemoveVariant = (index) => {
+    setVariants(variants.filter((_, i) => i !== index))
+  }
+
+  useEffect(() => {
+    if (existing) {
+      setVariants(existing.variants || existing.weights || [])
+    }
+  }, [existing])
 
   const {
     register,
@@ -79,7 +127,7 @@ export default function AdminAddEditProduct() {
     )
   }
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     setSaving(true)
 
     // Map selected badge types back to { type, label }
@@ -88,25 +136,27 @@ export default function AdminAddEditProduct() {
       return { type, label: found?.label ?? type }
     })
 
-    const payload = { ...data, badges }
+    const payload = {
+      ...data,
+      badges,
+      weights: variants,
+      variants: variants
+    }
 
-    // Simulate async save (replace setTimeout with real API call in Phase 2)
-    setTimeout(() => {
-      try {
-        if (isNew) {
-          addProduct(payload)
-          addToast({ message: 'Product created successfully!', type: 'success' })
-        } else {
-          updateProduct(id, payload)
-          addToast({ message: 'Product updated successfully!', type: 'success' })
-        }
-        setSaving(false)
-        navigate('/admin/products')
-      } catch {
-        setSaving(false)
-        addToast({ message: 'Failed to save product. Please try again.', type: 'error' })
+    try {
+      if (isNew) {
+        await addProduct(payload)
+        addToast({ message: 'Product created successfully!', type: 'success' })
+      } else {
+        await updateProduct(id, payload)
+        addToast({ message: 'Product updated successfully!', type: 'success' })
       }
-    }, 800)
+      navigate('/admin/products')
+    } catch (err) {
+      addToast({ message: err.message || 'Failed to save product. Please try again.', type: 'error' })
+    } finally {
+      setSaving(false)
+    }
   }
 
   // If editing a non-existent product id, redirect gracefully
@@ -177,7 +227,7 @@ export default function AdminAddEditProduct() {
                       className="w-full px-3 py-2.5 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] text-admin-text focus:outline-none focus:border-admin-navy capitalize"
                     >
                       {CATEGORIES.map((c) => (
-                        <option key={c} value={c}>{c.replace('-', ' & ')}</option>
+                        <option key={c} value={c}>{CATEGORY_LABELS[c] || c}</option>
                       ))}
                     </select>
                   </div>
@@ -246,6 +296,106 @@ export default function AdminAddEditProduct() {
                     className="w-full px-3 py-2.5 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] text-admin-text focus:outline-none focus:border-admin-navy resize-none"
                   />
                 </div>
+              </div>
+            </AdminCard>
+
+            {/* Product Variants */}
+            <AdminCard title="Product Variants">
+              <div className="p-5 space-y-4">
+                <p className="text-[12px] text-admin-text-sub">
+                  Define different options for this product (e.g. label: "1 piece (~600g)", price: ₹699, originalPrice: ₹799).
+                  If no variants are defined, the product card will fall back to the default unit and base price.
+                </p>
+
+                {/* Add Variant Form */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 bg-admin-seafoam/50 p-4 rounded-[12px] border border-admin-border/50 items-end">
+                  <div>
+                    <label className="block text-[10px] font-bold text-admin-text uppercase tracking-[0.05em] mb-1">
+                      Label
+                    </label>
+                    <input
+                      type="text"
+                      value={newVarLabel}
+                      onChange={(e) => setNewVarLabel(e.target.value)}
+                      placeholder="e.g. 500g, 1kg, 1 piece (~600g)"
+                      className="w-full px-2.5 py-2 rounded-[8px] border border-admin-border bg-white text-[12px] focus:outline-none focus:border-admin-navy"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-admin-text uppercase tracking-[0.05em] mb-1">
+                      Price (₹)
+                    </label>
+                    <input
+                      type="number"
+                      value={newVarPrice}
+                      onChange={(e) => setNewVarPrice(e.target.value)}
+                      placeholder="e.g. 450"
+                      className="w-full px-2.5 py-2 rounded-[8px] border border-admin-border bg-white text-[12px] focus:outline-none focus:border-admin-navy"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-admin-text uppercase tracking-[0.05em] mb-1">
+                      Original Price (₹ - Optional)
+                    </label>
+                    <input
+                      type="number"
+                      value={newVarOrigPrice}
+                      onChange={(e) => setNewVarOrigPrice(e.target.value)}
+                      placeholder="e.g. 500"
+                      className="w-full px-2.5 py-2 rounded-[8px] border border-admin-border bg-white text-[12px] focus:outline-none focus:border-admin-navy"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddVariant}
+                    className="h-9 px-4 rounded-[8px] bg-admin-navy text-white text-[12px] font-bold flex items-center justify-center gap-1 hover:opacity-90 transition-opacity cursor-pointer select-none"
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>add</span>
+                    Add Variant
+                  </button>
+                </div>
+
+                {/* Variants List */}
+                {variants.length > 0 ? (
+                  <div className="border border-admin-border/60 rounded-[12px] overflow-hidden bg-white">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-admin-seafoam text-[11px] font-bold text-admin-text uppercase tracking-wider border-b border-admin-border/60">
+                          <th className="px-4 py-2.5">Label</th>
+                          <th className="px-4 py-2.5">Price</th>
+                          <th className="px-4 py-2.5">Original Price</th>
+                          <th className="px-4 py-2.5 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-admin-border/40 text-[12px] text-admin-text">
+                        {variants.map((v, idx) => (
+                          <tr key={idx} className="hover:bg-admin-seafoam/20">
+                            <td className="px-4 py-2.5 font-semibold">{v.label}</td>
+                            <td className="px-4 py-2.5">₹{v.price}</td>
+                            <td className="px-4 py-2.5 text-admin-text-sub">
+                              {v.originalPrice ? `₹${v.originalPrice}` : '—'}
+                            </td>
+                            <td className="px-4 py-2.5 text-right">
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveVariant(idx)}
+                                className="text-admin-coral hover:underline font-semibold flex items-center gap-0.5 ml-auto cursor-pointer"
+                              >
+                                <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span>
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="text-center py-6 text-admin-text-sub border border-dashed border-admin-border rounded-[12px] bg-admin-seafoam/20">
+                    <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>inventory</span>
+                    <p className="text-[11px] mt-1">No variants added yet. Using default unit and price.</p>
+                  </div>
+                )}
               </div>
             </AdminCard>
           </div>

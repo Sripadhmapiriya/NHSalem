@@ -21,6 +21,12 @@ const productSchema = z.object({
     price: z.number(),
     originalPrice: z.number().optional()
   })).optional().default([]),
+  variants: z.array(z.object({
+    label: z.string(),
+    price: z.number(),
+    originalPrice: z.number().optional(),
+    value: z.number().optional()
+  })).optional().default([]),
   basePrice: z.number(),
   freshnessScore: z.number().optional().default(90),
   nutrition: z.any().optional().default({}),
@@ -36,6 +42,9 @@ const reviewSchema = z.object({
 })
 
 function formatProduct(p) {
+  const finalWeights = typeof p.weights === 'string' ? JSON.parse(p.weights) : (p.weights || [])
+  const finalVariants = typeof p.variants === 'string' ? JSON.parse(p.variants) : (p.variants || [])
+  
   return {
     id: p.id,
     slug: p.slug,
@@ -47,7 +56,8 @@ function formatProduct(p) {
     image: p.image,
     images: typeof p.images === 'string' ? JSON.parse(p.images) : p.images,
     badges: typeof p.badges === 'string' ? JSON.parse(p.badges) : p.badges,
-    weights: typeof p.weights === 'string' ? JSON.parse(p.weights) : p.weights,
+    weights: finalWeights,
+    variants: finalVariants.length > 0 ? finalVariants : finalWeights,
     basePrice: Number(p.base_price),
     rating: Number(p.rating),
     reviewCount: Number(p.review_count),
@@ -95,7 +105,13 @@ router.get('/products', asyncHandler(async (req, res) => {
 
   if (category) {
     paramCount++
-    sql += ` AND category = $${paramCount}`
+    if (category === 'dried-fish') {
+      sql += ` AND (category = $${paramCount} OR category = 'dry-fish')`
+    } else if (category === 'dry-fish') {
+      sql += ` AND (category = $${paramCount} OR category = 'dried-fish')`
+    } else {
+      sql += ` AND category = $${paramCount}`
+    }
     params.push(category)
   }
 
@@ -117,7 +133,9 @@ router.get('/products', asyncHandler(async (req, res) => {
     params.push(Number(maxPrice))
   }
 
-  if (sort === 'price_asc') {
+  if (sort === 'za') {
+    sql += ' ORDER BY name DESC'
+  } else if (sort === 'price_asc') {
     sql += ' ORDER BY base_price ASC'
   } else if (sort === 'price_desc') {
     sql += ' ORDER BY base_price DESC'
@@ -126,6 +144,7 @@ router.get('/products', asyncHandler(async (req, res) => {
   } else if (sort === 'newest') {
     sql += ' ORDER BY created_at DESC'
   } else {
+    // Default is 'az' (ORDER BY name ASC)
     sql += ' ORDER BY name ASC'
   }
 
@@ -210,8 +229,8 @@ router.post('/admin/products', requireAdmin, asyncHandler(async (req, res) => {
 
   const result = await pool.query(
     `INSERT INTO products (
-      slug, category, name, tagline, description, how_to_cook, image, images, badges, weights, base_price, freshness_score, nutrition, unit, stock_qty, is_active
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+      slug, category, name, tagline, description, how_to_cook, image, images, badges, weights, base_price, freshness_score, nutrition, unit, stock_qty, is_active, variants
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
      RETURNING *`,
     [
       slug,
@@ -223,13 +242,14 @@ router.post('/admin/products', requireAdmin, asyncHandler(async (req, res) => {
       p.image,
       JSON.stringify(p.images),
       JSON.stringify(p.badges),
-      JSON.stringify(p.weights),
+      JSON.stringify(p.weights || p.variants || []),
       p.basePrice,
       p.freshnessScore,
       JSON.stringify(p.nutrition),
       p.unit,
       p.stock_qty,
-      p.is_active
+      p.is_active,
+      JSON.stringify(p.variants || p.weights || [])
     ]
   )
 
@@ -250,8 +270,8 @@ router.put('/admin/products/:id', requireAdmin, asyncHandler(async (req, res) =>
 
   const result = await pool.query(
     `UPDATE products SET
-      slug = $1, category = $2, name = $3, tagline = $4, description = $5, how_to_cook = $6, image = $7, images = $8, badges = $9, weights = $10, base_price = $11, freshness_score = $12, nutrition = $13, unit = $14, stock_qty = $15, is_active = $16, updated_at = NOW()
-     WHERE id = $17
+      slug = $1, category = $2, name = $3, tagline = $4, description = $5, how_to_cook = $6, image = $7, images = $8, badges = $9, weights = $10, base_price = $11, freshness_score = $12, nutrition = $13, unit = $14, stock_qty = $15, is_active = $16, variants = $17, updated_at = NOW()
+     WHERE id = $18
      RETURNING *`,
     [
       newSlug,
@@ -263,13 +283,14 @@ router.put('/admin/products/:id', requireAdmin, asyncHandler(async (req, res) =>
       p.image,
       JSON.stringify(p.images),
       JSON.stringify(p.badges),
-      JSON.stringify(p.weights),
+      JSON.stringify(p.weights || p.variants || []),
       p.basePrice,
       p.freshnessScore,
       JSON.stringify(p.nutrition),
       p.unit,
       p.stock_qty,
       p.is_active,
+      JSON.stringify(p.variants || p.weights || []),
       id
     ]
   )

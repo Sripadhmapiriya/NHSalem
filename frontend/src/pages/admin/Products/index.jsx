@@ -14,7 +14,17 @@ import {
   formatCurrency,
 } from '@/admin/AdminUI'
 
-const CATEGORIES = ['all', 'fish', 'prawns-shrimp', 'crabs', 'lobster']
+const CATEGORIES = ['all', 'fish', 'prawns-shrimp', 'crabs', 'lobster', 'dried-fish', 'combos']
+
+const CATEGORY_MAP = {
+  'all': 'All',
+  'fish': 'Fish',
+  'prawns-shrimp': 'Prawns & Shrimp',
+  'crabs': 'Crabs',
+  'lobster': 'Lobster',
+  'dried-fish': 'Dried Fish',
+  'combos': 'Combos'
+}
 
 export default function AdminProducts() {
   const navigate = useNavigate()
@@ -46,7 +56,7 @@ export default function AdminProducts() {
             className="w-64"
           />
           <FilterBar
-            options={CATEGORIES.map((c) => ({ value: c, label: c === 'all' ? 'All' : c.replace('-', ' & ') }))}
+            options={CATEGORIES.map((c) => ({ value: c, label: CATEGORY_MAP[c] || c }))}
             active={category}
             onSelect={setCategory}
           />
@@ -72,7 +82,7 @@ export default function AdminProducts() {
                   <p className="text-[11px] text-admin-text-sub">{p.tagline}</p>
                 </div>
               </Td>
-              <Td className="capitalize">{p.category?.replace('-', ' & ')}</Td>
+              <Td className="capitalize">{CATEGORY_MAP[p.category] || p.category}</Td>
               <Td><span className="font-bold">{formatCurrency(p.basePrice)}</span></Td>
               <Td>
                 <span className="flex items-center gap-1">

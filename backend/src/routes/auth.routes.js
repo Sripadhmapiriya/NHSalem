@@ -12,7 +12,7 @@ const registerSchema = z.object({
   name: z.string().min(2),
   email: z.string().email(),
   phone: z.string().min(10),
-  password: z.string().min(6)
+  password: z.string().min(8)
 })
 
 const loginSchema = z.object({
@@ -24,19 +24,30 @@ const loginSchema = z.object({
 router.post('/register', asyncHandler(async (req, res) => {
   const { name, email, phone, password } = registerSchema.parse(req.body)
   
-  // Clean phone
-  const cleanPhone = phone.replace(/[^0-9]/g, '').slice(-10)
+  // Clean phone: numeric only, exactly 10 digits
+  const cleanPhone = phone.replace(/[^0-9]/g, '')
+  if (cleanPhone.length !== 10) {
+    return res.status(400).json({ success: false, message: 'Phone number must be exactly 10 digits' })
+  }
 
-  // Check if exists
-  const existing = await pool.query('SELECT id FROM users WHERE email = $1 OR phone = $2', [email, cleanPhone])
-  if (existing.rows.length > 0) {
-    return res.status(400).json({ success: false, message: 'User with this email or phone already exists' })
+  const finalEmail = email.toLowerCase().trim()
+
+  // Check if email exists
+  const existingEmail = await pool.query('SELECT id FROM users WHERE email = $1', [finalEmail])
+  if (existingEmail.rows.length > 0) {
+    return res.status(409).json({ success: false, message: 'This email is already registered.' })
+  }
+
+  // Check if phone exists
+  const existingPhone = await pool.query('SELECT id FROM users WHERE phone = $1', [cleanPhone])
+  if (existingPhone.rows.length > 0) {
+    return res.status(409).json({ success: false, message: 'This phone number is already registered.' })
   }
 
   const passwordHash = await bcrypt.hash(password, 10)
   const result = await pool.query(
     'INSERT INTO users (name, email, phone, password_hash) VALUES ($1, $2, $3, $4) RETURNING id, name, email, phone',
-    [name, email, cleanPhone, passwordHash]
+    [name, finalEmail, cleanPhone, passwordHash]
   )
 
   const user = result.rows[0]

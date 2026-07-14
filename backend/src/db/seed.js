@@ -92,7 +92,7 @@ async function runSeed() {
       { id: 'prawns-shrimp', slug: 'prawns-shrimp', name: 'Prawns & Shrimp' },
       { id: 'crabs', slug: 'crabs', name: 'Crabs' },
       { id: 'lobster', slug: 'lobster', name: 'Lobster' },
-      { id: 'dry-fish', slug: 'dry-fish', name: 'Dry Fish' },
+      { id: 'dried-fish', slug: 'dried-fish', name: 'Dried Fish' },
       { id: 'combos', slug: 'combos', name: 'Combos' }
     ]
     for (const cat of categories) {
@@ -107,7 +107,8 @@ async function runSeed() {
     // 4. Seed Products
     console.log('Seeding products...')
     for (const p of PRODUCTS) {
-      const categoryId = p.category.toLowerCase()
+      let categoryId = p.category.toLowerCase()
+      if (categoryId === 'dry-fish') categoryId = 'dried-fish'
       // Ensure category exists
       await client.query(
         `INSERT INTO categories (id, slug, name)
@@ -118,8 +119,8 @@ async function runSeed() {
 
       await client.query(
         `INSERT INTO products (
-          slug, category, name, tagline, description, how_to_cook, image, images, badges, weights, base_price, rating, review_count, is_bestseller, catch_time, freshness_score, nutrition, unit, stock_qty, is_active
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+          slug, category, name, tagline, description, how_to_cook, image, images, badges, weights, base_price, rating, review_count, is_bestseller, catch_time, freshness_score, nutrition, unit, stock_qty, is_active, variants
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
          ON CONFLICT (slug) DO NOTHING`,
         [
           p.slug,
@@ -141,7 +142,8 @@ async function runSeed() {
           JSON.stringify(p.nutritionPer100g || {}),
           p.unit || null,
           p.stock_qty ?? 100,
-          p.is_active ?? true
+          p.is_active ?? true,
+          JSON.stringify(p.weights || [])
         ]
       )
     }

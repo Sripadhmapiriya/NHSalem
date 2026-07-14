@@ -14,7 +14,7 @@ import useWishlistStore from '@/store/wishlistStore'
  * - Wishlist toggle
  */
 export default function ProductCard({ product }) {
-  const [selectedWeight, setSelectedWeight] = useState(0)
+  const [selectedVariant, setSelectedVariant] = useState(0)
   const { addItem, getItem, updateQuantity, removeItem } = useCartStore()
   const { toggle: toggleWishlist, isWishlisted } = useWishlistStore()
 
@@ -25,13 +25,21 @@ export default function ProductCard({ product }) {
     image,
     badges = [],
     weights = [],
+    variants = [],
     basePrice,
     rating,
     reviewCount,
+    unit,
   } = product
 
-  const currentWeight = weights[selectedWeight] || { label: '500g', price: basePrice }
-  const cartItem = getItem(id, currentWeight.label)
+  const finalVariants = (variants && variants.length > 0)
+    ? variants
+    : ((weights && weights.length > 0)
+      ? weights
+      : (unit ? [{ label: unit, price: basePrice }] : []))
+
+  const currentVariant = finalVariants[selectedVariant] || { label: unit || '500g', price: basePrice }
+  const cartItem = getItem(id, currentVariant.label)
   const wishlisted = isWishlisted(id)
 
   const handleAdd = () => {
@@ -39,16 +47,16 @@ export default function ProductCard({ product }) {
       id,
       name,
       image,
-      weight: currentWeight.label,
-      price: currentWeight.price,
+      weight: currentVariant.label,
+      price: currentVariant.price,
       quantity: 1,
     })
   }
 
-  const handleIncrease = () => updateQuantity(id, currentWeight.label, cartItem.quantity + 1)
+  const handleIncrease = () => updateQuantity(id, currentVariant.label, cartItem.quantity + 1)
   const handleDecrease = () => {
-    if (cartItem.quantity <= 1) removeItem(id, currentWeight.label)
-    else updateQuantity(id, currentWeight.label, cartItem.quantity - 1)
+    if (cartItem.quantity <= 1) removeItem(id, currentVariant.label)
+    else updateQuantity(id, currentVariant.label, cartItem.quantity - 1)
   }
 
   return (
@@ -112,41 +120,48 @@ export default function ProductCard({ product }) {
         </div>
 
         {/* Rating */}
-        {rating && (
-          <div className="flex items-center gap-1.5">
-            <div className="flex gap-0.5">
-              {[1, 2, 3, 4, 5].map((star) => (
+        <div className="flex items-center gap-1.5">
+          <div className="flex gap-0.5">
+            {[1, 2, 3, 4, 5].map((star) => {
+              const isFilled = rating > 0 && star <= Math.round(rating)
+              return (
                 <span
                   key={star}
-                  className={`material-symbols-outlined ${star <= Math.round(rating) ? 'filled' : ''} text-secondary-container`}
+                  className={`material-symbols-outlined ${isFilled ? 'filled' : ''} text-secondary-container`}
                   style={{ fontSize: '14px' }}
                   aria-hidden="true"
                 >
                   star
                 </span>
-              ))}
-            </div>
+              )
+            })}
+          </div>
+          {rating > 0 ? (
             <span className="text-label-sm text-on-surface-variant">
               {rating} ({reviewCount?.toLocaleString()})
             </span>
-          </div>
-        )}
+          ) : (
+            <span className="inline-flex items-center bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
+              New
+            </span>
+          )}
+        </div>
 
-        {/* Weight chips */}
-        {weights.length > 0 && (
+        {/* Variant chips */}
+        {finalVariants.length > 0 && (
           <div className="flex flex-wrap gap-2">
-            {weights.map((w, i) => (
+            {finalVariants.map((v, i) => (
               <button
-                key={w.label}
-                onClick={() => setSelectedWeight(i)}
-                aria-pressed={selectedWeight === i}
+                key={v.label}
+                onClick={() => setSelectedVariant(i)}
+                aria-pressed={selectedVariant === i}
                 className={`px-3 py-1 rounded-full text-label-sm border transition-all ${
-                  selectedWeight === i
+                  selectedVariant === i
                     ? 'bg-secondary-container text-on-secondary-container border-secondary-container font-semibold'
                     : 'bg-surface-container-low text-on-surface-variant border-outline-variant hover:border-primary'
                 }`}
               >
-                {w.label}
+                {v.label}
               </button>
             ))}
           </div>
@@ -156,11 +171,11 @@ export default function ProductCard({ product }) {
         <div className="flex items-center justify-between mt-auto pt-2">
           <div>
             <p className="text-headline-sm font-bold text-on-surface">
-              ₹{currentWeight.price.toLocaleString()}
+              ₹{currentVariant.price.toLocaleString()}
             </p>
-            {currentWeight.originalPrice && (
+            {currentVariant.originalPrice && (
               <p className="text-label-sm text-outline line-through">
-                ₹{currentWeight.originalPrice.toLocaleString()}
+                ₹{currentVariant.originalPrice.toLocaleString()}
               </p>
             )}
           </div>

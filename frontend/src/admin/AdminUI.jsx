@@ -31,6 +31,7 @@ const STATUS_STYLES = {
   refunded:         'bg-orange-50 text-orange-600 border-orange-200',
   paid:             'bg-green-50 text-green-700 border-green-200',
   collected:        'bg-green-50 text-green-700 border-green-200',
+  guest:            'bg-purple-50 text-purple-700 border-purple-200',
 }
 
 const STATUS_LABELS = {
@@ -54,6 +55,7 @@ const STATUS_LABELS = {
   refunded:         'Refunded',
   paid:             'Paid',
   collected:        'Collected',
+  guest:            'Guest',
 }
 
 export function StatusBadge({ status }) {

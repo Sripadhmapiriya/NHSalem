@@ -14,16 +14,19 @@ const CATEGORY_META = {
   'prawns-shrimp': { title: 'Fresh Prawns & Shrimp', description: 'From Jumbo Tiger Prawns to Coastal White Shrimp — all hand-selected, size-graded, and packed fresh.' },
   crabs: { title: 'Fresh Crabs', description: 'Live-packed crabs delivered the same day. Sweet, succulent, and full of flavour.' },
   lobster: { title: 'Premium Lobster', description: 'Spiny lobster tails from Lakshadweep waters. The pinnacle of Indian coastal seafood.' },
-  'dry-fish': { title: 'Dry Fish', description: 'Traditional sun-dried and salt-preserved fish from coastal artisans.' },
+  'dry-fish': { title: 'Dried Fish', description: 'Traditional sun-dried and salt-preserved fish from coastal artisans.' },
+  'dried-fish': { title: 'Dried Fish', description: 'Traditional sun-dried and salt-preserved fish from coastal artisans.' },
   combos: { title: 'Value Combos', description: 'Curated seafood combo packs — great value, premium selection.' },
   shellfish: { title: 'Shellfish & Molluscs', description: 'Clams, mussels, oysters, and more from the cleanest Indian coastal waters.' },
 }
 
 const SORT_OPTIONS = [
-  { id: 'newest', label: 'Newest First' },
+  { id: 'az', label: 'Alphabetical: A to Z' },
+  { id: 'za', label: 'Alphabetical: Z to A' },
   { id: 'price_asc', label: 'Price: Low to High' },
   { id: 'price_desc', label: 'Price: High to Low' },
-  { id: 'rating', label: 'Top Rated' },
+  { id: 'rating', label: 'Highest Rated' },
+  { id: 'newest', label: 'Newest First' },
 ]
 
 const CATCH_TYPES = [
@@ -44,24 +47,27 @@ const MemoProductCard = memo(ProductCard)
 /**
  * FilterGroup - collapsible block with height animation and rotating chevron
  */
-function FilterGroup({ title, children, defaultOpen = true }) {
+function FilterGroup({ title, children, defaultOpen = true, headerExtra }) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
   return (
     <div className="border-b border-outline-variant/30 py-4 last:border-0 text-left">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between text-label-md font-bold text-on-surface uppercase tracking-wider mb-2 focus:outline-none"
-      >
-        <span>{title}</span>
-        <motion.span
-          animate={{ rotate: isOpen ? 180 : 0 }}
-          transition={{ duration: 0.2 }}
-          className="material-symbols-outlined text-outline-variant flex items-center justify-center leading-none"
-          style={{ fontSize: '20px' }}
+      <div className="w-full flex items-center justify-between mb-2">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex items-center gap-2 text-label-md font-bold text-on-surface uppercase tracking-wider focus:outline-none"
         >
-          expand_more
-        </motion.span>
-      </button>
+          <span>{title}</span>
+          <motion.span
+            animate={{ rotate: isOpen ? 180 : 0 }}
+            transition={{ duration: 0.2 }}
+            className="material-symbols-outlined text-outline-variant flex items-center justify-center leading-none"
+            style={{ fontSize: '20px' }}
+          >
+            expand_more
+          </motion.span>
+        </button>
+        {headerExtra}
+      </div>
       <motion.div
         initial={false}
         animate={{ height: isOpen ? 'auto' : 0 }}
@@ -92,9 +98,44 @@ function FilterPanel({
   resultCount,
   onApply,
   hideHeader = false,
+  maxPriceLimit = 9999,
 }) {
-  const minPercent = (priceMin / 3000) * 100
-  const maxPercent = (priceMax / 3000) * 100
+  const minPercent = (priceMin / maxPriceLimit) * 100
+  const maxPercent = (priceMax / maxPriceLimit) * 100
+
+  const [tempMin, setTempMin] = useState(priceMin)
+  const [tempMax, setTempMax] = useState(priceMax)
+
+  useEffect(() => {
+    setTempMin(priceMin)
+  }, [priceMin])
+
+  useEffect(() => {
+    setTempMax(priceMax)
+  }, [priceMax])
+
+  const handleMinChange = (valStr) => {
+    let val = Number(valStr) || 0
+    if (val < 0) val = 0
+    if (val > priceMax) {
+      val = priceMax
+    }
+    setPriceMin(val)
+    setTempMin(val)
+  }
+
+  const handleMaxChange = (valStr) => {
+    let val = Number(valStr) || maxPriceLimit
+    if (val < 0) val = 0
+    if (val < priceMin) {
+      val = priceMin
+    }
+    if (val > maxPriceLimit) {
+      val = maxPriceLimit
+    }
+    setPriceMax(val)
+    setTempMax(val)
+  }
 
   const bodyClass = hideHeader
     ? 'flex-1 overflow-y-auto pt-2 pb-8 space-y-4'
@@ -174,33 +215,60 @@ function FilterPanel({
         </FilterGroup>
 
         {/* Price Range accordion */}
-        <FilterGroup title="Price Range">
+        <FilterGroup
+          title="Price Range"
+          headerExtra={
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                setPriceMin(0)
+                setPriceMax(maxPriceLimit)
+              }}
+              className="text-[11px] font-bold text-primary hover:underline lowercase tracking-wide"
+            >
+              Reset
+            </button>
+          }
+        >
           <div className="px-1.5 pt-2">
             {/* Numeric Inputs */}
             <div className="flex items-center gap-2 mb-6">
               <div className="flex-1 min-w-0 flex items-center gap-1 pl-3 pr-2 py-1.5 bg-surface-container-low border border-outline-variant rounded-full">
                 <span className="text-[11px] font-bold text-outline uppercase tracking-wider flex-shrink-0">Min</span>
                 <input
-                  type="number"
-                  value={priceMin}
+                  type="text"
+                  value={tempMin}
                   onChange={(e) => {
-                    const val = Math.min(Math.max(0, Number(e.target.value)), priceMax - 50)
-                    setPriceMin(val)
+                    const val = e.target.value.replace(/\D/g, '')
+                    setTempMin(val)
                   }}
-                  className="w-full min-w-0 bg-transparent text-label-md font-semibold text-on-surface text-right focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 border-0"
+                  onBlur={() => handleMinChange(tempMin)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleMinChange(tempMin)
+                    }
+                  }}
+                  className="w-full min-w-0 bg-transparent text-label-md font-semibold text-on-surface text-right focus:outline-none p-0 border-0"
                 />
               </div>
               <span className="text-outline text-label-md flex-shrink-0">—</span>
               <div className="flex-1 min-w-0 flex items-center gap-1 pl-3 pr-2 py-1.5 bg-surface-container-low border border-outline-variant rounded-full">
                 <span className="text-[11px] font-bold text-outline uppercase tracking-wider flex-shrink-0">Max</span>
                 <input
-                  type="number"
-                  value={priceMax}
+                  type="text"
+                  value={tempMax}
                   onChange={(e) => {
-                    const val = Math.min(Math.max(priceMin + 50, Number(e.target.value)), 3000)
-                    setPriceMax(val)
+                    const val = e.target.value.replace(/\D/g, '')
+                    setTempMax(val)
                   }}
-                  className="w-full min-w-0 bg-transparent text-label-md font-semibold text-on-surface text-right focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 border-0"
+                  onBlur={() => handleMaxChange(tempMax)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleMaxChange(tempMax)
+                    }
+                  }}
+                  className="w-full min-w-0 bg-transparent text-label-md font-semibold text-on-surface text-right focus:outline-none p-0 border-0"
                 />
               </div>
             </div>
@@ -214,26 +282,28 @@ function FilterPanel({
               <input
                 type="range"
                 min="0"
-                max="3000"
-                step="50"
+                max={maxPriceLimit}
+                step="10"
                 value={priceMin}
                 onChange={(e) => {
-                  const val = Math.min(Number(e.target.value), priceMax - 100)
+                  const val = Math.min(Number(e.target.value), priceMax - 10)
                   setPriceMin(val)
                 }}
                 className="dual-range-input"
+                style={{ zIndex: priceMin > (maxPriceLimit / 2) ? 40 : 30 }}
               />
               <input
                 type="range"
                 min="0"
-                max="3000"
-                step="50"
+                max={maxPriceLimit}
+                step="10"
                 value={priceMax}
                 onChange={(e) => {
-                  const val = Math.max(Number(e.target.value), priceMin + 100)
+                  const val = Math.max(Number(e.target.value), priceMin + 10)
                   setPriceMax(val)
                 }}
                 className="dual-range-input"
+                style={{ zIndex: priceMin > (maxPriceLimit / 2) ? 30 : 40 }}
               />
             </div>
 
@@ -309,22 +379,44 @@ export default function CategoryListing() {
 
   const [allProducts, setAllProducts] = useState([])
   const [loading, setLoading] = useState(true)
-  const [sort, setSort] = useState('newest')
+  const [sort, setSort] = useState('az')
   const [selectedBadges, setSelectedBadges] = useState([])
   const [priceMin, setPriceMin] = useState(0)
-  const [priceMax, setPriceMax] = useState(3000)
+  const [priceMax, setPriceMax] = useState(9999)
   const [filtersOpen, setFiltersOpen] = useState(false)
 
   const meta = CATEGORY_META[categorySlug] || { title: categorySlug, description: '' }
+
+  const maxPriceLimit = useMemo(() => {
+    if (allProducts.length === 0) return 9999
+    let max = 0
+    allProducts.forEach((p) => {
+      const finalVars = (p.variants && p.variants.length > 0)
+        ? p.variants
+        : ((p.weights && p.weights.length > 0) ? p.weights : [])
+      const price = finalVars.length > 0 ? finalVars[0].price : p.basePrice
+      if (price > max) max = price
+    })
+    return max || 9999
+  }, [allProducts])
 
   useEffect(() => {
     setLoading(true)
     setSelectedBadges([])
     setPriceMin(0)
-    setPriceMax(3000)
+    setPriceMax(9999)
     getProducts({ category: categorySlug }).then((data) => {
       setAllProducts(data)
       setLoading(false)
+      let max = 0
+      data.forEach((p) => {
+        const finalVars = (p.variants && p.variants.length > 0)
+          ? p.variants
+          : ((p.weights && p.weights.length > 0) ? p.weights : [])
+        const price = finalVars.length > 0 ? finalVars[0].price : p.basePrice
+        if (price > max) max = price
+      })
+      setPriceMax(max || 9999)
     })
   }, [categorySlug])
 
@@ -335,28 +427,51 @@ export default function CategoryListing() {
   }, [])
 
   const filteredProducts = useMemo(() => {
+    const getProductPrice = (p) => {
+      const finalVars = (p.variants && p.variants.length > 0)
+        ? p.variants
+        : ((p.weights && p.weights.length > 0) ? p.weights : [])
+      if (finalVars.length > 0) {
+        return finalVars[0].price
+      }
+      return p.basePrice
+    }
+
     let results = [...allProducts]
     if (selectedBadges.length) {
       results = results.filter((p) =>
         p.badges?.some((b) => selectedBadges.includes(b.type))
       )
     }
-    results = results.filter((p) => p.basePrice >= priceMin && p.basePrice <= priceMax)
+    results = results.filter((p) => {
+      const displayPrice = getProductPrice(p)
+      return displayPrice >= priceMin && displayPrice <= priceMax
+    })
     
-    if (sort === 'price_asc') results.sort((a, b) => a.basePrice - b.basePrice)
-    else if (sort === 'price_desc') results.sort((a, b) => b.basePrice - a.basePrice)
-    else if (sort === 'rating') results.sort((a, b) => (b.rating || 0) - (a.rating || 0))
+    if (sort === 'az') {
+      results.sort((a, b) => a.name.localeCompare(b.name))
+    } else if (sort === 'za') {
+      results.sort((a, b) => b.name.localeCompare(a.name))
+    } else if (sort === 'price_asc') {
+      results.sort((a, b) => getProductPrice(a) - getProductPrice(b))
+    } else if (sort === 'price_desc') {
+      results.sort((a, b) => getProductPrice(b) - getProductPrice(a))
+    } else if (sort === 'rating') {
+      results.sort((a, b) => (b.rating || 0) - (a.rating || 0))
+    } else if (sort === 'newest') {
+      results.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
+    }
     return results
   }, [allProducts, selectedBadges, priceMin, priceMax, sort])
 
-  const activeCount = selectedBadges.length + (priceMin !== 0 || priceMax !== 3000 ? 1 : 0)
-  const hasActiveFilters = selectedBadges.length > 0 || priceMin !== 0 || priceMax !== 3000
+  const activeCount = selectedBadges.length + (priceMin !== 0 || priceMax !== maxPriceLimit ? 1 : 0)
+  const hasActiveFilters = selectedBadges.length > 0 || priceMin !== 0 || priceMax !== maxPriceLimit
   
   const handleClearAll = useCallback(() => {
     setSelectedBadges([])
     setPriceMin(0)
-    setPriceMax(3000)
-  }, [])
+    setPriceMax(maxPriceLimit)
+  }, [maxPriceLimit])
 
   return (
     <div className="pt-8 pb-16 md:pb-24 bg-background min-h-screen">
@@ -388,6 +503,7 @@ export default function CategoryListing() {
                 hasActiveFilters={hasActiveFilters}
                 resultCount={filteredProducts.length}
                 onApply={() => {}}
+                maxPriceLimit={maxPriceLimit}
               />
             </div>
           </aside>
@@ -456,8 +572,8 @@ export default function CategoryListing() {
                     {CATCH_TYPES.find((f) => f.id === b)?.label || b}
                   </Chip>
                 ))}
-                {(priceMin !== 0 || priceMax !== 3000) && (
-                  <Chip selected removable onRemove={() => { setPriceMin(0); setPriceMax(3000) }}>
+                {(priceMin !== 0 || priceMax !== maxPriceLimit) && (
+                  <Chip selected removable onRemove={() => { setPriceMin(0); setPriceMax(maxPriceLimit) }}>
                     ₹{priceMin} – ₹{priceMax}
                   </Chip>
                 )}
@@ -477,17 +593,17 @@ export default function CategoryListing() {
                       <MemoProductCard key={product.id} product={product} />
                     ))
                   : (
-                    <div className="col-span-full text-center py-20">
-                      <span className="material-symbols-outlined text-outline text-6xl mb-4 block" aria-hidden="true">
-                        search_off
-                      </span>
-                      <p className="text-headline-sm text-on-surface-variant mb-2">No products found</p>
-                      <p className="text-body-md text-outline mb-6">Try adjusting your filters</p>
-                      <Button variant="primary" onClick={handleClearAll}>
-                        Clear Filters
-                      </Button>
-                    </div>
-                  )
+                      <div className="col-span-full text-center py-20">
+                        <span className="material-symbols-outlined text-outline text-6xl mb-4 block" aria-hidden="true">
+                          search_off
+                        </span>
+                        <p className="text-headline-sm text-on-surface-variant mb-2">No products found</p>
+                        <p className="text-body-md text-outline mb-6">Try adjusting your filters</p>
+                        <Button variant="primary" onClick={handleClearAll}>
+                          Clear Filters
+                        </Button>
+                      </div>
+                    )
               }
             </div>
           </div>
@@ -516,6 +632,7 @@ export default function CategoryListing() {
             resultCount={filteredProducts.length}
             onApply={() => setFiltersOpen(false)}
             hideHeader={true}
+            maxPriceLimit={maxPriceLimit}
           />
         </div>
       </Drawer>

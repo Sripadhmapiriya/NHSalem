@@ -213,6 +213,19 @@ export async function loginWithPhone(phone, password) {
   }
 }
 
+export async function registerUser({ name, email, phone, password }) {
+  try {
+    const response = await fetch(`${API_URL}/api/auth/register`, {
+      method: 'POST',
+      headers: getHeaders(false),
+      body: JSON.stringify({ name, email, phone, password })
+    })
+    return await handleResponse(response)
+  } catch (err) {
+    return { success: false, message: err.message }
+  }
+}
+
 // ── Reviews (for Products Detail Page) ──────────────────────────────────────────
 
 export async function getReviewsForProduct(productId) {

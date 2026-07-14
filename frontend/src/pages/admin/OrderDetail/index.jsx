@@ -114,11 +114,6 @@ export default function AdminOrderDetail() {
       action={
         <>
           <AdminBtn variant="secondary" icon="print" onClick={() => window.print()}>Print Invoice</AdminBtn>
-          {order.status !== 'delivered' && order.status !== 'cancelled' && (
-            <AdminBtn variant="primary" icon="local_shipping" disabled={updating} onClick={handleUpdateStatus}>
-              {updating ? 'Updating…' : 'Advance Fulfill Status'}
-            </AdminBtn>
-          )}
         </>
       }
     >
