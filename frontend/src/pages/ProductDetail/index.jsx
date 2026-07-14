@@ -12,6 +12,7 @@ import Modal from '@/components/ui/Modal'
 import useCartStore from '@/store/cartStore'
 import useWishlistStore from '@/store/wishlistStore'
 import useToastStore from '@/store/toastStore'
+import useAuthStore from '@/store/authStore'
 import { getProductById, getProducts, checkDelivery } from '@/services/api'
 
 const PRODUCT_TABS = [
@@ -61,6 +62,22 @@ export default function ProductDetail() {
 
   const handleAddToCart = useCallback(() => {
     if (!product) return
+    const { user, setCartLoginPopupOpen, setPendingAction } = useAuthStore.getState()
+    if (!user) {
+      setPendingAction({
+        type: 'ADD_TO_CART',
+        payload: {
+          id: product.id,
+          name: product.name,
+          image: product.image,
+          weight: currentWeight.label,
+          price: currentWeight.price,
+          quantity: 1,
+        }
+      })
+      setCartLoginPopupOpen(true)
+      return
+    }
     addItem({
       id: product.id,
       name: product.name,
@@ -81,6 +98,15 @@ export default function ProductDetail() {
   }
 
   const handleAddPairItem = (item) => {
+    const { user, setCartLoginPopupOpen, setPendingAction } = useAuthStore.getState()
+    if (!user) {
+      setPendingAction({
+        type: 'ADD_TO_CART',
+        payload: { id: item.id, name: item.name, image: item.image, weight: '1x', price: item.price, quantity: 1 }
+      })
+      setCartLoginPopupOpen(true)
+      return
+    }
     addItem({ id: item.id, name: item.name, image: item.image, weight: '1x', price: item.price, quantity: 1 })
     addToast({ message: `${item.name} added to cart!`, type: 'success' })
   }

@@ -12,6 +12,7 @@ import {
   AdminInput,
   FilterBar,
   formatCurrency,
+  Pagination,
 } from '@/admin/AdminUI'
 
 const CATEGORIES = ['all', 'fish', 'prawns-shrimp', 'crabs', 'lobster', 'dried-fish', 'combos']
@@ -32,16 +33,28 @@ export default function AdminProducts() {
   const fetchProducts = useProductStore((s) => s.fetchProducts)
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('all')
+  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
     fetchProducts()
   }, [fetchProducts])
+
+  // Reset to first page on search or filter change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [search, category])
 
   const filtered = products.filter((p) => {
     const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase())
     const matchCat = category === 'all' || p.category === category
     return matchSearch && matchCat
   })
+
+  // Sort products alphabetically A-Z by name
+  const sorted = [...filtered].sort((a, b) => a.name.localeCompare(b.name))
+
+  // Paginate products
+  const paginated = sorted.slice((currentPage - 1) * 10, currentPage * 10)
 
   return (
     <AdminPage>
@@ -66,9 +79,9 @@ export default function AdminProducts() {
         </AdminBtn>
       </div>
 
-      <AdminCard subtitle={`${filtered.length} products`}>
+      <AdminCard subtitle={`${sorted.length} products`}>
         <AdminTable headers={['', 'Name', 'Category', 'Base Price', 'Rating', 'Reviews', 'Freshness', 'Badges', '']}>
-          {filtered.map((p) => (
+          {paginated.map((p) => (
             <Tr key={p.id} onClick={() => navigate(`/admin/products/${p.id}/edit`)}>
               <Td>
                 {p.image
@@ -124,6 +137,12 @@ export default function AdminProducts() {
             </Tr>
           ))}
         </AdminTable>
+        <Pagination
+          currentPage={currentPage}
+          totalItems={sorted.length}
+          itemsPerPage={10}
+          onPageChange={setCurrentPage}
+        />
       </AdminCard>
     </AdminPage>
   )

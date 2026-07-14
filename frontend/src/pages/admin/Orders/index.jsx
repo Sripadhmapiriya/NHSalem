@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getAdminOrders } from '@/services/adminApi'
-import { AdminPage, AdminCard, AdminTable, Tr, Td, StatusBadge, AdminBtn, AdminInput, FilterBar, formatCurrency, formatDate } from '@/admin/AdminUI'
+import { AdminPage, AdminCard, AdminTable, Tr, Td, StatusBadge, AdminBtn, AdminInput, FilterBar, formatCurrency, formatDate, Pagination } from '@/admin/AdminUI'
 import { SeafoodLoader } from '@/components/ui'
 
 const ALL_STATUSES = ['all', 'confirmed', 'packed', 'out_for_delivery', 'delivered', 'cancelled']
@@ -12,6 +12,7 @@ export default function AdminOrders() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
     async function loadOrders() {
@@ -29,6 +30,11 @@ export default function AdminOrders() {
     loadOrders()
   }, [])
 
+  // Reset to first page on search or filter change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [search, statusFilter])
+
   const filtered = orders.filter((o) => {
     const customerName = o.address?.name || ''
     const matchSearch = 
@@ -39,6 +45,9 @@ export default function AdminOrders() {
     const matchStatus = statusFilter === 'all' || o.status === statusFilter
     return matchSearch && matchStatus
   })
+
+  // Paginate orders
+  const paginated = filtered.slice((currentPage - 1) * 10, currentPage * 10)
 
   return (
     <AdminPage>
@@ -63,38 +72,46 @@ export default function AdminOrders() {
         {loading ? (
           <SeafoodLoader text="Loading orders..." className="py-8" />
         ) : (
-          <AdminTable headers={['Order ID', 'Customer', 'City', 'Items', 'Payment', 'Total', 'Date', 'Status', '']}>
-            {filtered.map((o) => {
-              const itemCount = o.items?.reduce((sum, item) => sum + item.quantity, 0) || 0
-              return (
-                <Tr key={o.dbId} onClick={() => navigate(`/admin/orders/${o.dbId}`)}>
-                  <Td><span className="font-mono font-bold text-admin-navy text-[12px]">{o.id}</span></Td>
-                  <Td>
-                    <div>
-                      <p className="font-semibold">{o.address?.name || 'Customer'}</p>
-                      <p className="text-[11px] text-admin-text-sub">{o.address?.email || ''}</p>
-                    </div>
-                  </Td>
-                  <Td>{o.address?.city || ''}</Td>
-                  <Td>{itemCount}</Td>
-                  <Td>
-                    <div>
-                      <p className="capitalize">{o.paymentMethod}</p>
-                      <StatusBadge status={o.paymentStatus} />
-                    </div>
-                  </Td>
-                  <Td><span className="font-bold">{formatCurrency(o.total)}</span></Td>
-                  <Td><span className="text-[12px]">{formatDate(o.placedAt)}</span></Td>
-                  <Td><StatusBadge status={o.status} /></Td>
-                  <Td>
-                    <AdminBtn size="sm" variant="secondary" onClick={(e) => { e.stopPropagation(); navigate(`/admin/orders/${o.dbId}`) }}>
-                      View
-                    </AdminBtn>
-                  </Td>
-                </Tr>
-              )
-            })}
-          </AdminTable>
+          <>
+            <AdminTable headers={['Order ID', 'Customer', 'City', 'Items', 'Payment', 'Total', 'Date', 'Status', '']}>
+              {paginated.map((o) => {
+                const itemCount = o.items?.reduce((sum, item) => sum + item.quantity, 0) || 0
+                return (
+                  <Tr key={o.dbId} onClick={() => navigate(`/admin/orders/${o.dbId}`)}>
+                    <Td><span className="font-mono font-bold text-admin-navy text-[12px]">{o.id}</span></Td>
+                    <Td>
+                      <div>
+                        <p className="font-semibold">{o.address?.name || 'Customer'}</p>
+                        <p className="text-[11px] text-admin-text-sub">{o.address?.email || ''}</p>
+                      </div>
+                    </Td>
+                    <Td>{o.address?.city || ''}</Td>
+                    <Td>{itemCount}</Td>
+                    <Td>
+                      <div>
+                        <p className="capitalize">{o.paymentMethod}</p>
+                        <StatusBadge status={o.paymentStatus} />
+                      </div>
+                    </Td>
+                    <Td><span className="font-bold">{formatCurrency(o.total)}</span></Td>
+                    <Td><span className="text-[12px]">{formatDate(o.placedAt)}</span></Td>
+                    <Td><StatusBadge status={o.status} /></Td>
+                    <Td>
+                      <AdminBtn size="sm" variant="secondary" onClick={(e) => { e.stopPropagation(); navigate(`/admin/orders/${o.dbId}`) }}>
+                        View
+                      </AdminBtn>
+                    </Td>
+                  </Tr>
+                )
+              })}
+            </AdminTable>
+            <Pagination
+              currentPage={currentPage}
+              totalItems={filtered.length}
+              itemsPerPage={10}
+              onPageChange={setCurrentPage}
+            />
+          </>
         )}
       </AdminCard>
     </AdminPage>

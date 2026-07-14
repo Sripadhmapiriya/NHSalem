@@ -6,6 +6,7 @@ import Badge from '@/components/ui/Badge'
 import { PageSkeleton } from '@/components/ui/Skeleton'
 import useCartStore from '@/store/cartStore'
 import useToastStore from '@/store/toastStore'
+import useAuthStore from '@/store/authStore'
 import { getRecipeBySlug, getProductById } from '@/services/api'
 import useAdminAuthStore from '@/store/adminAuthStore'
 
@@ -196,6 +197,22 @@ export default function RecipeArticle() {
                         </div>
                         <button
                           onClick={() => {
+                            const { user, setCartLoginPopupOpen, setPendingAction } = useAuthStore.getState()
+                            if (!user) {
+                              setPendingAction({
+                                type: 'ADD_TO_CART',
+                                payload: {
+                                  id: product.id,
+                                  name: product.name,
+                                  image: product.image,
+                                  weight: product.weights?.[0]?.label || '500g',
+                                  price: product.basePrice,
+                                  quantity: 1,
+                                }
+                              })
+                              setCartLoginPopupOpen(true)
+                              return
+                            }
                             addItem({ id: product.id, name: product.name, image: product.image, weight: product.weights?.[0]?.label || '500g', price: product.basePrice, quantity: 1 })
                             addToast({ message: `${product.name} added to cart!`, type: 'success' })
                           }}

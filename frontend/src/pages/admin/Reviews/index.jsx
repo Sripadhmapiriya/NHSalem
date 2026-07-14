@@ -10,6 +10,7 @@ import {
   StatusBadge,
   AdminBtn,
   AdminInput,
+  Pagination,
 } from '@/admin/AdminUI'
 import { SeafoodLoader } from '@/components/ui'
 
@@ -68,6 +69,7 @@ export default function AdminReviews() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [replyTarget, setReplyTarget] = useState(null)
+  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
     loadReviews()
@@ -88,6 +90,11 @@ export default function AdminReviews() {
     }
   }
 
+  // Reset to first page on search or filter change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [search, statusFilter])
+
   const filtered = reviews.filter((r) => {
     const matchSearch =
       !search ||
@@ -97,6 +104,9 @@ export default function AdminReviews() {
     const matchStatus = statusFilter === 'all' || r.status === statusFilter
     return matchSearch && matchStatus
   })
+
+  // Paginate reviews
+  const paginated = filtered.slice((currentPage - 1) * 10, currentPage * 10)
 
   const pending = reviews.filter((r) => r.status === 'pending').length
   const flagged = reviews.filter((r) => r.status === 'flagged').length
@@ -220,54 +230,62 @@ export default function AdminReviews() {
         {loading ? (
           <SeafoodLoader text="Loading reviews..." className="py-8" />
         ) : (
-          <AdminTable headers={['Product', 'Reviewer', 'Rating', 'Review Details', 'Status', 'Actions']}>
-            {filtered.map((r) => (
-              <Tr key={r.id}>
-                <Td><span className="font-semibold text-admin-navy">{r.product}</span></Td>
-                <Td>
-                  <div>
-                    <p className="font-semibold">{r.author}</p>
-                    <p className="text-[10px] text-admin-text-sub">{r.date}</p>
-                  </div>
-                </Td>
-                <Td>
-                  <span className="flex items-center gap-0.5 font-bold text-admin-navy">
-                    {r.rating}
-                    <span className="material-symbols-outlined text-admin-gold" style={{ fontSize: '14px', fontVariationSettings: "'FILL' 1" }}>star</span>
-                  </span>
-                </Td>
-                <Td>
-                  <div className="max-w-[280px]">
-                    <p className="font-bold text-[12px] text-admin-navy">{r.title}</p>
-                    <p className="text-[11px] text-admin-text-sub leading-relaxed mt-0.5">{r.body}</p>
-                    {r.adminReply && (
-                      <div className="mt-2 pl-2.5 border-l-2 border-admin-gold text-[10px] text-admin-navy bg-admin-seafoam/40 py-1 rounded-r">
-                        <span className="font-bold">Official Response:</span> "{r.adminReply}"
-                      </div>
-                    )}
-                  </div>
-                </Td>
-                <Td><StatusBadge status={r.status} /></Td>
-                <Td>
-                  <div className="flex gap-1">
-                    {r.status === 'pending' && (
-                      <>
-                        <AdminBtn size="sm" variant="primary" icon="check" onClick={() => handleApprove(r.id)}>Approve</AdminBtn>
-                        <AdminBtn size="sm" variant="secondary" icon="close" onClick={() => handleReject(r.id, r.author)}>Reject</AdminBtn>
-                      </>
-                    )}
-                    {r.status === 'flagged' && (
-                      <AdminBtn size="sm" variant="primary" icon="check" onClick={() => handleKeep(r.id)}>Keep / Restore</AdminBtn>
-                    )}
-                    {r.status === 'published' && (
-                      <AdminBtn size="sm" variant="secondary" icon="reply" onClick={() => setReplyTarget(r)}>Reply</AdminBtn>
-                    )}
-                    <AdminBtn size="sm" variant="secondary" icon="delete" onClick={() => handleDelete(r.id, r.author)}>Delete</AdminBtn>
-                  </div>
-                </Td>
-              </Tr>
-            ))}
-          </AdminTable>
+          <>
+            <AdminTable headers={['Product', 'Reviewer', 'Rating', 'Review Details', 'Status', 'Actions']}>
+              {paginated.map((r) => (
+                <Tr key={r.id}>
+                  <Td><span className="font-semibold text-admin-navy">{r.product}</span></Td>
+                  <Td>
+                    <div>
+                      <p className="font-semibold">{r.author}</p>
+                      <p className="text-[10px] text-admin-text-sub">{r.date}</p>
+                    </div>
+                  </Td>
+                  <Td>
+                    <span className="flex items-center gap-0.5 font-bold text-admin-navy">
+                      {r.rating}
+                      <span className="material-symbols-outlined text-admin-gold" style={{ fontSize: '14px', fontVariationSettings: "'FILL' 1" }}>star</span>
+                    </span>
+                  </Td>
+                  <Td>
+                    <div className="max-w-[280px]">
+                      <p className="font-bold text-[12px] text-admin-navy">{r.title}</p>
+                      <p className="text-[11px] text-admin-text-sub leading-relaxed mt-0.5">{r.body}</p>
+                      {r.adminReply && (
+                        <div className="mt-2 pl-2.5 border-l-2 border-admin-gold text-[10px] text-admin-navy bg-admin-seafoam/40 py-1 rounded-r">
+                          <span className="font-bold">Official Response:</span> "{r.adminReply}"
+                        </div>
+                      )}
+                    </div>
+                  </Td>
+                  <Td><StatusBadge status={r.status} /></Td>
+                  <Td>
+                    <div className="flex gap-1">
+                      {r.status === 'pending' && (
+                        <>
+                          <AdminBtn size="sm" variant="primary" icon="check" onClick={() => handleApprove(r.id)}>Approve</AdminBtn>
+                          <AdminBtn size="sm" variant="secondary" icon="close" onClick={() => handleReject(r.id, r.author)}>Reject</AdminBtn>
+                        </>
+                      )}
+                      {r.status === 'flagged' && (
+                        <AdminBtn size="sm" variant="primary" icon="check" onClick={() => handleKeep(r.id)}>Keep / Restore</AdminBtn>
+                      )}
+                      {r.status === 'published' && (
+                        <AdminBtn size="sm" variant="secondary" icon="reply" onClick={() => setReplyTarget(r)}>Reply</AdminBtn>
+                      )}
+                      <AdminBtn size="sm" variant="secondary" icon="delete" onClick={() => handleDelete(r.id, r.author)}>Delete</AdminBtn>
+                    </div>
+                  </Td>
+                </Tr>
+              ))}
+            </AdminTable>
+            <Pagination
+              currentPage={currentPage}
+              totalItems={filtered.length}
+              itemsPerPage={10}
+              onPageChange={setCurrentPage}
+            />
+          </>
         )}
       </AdminCard>
     </AdminPage>

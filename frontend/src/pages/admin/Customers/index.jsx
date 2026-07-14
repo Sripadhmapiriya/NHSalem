@@ -13,6 +13,7 @@ import {
   FilterBar,
   formatCurrency,
   formatDate,
+  Pagination,
 } from '@/admin/AdminUI'
 import { SeafoodLoader } from '@/components/ui'
 
@@ -21,6 +22,7 @@ export default function AdminCustomers() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
     async function loadCustomers() {
@@ -38,6 +40,11 @@ export default function AdminCustomers() {
     loadCustomers()
   }, [])
 
+  // Reset to first page on search or filter change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [search, statusFilter])
+
   const filtered = customers.filter((c) => {
     const matchSearch =
       !search ||
@@ -47,6 +54,9 @@ export default function AdminCustomers() {
     const matchStatus = statusFilter === 'all' || c.status === statusFilter
     return matchSearch && matchStatus
   })
+
+  // Paginate customers
+  const paginated = filtered.slice((currentPage - 1) * 10, currentPage * 10)
 
   const totalCustomers = customers.length
   const activeCount = customers.filter((c) => c.status === 'active').length
@@ -93,27 +103,35 @@ export default function AdminCustomers() {
         {loading ? (
           <SeafoodLoader text="Loading customers..." className="py-8" />
         ) : (
-          <AdminTable headers={['Customer', 'City', 'Orders', 'Total Spent', 'Joined', 'Last Order', 'Status']}>
-            {filtered.map((c) => (
-              <Tr key={c.id}>
-                <Td>
-                  <div className="flex items-center gap-2.5">
-                    <Avatar name={c.name} />
-                    <div>
-                      <p className="font-semibold text-admin-navy">{c.name}</p>
-                      <p className="text-[11px] text-admin-text-sub">{c.email}</p>
+          <>
+            <AdminTable headers={['Customer', 'City', 'Orders', 'Total Spent', 'Joined', 'Last Order', 'Status']}>
+              {paginated.map((c) => (
+                <Tr key={c.id}>
+                  <Td>
+                    <div className="flex items-center gap-2.5">
+                      <Avatar name={c.name} />
+                      <div>
+                        <p className="font-semibold text-admin-navy">{c.name}</p>
+                        <p className="text-[11px] text-admin-text-sub">{c.email}</p>
+                      </div>
                     </div>
-                  </div>
-                </Td>
-                <Td>{c.city}</Td>
-                <Td>{c.orders}</Td>
-                <Td><span className="font-semibold">{formatCurrency(c.totalSpent)}</span></Td>
-                <Td>{formatDate(c.joinedAt)}</Td>
-                <Td>{c.lastOrder ? formatDate(c.lastOrder) : <span className="text-admin-text-sub">—</span>}</Td>
-                <Td><StatusBadge status={c.status} /></Td>
-              </Tr>
-            ))}
-          </AdminTable>
+                  </Td>
+                  <Td>{c.city}</Td>
+                  <Td>{c.orders}</Td>
+                  <Td><span className="font-semibold">{formatCurrency(c.totalSpent)}</span></Td>
+                  <Td>{formatDate(c.joinedAt)}</Td>
+                  <Td>{c.lastOrder ? formatDate(c.lastOrder) : <span className="text-admin-text-sub">—</span>}</Td>
+                  <Td><StatusBadge status={c.status} /></Td>
+                </Tr>
+              ))}
+            </AdminTable>
+            <Pagination
+              currentPage={currentPage}
+              totalItems={filtered.length}
+              itemsPerPage={10}
+              onPageChange={setCurrentPage}
+            />
+          </>
         )}
       </AdminCard>
     </AdminPage>

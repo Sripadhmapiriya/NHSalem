@@ -297,3 +297,65 @@ export function FilterBar({ options, active, onSelect, className = '' }) {
     </div>
   )
 }
+
+// ── Pagination ────────────────────────────────────────────────────────────────
+export function Pagination({ currentPage, totalItems, itemsPerPage = 10, onPageChange }) {
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+  if (totalPages <= 1) return null
+
+  // Generate range of page numbers
+  const pages = []
+  for (let i = 1; i <= totalPages; i++) {
+    pages.push(i)
+  }
+
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-4 border-t border-admin-border/40 select-none bg-white">
+      <span className="text-[12px] text-admin-text-sub font-medium">
+        Showing <span className="font-semibold text-admin-navy">{Math.min(totalItems, (currentPage - 1) * itemsPerPage + 1)}</span> to{' '}
+        <span className="font-semibold text-admin-navy">{Math.min(totalItems, currentPage * itemsPerPage)}</span> of{' '}
+        <span className="font-semibold text-admin-navy">{totalItems}</span> results
+      </span>
+      <div className="flex items-center gap-1">
+        {/* Prev Button */}
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="w-8 h-8 rounded-[8px] flex items-center justify-center border border-admin-border hover:bg-admin-seafoam text-admin-navy disabled:opacity-30 disabled:pointer-events-none transition-colors"
+          aria-label="Previous Page"
+        >
+          <span className="material-symbols-outlined leading-none" style={{ fontSize: '18px' }}>chevron_left</span>
+        </button>
+
+        {/* Page numbers */}
+        {pages.map((p) => {
+          const isActive = p === currentPage
+          return (
+            <button
+              key={p}
+              onClick={() => onPageChange(p)}
+              style={isActive ? { backgroundColor: '#0B1E3D', color: '#ffffff', borderColor: '#0B1E3D' } : {}}
+              className={`w-8 h-8 rounded-[8px] flex items-center justify-center text-[12px] font-bold border transition-colors ${
+                isActive
+                  ? 'border-transparent'
+                  : 'bg-white text-admin-text-sub border-admin-border hover:border-admin-navy/50 hover:text-admin-navy'
+              }`}
+            >
+              {p}
+            </button>
+          )
+        })}
+
+        {/* Next Button */}
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="w-8 h-8 rounded-[8px] flex items-center justify-center border border-admin-border hover:bg-admin-seafoam text-admin-navy disabled:opacity-30 disabled:pointer-events-none transition-colors"
+          aria-label="Next Page"
+        >
+          <span className="material-symbols-outlined leading-none" style={{ fontSize: '18px' }}>chevron_right</span>
+        </button>
+      </div>
+    </div>
+  )
+}

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import Badge from './Badge'
 import useCartStore from '@/store/cartStore'
 import useWishlistStore from '@/store/wishlistStore'
+import useAuthStore from '@/store/authStore'
 
 /**
  * ProductCard — Level 1 card with:
@@ -43,6 +44,22 @@ export default function ProductCard({ product }) {
   const wishlisted = isWishlisted(id)
 
   const handleAdd = () => {
+    const { user, setCartLoginPopupOpen, setPendingAction } = useAuthStore.getState()
+    if (!user) {
+      setPendingAction({
+        type: 'ADD_TO_CART',
+        payload: {
+          id,
+          name,
+          image,
+          weight: currentVariant.label,
+          price: currentVariant.price,
+          quantity: 1,
+        }
+      })
+      setCartLoginPopupOpen(true)
+      return
+    }
     addItem({
       id,
       name,

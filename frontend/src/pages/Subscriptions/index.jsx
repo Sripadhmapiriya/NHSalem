@@ -4,6 +4,7 @@ import Button from '@/components/ui/Button'
 import { ProgressStepper } from '@/components/ui/Stepper'
 import useToastStore from '@/store/toastStore'
 import useSubscriptionStore from '@/store/subscriptionStore'
+import useAuthStore from '@/store/authStore'
 import { getSubscriptionPlans, createSubscription } from '@/services/api'
 import { MOCK_SUBSCRIPTION } from '@/mock/subscriptions'
 
@@ -26,6 +27,16 @@ export default function Subscriptions() {
 
   const handleSubscribe = async () => {
     if (!selectedPlan) return
+    const { user, setCartLoginPopupOpen, setPendingAction } = useAuthStore.getState()
+    if (!user) {
+      setPendingAction({
+        type: 'SUBSCRIBE',
+        payload: { planId: selectedPlan }
+      })
+      setCartLoginPopupOpen(true)
+      return
+    }
+
     setSubscribing(true)
     const result = await createSubscription({ planId: selectedPlan })
     if (result.success) {
