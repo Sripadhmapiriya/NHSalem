@@ -601,8 +601,8 @@ export default function AdminSubscriptions() {
                       : <span className="text-admin-text-sub">—</span>}
                   </Td>
                   <Td>{formatDate(s.startedAt)}</Td>
-                  <Td>
-                    <div className="flex gap-1 flex-wrap">
+                  <Td className="whitespace-nowrap min-w-[310px]">
+                    <div className="flex items-center gap-1.5 flex-nowrap">
                       {s.status !== 'cancelled' && (
                         <AdminBtn size="sm" variant="secondary" icon="swap_vert" onClick={() => setChangePlanTarget(s)}>
                           Change Plan

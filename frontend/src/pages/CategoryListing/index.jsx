@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, memo } from 'react'
+import { useState, useEffect, useMemo, useCallback, memo, useId } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import ProductCard from '@/components/ui/ProductCard'
@@ -102,6 +102,9 @@ function FilterPanel({
 }) {
   const minPercent = (priceMin / maxPriceLimit) * 100
   const maxPercent = (priceMax / maxPriceLimit) * 100
+
+  const minInputId = useId()
+  const maxInputId = useId()
 
   const [tempMin, setTempMin] = useState(priceMin)
   const [tempMax, setTempMax] = useState(priceMax)
@@ -234,10 +237,16 @@ function FilterPanel({
           <div className="px-1.5 pt-2">
             {/* Numeric Inputs */}
             <div className="flex items-center gap-2 mb-6">
-              <div className="flex-1 min-w-0 flex items-center gap-1 pl-3 pr-2 py-1.5 bg-surface-container-low border border-outline-variant rounded-full">
-                <span className="text-[11px] font-bold text-outline uppercase tracking-wider flex-shrink-0">Min</span>
+              <div
+                onClick={() => document.getElementById(minInputId)?.focus()}
+                className="flex-1 min-w-0 flex items-center gap-1 pl-3 pr-2 py-1.5 bg-surface-container-low border border-outline-variant rounded-full cursor-text"
+              >
+                <label htmlFor={minInputId} className="text-[11px] font-bold text-outline uppercase tracking-wider flex-shrink-0 cursor-pointer select-none">Min</label>
                 <input
+                  id={minInputId}
                   type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={tempMin}
                   onChange={(e) => {
                     const val = e.target.value.replace(/\D/g, '')
@@ -253,10 +262,16 @@ function FilterPanel({
                 />
               </div>
               <span className="text-outline text-label-md flex-shrink-0">—</span>
-              <div className="flex-1 min-w-0 flex items-center gap-1 pl-3 pr-2 py-1.5 bg-surface-container-low border border-outline-variant rounded-full">
-                <span className="text-[11px] font-bold text-outline uppercase tracking-wider flex-shrink-0">Max</span>
+              <div
+                onClick={() => document.getElementById(maxInputId)?.focus()}
+                className="flex-1 min-w-0 flex items-center gap-1 pl-3 pr-2 py-1.5 bg-surface-container-low border border-outline-variant rounded-full cursor-text"
+              >
+                <label htmlFor={maxInputId} className="text-[11px] font-bold text-outline uppercase tracking-wider flex-shrink-0 cursor-pointer select-none">Max</label>
                 <input
+                  id={maxInputId}
                   type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={tempMax}
                   onChange={(e) => {
                     const val = e.target.value.replace(/\D/g, '')
