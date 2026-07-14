@@ -1,7 +1,7 @@
 import { useCartStore } from '@/store/cartStore'
 import useAuthStore from '@/store/authStore'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000'
+const API_URL = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && window.location.hostname !== 'localhost' ? '' : 'http://localhost:4000')
 
 function getHeaders(authRequired = false) {
   const headers = {
@@ -32,7 +32,7 @@ export async function getProducts(opts = {}) {
   if (opts.category) params.append('category', opts.category)
   if (opts.search) params.append('search', opts.search)
   if (opts.sort) params.append('sort', opts.sort)
-  
+
   if (opts.filters) {
     const { badges, minPrice, maxPrice } = opts.filters
     if (badges?.length) params.append('badges', badges.join(','))
