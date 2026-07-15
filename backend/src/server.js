@@ -26,6 +26,7 @@ import recipeRoutes from './routes/recipes.routes.js'
 import storeLocatorRoutes from './routes/storeLocator.routes.js'
 import faqRoutes from './routes/faqs.routes.js'
 import newsletterRoutes from './routes/newsletter.routes.js'
+import addressRoutes from './routes/addresses.routes.js'
 
 dotenv.config()
 
@@ -84,6 +85,7 @@ app.use('/api', recipeRoutes) // handles /recipes and /admin/recipes
 app.use('/api', storeLocatorRoutes) // handles /cities and /admin/cities
 app.use('/api/faqs', faqRoutes) // handles /faqs
 app.use('/api/newsletter', newsletterRoutes) // handles /newsletter
+app.use('/api/addresses', addressRoutes) // handles /addresses
 app.use('/api/admin/reviews', productRoutes) // we can mount review admin paths or put them in productRoutes
 
 // 3. Centralized error handling
@@ -112,6 +114,23 @@ app.listen(PORT, async () => {
       ADD COLUMN IF NOT EXISTS razorpay_order_id VARCHAR(100),
       ADD COLUMN IF NOT EXISTS razorpay_payment_id VARCHAR(100),
       ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) DEFAULT 'pending';
+    `);
+
+    // Create user_addresses table if not exists
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS user_addresses (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        label VARCHAR(50) DEFAULT 'Home',
+        name VARCHAR(100) NOT NULL,
+        phone VARCHAR(15) NOT NULL,
+        pincode VARCHAR(10) NOT NULL,
+        line1 TEXT NOT NULL,
+        city VARCHAR(100) NOT NULL,
+        state VARCHAR(100) NOT NULL,
+        is_default BOOLEAN DEFAULT false,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
     `);
 
     // Add unique constraints to users table

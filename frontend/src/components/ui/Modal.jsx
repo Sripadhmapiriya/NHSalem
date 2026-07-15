@@ -13,6 +13,7 @@ export default function Modal({
   size = 'md',
   showClose = true,
   id,
+  noScroll = false,
 }) {
   const panelRef = useRef(null)
   const prevFocusRef = useRef(null)
@@ -88,7 +89,7 @@ export default function Modal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 16 }}
             transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-            className={`relative bg-white rounded-[28px] shadow-stat w-full ${sizeMap[size]} max-h-[90vh] overflow-y-auto`}
+            className={`relative bg-white rounded-[28px] shadow-stat w-full ${sizeMap[size]} ${noScroll ? '' : 'max-h-[90vh] overflow-y-auto'}`}
           >
             {/* Header */}
             {(title || showClose) && (

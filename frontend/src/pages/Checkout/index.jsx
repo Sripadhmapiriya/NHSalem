@@ -10,7 +10,7 @@ import Input from '@/components/ui/Input'
 import useCart from '@/store/cartStore'
 import useToastStore from '@/store/toastStore'
 import useAuthStore from '@/store/authStore'
-import { placeOrder } from '@/services/api'
+import { placeOrder, getUserAddresses, createUserAddress } from '@/services/api'
 import useRazorpay from '@/hooks/useRazorpay'
 
 const CHECKOUT_STEPS = [
@@ -19,8 +19,6 @@ const CHECKOUT_STEPS = [
   { id: 'payment', label: 'Payment', icon: 'payment' },
   { id: 'summary', label: 'Order Summary', icon: 'receipt' },
 ]
-
-
 
 const DELIVERY_SLOTS = ['7–9 AM', '9–11 AM', '11 AM–1 PM', '5–7 PM', '7–9 PM']
 
@@ -40,7 +38,6 @@ const addressSchema = z.object({
   state: z.string().min(2, 'Enter your state'),
 })
 
-
 export default function Checkout() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
@@ -59,10 +56,80 @@ export default function Checkout() {
   const [selectedPayment, setSelectedPayment] = useState(null)
   const [placingOrder, setPlacingOrder] = useState(false)
 
+  // Address management state
+  const [savedAddresses, setSavedAddresses] = useState([])
+  const [loadingAddresses, setLoadingAddresses] = useState(true)
+  const [selectedAddressId, setSelectedAddressId] = useState(null)
+  const [addingNewAddress, setAddingNewAddress] = useState(false)
+  const [chosenAddress, setChosenAddress] = useState(null) // the address object used for the order
+
   const addressForm = useForm({ resolver: zodResolver(addressSchema) })
 
-  const handleNextFromAddress = () => {
+  // Fetch saved addresses on mount
+  useEffect(() => {
+    async function fetchAddresses() {
+      try {
+        const res = await getUserAddresses()
+        if (res.success && res.addresses.length > 0) {
+          setSavedAddresses(res.addresses)
+          // Auto-select the default address
+          const defaultAddr = res.addresses.find(a => a.is_default) || res.addresses[0]
+          setSelectedAddressId(defaultAddr.id)
+          setChosenAddress(defaultAddr)
+          setAddingNewAddress(false)
+        } else {
+          // No saved addresses — show the new address form
+          setSavedAddresses([])
+          setAddingNewAddress(true)
+        }
+      } catch (err) {
+        console.error('Failed to fetch addresses:', err)
+        setAddingNewAddress(true)
+      } finally {
+        setLoadingAddresses(false)
+      }
+    }
+    if (user) {
+      fetchAddresses()
+    }
+  }, [user])
+
+  const handleSelectSavedAddress = (addr) => {
+    setSelectedAddressId(addr.id)
+    setChosenAddress(addr)
+    setAddingNewAddress(false)
+  }
+
+  const handleNextFromAddress = async (formData) => {
+    if (addingNewAddress) {
+      // Save the new address to the backend
+      try {
+        const res = await createUserAddress(formData)
+        if (res.success) {
+          setChosenAddress(res.address)
+          setSavedAddresses(prev => [...prev, res.address])
+          setSelectedAddressId(res.address.id)
+          addToast({ message: '📍 Address saved for future orders!', type: 'success' })
+        }
+      } catch (err) {
+        console.error('Failed to save address:', err)
+        // Still proceed — use form data as the address
+        setChosenAddress(formData)
+      }
+    }
     setStep('slot')
+  }
+
+  const handleContinueAddress = () => {
+    if (addingNewAddress) {
+      // Validate form, then call handleNextFromAddress with form data
+      addressForm.handleSubmit(handleNextFromAddress)()
+    } else if (chosenAddress) {
+      // Using a saved address — go directly
+      setStep('slot')
+    } else {
+      addToast({ message: 'Please select or add a delivery address', type: 'warning' })
+    }
   }
 
   const handleNextFromSlot = () => {
@@ -84,7 +151,7 @@ export default function Checkout() {
   const { initiatePayment, loading: paymentLoading } = useRazorpay()
 
   const handlePlaceOrder = async () => {
-    const orderAddress = addressForm.getValues()
+    const orderAddress = chosenAddress || addressForm.getValues()
     const addressString = orderAddress 
       ? `${orderAddress.line1 || ''}, ${orderAddress.city || ''}, ${orderAddress.state || ''}`.trim()
       : ''
@@ -173,20 +240,95 @@ export default function Checkout() {
                   transition={{ duration: 0.2 }}
                   className="space-y-4"
                 >
-                  <h2 className="text-headline-sm text-on-surface">Enter Delivery Address</h2>
+                  <h2 className="text-headline-sm text-on-surface">Delivery Address</h2>
 
-                  <div className="bg-white rounded-[20px] shadow-card p-6 space-y-4">
-                    <Input label="Full Name" id="new-name" required {...addressForm.register('name')} error={addressForm.formState.errors.name?.message} />
-                    <Input label="Mobile Number" id="new-phone" type="tel" required {...addressForm.register('phone')} error={addressForm.formState.errors.phone?.message} />
-                    <Input label="Pincode" id="new-pincode" required {...addressForm.register('pincode')} error={addressForm.formState.errors.pincode?.message} />
-                    <Input label="Address Line 1" id="new-line1" required {...addressForm.register('line1')} error={addressForm.formState.errors.line1?.message} />
-                    <div className="grid grid-cols-2 gap-4">
-                      <Input label="City" id="new-city" required {...addressForm.register('city')} error={addressForm.formState.errors.city?.message} />
-                      <Input label="State" id="new-state" required {...addressForm.register('state')} error={addressForm.formState.errors.state?.message} />
+                  {loadingAddresses ? (
+                    <div className="bg-white rounded-[20px] shadow-card p-8 flex items-center justify-center">
+                      <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full" />
+                      <span className="ml-3 text-body-md text-on-surface-variant">Loading saved addresses…</span>
                     </div>
-                  </div>
+                  ) : (
+                    <>
+                      {/* Saved addresses list */}
+                      {savedAddresses.length > 0 && (
+                        <div className="space-y-3">
+                          {savedAddresses.map((addr) => (
+                            <label
+                              key={addr.id}
+                              htmlFor={`addr-${addr.id}`}
+                              className={`flex items-start gap-4 bg-white rounded-[20px] shadow-card p-5 cursor-pointer border-2 transition-all ${
+                                selectedAddressId === addr.id && !addingNewAddress
+                                  ? 'border-primary'
+                                  : 'border-transparent hover:border-outline-variant'
+                              }`}
+                              onClick={() => handleSelectSavedAddress(addr)}
+                            >
+                              <input
+                                type="radio"
+                                id={`addr-${addr.id}`}
+                                name="address"
+                                checked={selectedAddressId === addr.id && !addingNewAddress}
+                                onChange={() => handleSelectSavedAddress(addr)}
+                                className="mt-1 accent-primary"
+                              />
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-0.5">
+                                  <span className="text-label-md font-bold text-on-surface">{addr.name}</span>
+                                  <span className="px-2 py-0.5 bg-surface-container rounded-full text-label-sm text-on-surface-variant">
+                                    {addr.label || 'Home'}
+                                  </span>
+                                  {addr.is_default && (
+                                    <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-full text-label-sm font-semibold">
+                                      Default
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-body-md text-on-surface-variant">{addr.line1}, {addr.city}, {addr.state} — {addr.pincode}</p>
+                                <p className="text-label-sm text-on-surface-variant mt-0.5">{addr.phone}</p>
+                              </div>
+                            </label>
+                          ))}
+                        </div>
+                      )}
 
-                  <Button variant="primary" className="w-full" onClick={addressForm.handleSubmit(handleNextFromAddress)}>
+                      {/* Add new address toggle */}
+                      <button
+                        onClick={() => { setAddingNewAddress(true); setSelectedAddressId(null); setChosenAddress(null) }}
+                        className={`w-full flex items-center gap-4 bg-white rounded-[20px] p-5 border-2 border-dashed transition-all ${
+                          addingNewAddress ? 'border-primary bg-primary/5' : 'border-outline-variant hover:border-primary'
+                        }`}
+                      >
+                        <span className="material-symbols-outlined text-primary" style={{ fontSize: '24px' }} aria-hidden="true">add_location</span>
+                        <span className="text-label-md font-semibold text-primary">Add New Address</span>
+                      </button>
+
+                      {/* New address form */}
+                      <AnimatePresence>
+                        {addingNewAddress && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.25 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="bg-white rounded-[20px] shadow-card p-6 space-y-4">
+                              <Input label="Full Name" id="new-name" required {...addressForm.register('name')} error={addressForm.formState.errors.name?.message} />
+                              <Input label="Mobile Number" id="new-phone" type="tel" required {...addressForm.register('phone')} error={addressForm.formState.errors.phone?.message} />
+                              <Input label="Pincode" id="new-pincode" required {...addressForm.register('pincode')} error={addressForm.formState.errors.pincode?.message} />
+                              <Input label="Address Line 1" id="new-line1" required {...addressForm.register('line1')} error={addressForm.formState.errors.line1?.message} />
+                              <div className="grid grid-cols-2 gap-4">
+                                <Input label="City" id="new-city" required {...addressForm.register('city')} error={addressForm.formState.errors.city?.message} />
+                                <Input label="State" id="new-state" required {...addressForm.register('state')} error={addressForm.formState.errors.state?.message} />
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </>
+                  )}
+
+                  <Button variant="primary" className="w-full" onClick={handleContinueAddress}>
                     Continue to Delivery Slot
                   </Button>
                 </motion.div>
@@ -266,7 +408,6 @@ export default function Checkout() {
                           <p className="text-label-sm text-on-surface-variant">{method.description}</p>
                         </div>
                       </label>
-
                     </div>
                   ))}
                   <div className="flex gap-3">
@@ -307,8 +448,8 @@ export default function Checkout() {
                     <div className="flex gap-3">
                       <span className="material-symbols-outlined text-primary" style={{ fontSize: '20px' }} aria-hidden="true">location_on</span>
                       <div>
-                        <p className="font-semibold text-on-surface">{addressForm.getValues('name')}</p>
-                        <p className="text-on-surface-variant">{addressForm.getValues('line1')}, {addressForm.getValues('city')} {addressForm.getValues('pincode')}</p>
+                        <p className="font-semibold text-on-surface">{chosenAddress?.name}</p>
+                        <p className="text-on-surface-variant">{chosenAddress?.line1}, {chosenAddress?.city} {chosenAddress?.pincode}</p>
                       </div>
                     </div>
                     <div className="flex gap-3">

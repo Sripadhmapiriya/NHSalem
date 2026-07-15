@@ -92,21 +92,21 @@ function EmailForm({ onSuccess }) {
     `flex-1 bg-transparent text-sm font-medium text-on-surface placeholder:text-outline/70 focus:outline-none disabled:opacity-60 ${hasError ? 'text-red-700' : ''}`
 
   const wrapCls = (hasError) =>
-    `flex items-center gap-3 px-4 py-3.5 rounded-full border bg-surface-container-low transition-all duration-150 ${
+    `flex items-center gap-3 px-4 py-2 rounded-full border bg-surface-container-low transition-all duration-150 ${
       hasError
         ? 'border-red-400 ring-2 ring-red-400/20'
         : 'border-outline-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15'
     }`
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-3">
       {/* Email */}
       <div>
-        <label htmlFor="email-login-email" className="block text-label-md font-semibold text-on-surface mb-1.5">
+        <label htmlFor="email-login-email" className="block text-[12px] font-bold text-on-surface mb-1">
           Email Address <span className="text-red-500">*</span>
         </label>
         <div className={wrapCls(!!errors.email)}>
-          <span className="material-symbols-outlined text-outline flex-shrink-0 leading-none" style={{ fontSize: '18px' }}>
+          <span className="material-symbols-outlined text-outline flex-shrink-0 leading-none" style={{ fontSize: '16px' }}>
             alternate_email
           </span>
           <input
@@ -124,16 +124,16 @@ function EmailForm({ onSuccess }) {
 
       {/* Password */}
       <div>
-        <div className="flex items-center justify-between mb-1.5">
-          <label htmlFor="email-login-password" className="text-label-md font-semibold text-on-surface">
+        <div className="flex items-center justify-between mb-1">
+          <label htmlFor="email-login-password" className="text-[12px] font-bold text-on-surface">
             Password <span className="text-red-500">*</span>
           </label>
-          <a href="/help" className="text-label-sm text-primary hover:underline">
+          <a href="/help" className="text-[11px] text-primary hover:underline">
             Forgot password?
           </a>
         </div>
         <div className={wrapCls(!!errors.password)}>
-          <span className="material-symbols-outlined text-outline flex-shrink-0 leading-none" style={{ fontSize: '18px' }}>
+          <span className="material-symbols-outlined text-outline flex-shrink-0 leading-none" style={{ fontSize: '16px' }}>
             lock
           </span>
           <input
@@ -151,7 +151,7 @@ function EmailForm({ onSuccess }) {
             aria-label={showPassword ? 'Hide password' : 'Show password'}
             className="text-outline hover:text-on-surface transition-colors flex-shrink-0"
           >
-            <span className="material-symbols-outlined leading-none" style={{ fontSize: '18px' }}>
+            <span className="material-symbols-outlined leading-none" style={{ fontSize: '16px' }}>
               {showPassword ? 'visibility_off' : 'visibility'}
             </span>
           </button>
@@ -166,10 +166,10 @@ function EmailForm({ onSuccess }) {
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
-            className="flex items-start gap-2.5 px-4 py-3 rounded-[12px] bg-red-50 border border-red-200"
+            className="flex items-start gap-2.5 px-3 py-2 rounded-[12px] bg-red-50 border border-red-200"
           >
-            <span className="material-symbols-outlined text-red-500 flex-shrink-0 mt-0.5" style={{ fontSize: '16px' }}>warning</span>
-            <p className="text-[12px] font-medium text-red-700 leading-snug">{serverError}</p>
+            <span className="material-symbols-outlined text-red-500 flex-shrink-0 mt-0.5" style={{ fontSize: '14px' }}>warning</span>
+            <p className="text-[11px] font-medium text-red-700 leading-snug">{serverError}</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -178,8 +178,8 @@ function EmailForm({ onSuccess }) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-full font-bold text-sm text-white tracking-wide transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:opacity-70 disabled:cursor-not-allowed"
-        style={{ background: 'linear-gradient(135deg, #0B4F3C, #0f6b52)', boxShadow: '0 4px 20px rgba(11,79,60,0.35)' }}
+        className="w-full flex items-center justify-center gap-2 py-2.5 px-6 rounded-full font-bold text-sm text-white tracking-wide transition-all duration-200 bg-primary hover:bg-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:opacity-70 disabled:cursor-not-allowed"
+        style={{ boxShadow: '0 2px 10px rgba(0,5,22,0.2)' }}
       >
         {loading ? (
           <>
@@ -189,13 +189,13 @@ function EmailForm({ onSuccess }) {
         ) : (
           <>
             Sign In with Email
-            <span className="material-symbols-outlined leading-none" style={{ fontSize: '16px' }}>arrow_forward</span>
+            <span className="material-symbols-outlined leading-none" style={{ fontSize: '14px' }}>arrow_forward</span>
           </>
         )}
       </button>
 
       {/* Demo hint */}
-      <p className="text-center text-[11px] text-on-surface-variant bg-surface-container-low rounded-[10px] p-2.5">
+      <p className="text-center text-[11px] text-on-surface-variant bg-surface-container-low rounded-[10px] py-1.5 px-2.5">
         <span className="font-semibold">Demo:</span> user@nhsalem.com / password123
       </p>
     </form>
@@ -234,21 +234,21 @@ function PhoneForm({ onSuccess }) {
     `flex-1 bg-transparent text-sm font-medium text-on-surface placeholder:text-outline/70 focus:outline-none disabled:opacity-60 ${hasError ? 'text-red-700' : ''}`
 
   const wrapCls = (hasError) =>
-    `flex items-center gap-3 px-4 py-3.5 rounded-full border bg-surface-container-low transition-all duration-150 ${
+    `flex items-center gap-3 px-4 py-2 rounded-full border bg-surface-container-low transition-all duration-150 ${
       hasError
         ? 'border-red-400 ring-2 ring-red-400/20'
         : 'border-outline-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15'
     }`
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-3">
       {/* Phone */}
       <div>
-        <label htmlFor="phone-login-phone" className="block text-label-md font-semibold text-on-surface mb-1.5">
+        <label htmlFor="phone-login-phone" className="block text-[12px] font-bold text-on-surface mb-1">
           Mobile Number <span className="text-red-500">*</span>
         </label>
         <div className={wrapCls(!!errors.phone)}>
-          <span className="flex items-center px-2 border-r border-outline-variant text-sm text-on-surface-variant flex-shrink-0 mr-1">
+          <span className="flex items-center px-2 border-r border-outline-variant text-sm text-on-surface-variant flex-shrink-0 mr-1 leading-none">
             +91
           </span>
           <input
@@ -272,16 +272,16 @@ function PhoneForm({ onSuccess }) {
 
       {/* Password */}
       <div>
-        <div className="flex items-center justify-between mb-1.5">
-          <label htmlFor="phone-login-password" className="text-label-md font-semibold text-on-surface">
+        <div className="flex items-center justify-between mb-1">
+          <label htmlFor="phone-login-password" className="text-[12px] font-bold text-on-surface">
             Password <span className="text-red-500">*</span>
           </label>
-          <a href="/help" className="text-label-sm text-primary hover:underline">
+          <a href="/help" className="text-[11px] text-primary hover:underline">
             Forgot password?
           </a>
         </div>
         <div className={wrapCls(!!errors.password)}>
-          <span className="material-symbols-outlined text-outline flex-shrink-0 leading-none" style={{ fontSize: '18px' }}>
+          <span className="material-symbols-outlined text-outline flex-shrink-0 leading-none" style={{ fontSize: '16px' }}>
             lock
           </span>
           <input
@@ -299,7 +299,7 @@ function PhoneForm({ onSuccess }) {
             aria-label={showPassword ? 'Hide password' : 'Show password'}
             className="text-outline hover:text-on-surface transition-colors flex-shrink-0"
           >
-            <span className="material-symbols-outlined leading-none" style={{ fontSize: '18px' }}>
+            <span className="material-symbols-outlined leading-none" style={{ fontSize: '16px' }}>
               {showPassword ? 'visibility_off' : 'visibility'}
             </span>
           </button>
@@ -314,10 +314,10 @@ function PhoneForm({ onSuccess }) {
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
-            className="flex items-start gap-2.5 px-4 py-3 rounded-[12px] bg-red-50 border border-red-200"
+            className="flex items-start gap-2.5 px-3 py-2 rounded-[12px] bg-red-50 border border-red-200"
           >
-            <span className="material-symbols-outlined text-red-500 flex-shrink-0 mt-0.5" style={{ fontSize: '16px' }}>warning</span>
-            <p className="text-[12px] font-medium text-red-700 leading-snug">{serverError}</p>
+            <span className="material-symbols-outlined text-red-500 flex-shrink-0 mt-0.5" style={{ fontSize: '14px' }}>warning</span>
+            <p className="text-[11px] font-medium text-red-700 leading-snug">{serverError}</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -326,8 +326,8 @@ function PhoneForm({ onSuccess }) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-full font-bold text-sm text-white tracking-wide transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:opacity-70 disabled:cursor-not-allowed"
-        style={{ background: 'linear-gradient(135deg, #0B4F3C, #0f6b52)', boxShadow: '0 4px 20px rgba(11,79,60,0.35)' }}
+        className="w-full flex items-center justify-center gap-2 py-2.5 px-6 rounded-full font-bold text-sm text-white tracking-wide transition-all duration-200 bg-primary hover:bg-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:opacity-70 disabled:cursor-not-allowed"
+        style={{ boxShadow: '0 2px 10px rgba(0,5,22,0.2)' }}
       >
         {loading ? (
           <>
@@ -337,13 +337,13 @@ function PhoneForm({ onSuccess }) {
         ) : (
           <>
             Sign In with Phone
-            <span className="material-symbols-outlined leading-none" style={{ fontSize: '16px' }}>arrow_forward</span>
+            <span className="material-symbols-outlined leading-none" style={{ fontSize: '14px' }}>arrow_forward</span>
           </>
         )}
       </button>
 
       {/* Demo hint */}
-      <p className="text-center text-[11px] text-on-surface-variant bg-surface-container-low rounded-[10px] p-2.5">
+      <p className="text-center text-[11px] text-on-surface-variant bg-surface-container-low rounded-[10px] py-1.5 px-2.5">
         <span className="font-semibold">Demo:</span> phone 9876543210 / password123
       </p>
     </form>
@@ -389,21 +389,21 @@ function RegisterForm({ onSuccess }) {
     `flex-1 bg-transparent text-sm font-medium text-on-surface placeholder:text-outline/70 focus:outline-none disabled:opacity-60 ${hasError ? 'text-red-700' : ''}`
 
   const wrapCls = (hasError) =>
-    `flex items-center gap-3 px-4 py-3 rounded-full border bg-surface-container-low transition-all duration-150 ${
+    `flex items-center gap-3 px-4 py-2 rounded-full border bg-surface-container-low transition-all duration-150 ${
       hasError
         ? 'border-red-400 ring-2 ring-red-400/20'
         : 'border-outline-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15'
     }`
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-3">
       {/* Full Name */}
       <div>
-        <label htmlFor="reg-name" className="block text-label-md font-semibold text-on-surface mb-1">
+        <label htmlFor="reg-name" className="block text-[12px] font-bold text-on-surface mb-1">
           Full Name <span className="text-red-500">*</span>
         </label>
         <div className={wrapCls(!!errors.name)}>
-          <span className="material-symbols-outlined text-outline flex-shrink-0 leading-none" style={{ fontSize: '18px' }}>
+          <span className="material-symbols-outlined text-outline flex-shrink-0 leading-none" style={{ fontSize: '16px' }}>
             person
           </span>
           <input
@@ -420,11 +420,11 @@ function RegisterForm({ onSuccess }) {
 
       {/* Email */}
       <div>
-        <label htmlFor="reg-email" className="block text-label-md font-semibold text-on-surface mb-1">
+        <label htmlFor="reg-email" className="block text-[12px] font-bold text-on-surface mb-1">
           Email Address <span className="text-red-500">*</span>
         </label>
         <div className={wrapCls(!!errors.email)}>
-          <span className="material-symbols-outlined text-outline flex-shrink-0 leading-none" style={{ fontSize: '18px' }}>
+          <span className="material-symbols-outlined text-outline flex-shrink-0 leading-none" style={{ fontSize: '16px' }}>
             alternate_email
           </span>
           <input
@@ -441,11 +441,11 @@ function RegisterForm({ onSuccess }) {
 
       {/* Phone */}
       <div>
-        <label htmlFor="reg-phone" className="block text-label-md font-semibold text-on-surface mb-1">
+        <label htmlFor="reg-phone" className="block text-[12px] font-bold text-on-surface mb-1">
           Mobile Number <span className="text-red-500">*</span>
         </label>
         <div className={wrapCls(!!errors.phone)}>
-          <span className="flex items-center px-2 border-r border-outline-variant text-sm text-on-surface-variant flex-shrink-0 mr-1">
+          <span className="flex items-center px-2 border-r border-outline-variant text-sm text-on-surface-variant flex-shrink-0 mr-1 leading-none">
             +91
           </span>
           <input
@@ -468,11 +468,11 @@ function RegisterForm({ onSuccess }) {
 
       {/* Password */}
       <div>
-        <label htmlFor="reg-password" className="block text-label-md font-semibold text-on-surface mb-1">
+        <label htmlFor="reg-password" className="block text-[12px] font-bold text-on-surface mb-1">
           Password <span className="text-red-500">*</span>
         </label>
         <div className={wrapCls(!!errors.password)}>
-          <span className="material-symbols-outlined text-outline flex-shrink-0 leading-none" style={{ fontSize: '18px' }}>
+          <span className="material-symbols-outlined text-outline flex-shrink-0 leading-none" style={{ fontSize: '16px' }}>
             lock
           </span>
           <input
@@ -488,7 +488,7 @@ function RegisterForm({ onSuccess }) {
             onClick={() => setShowPassword((v) => !v)}
             className="text-outline hover:text-on-surface transition-colors flex-shrink-0"
           >
-            <span className="material-symbols-outlined leading-none" style={{ fontSize: '18px' }}>
+            <span className="material-symbols-outlined leading-none" style={{ fontSize: '16px' }}>
               {showPassword ? 'visibility_off' : 'visibility'}
             </span>
           </button>
@@ -498,11 +498,11 @@ function RegisterForm({ onSuccess }) {
 
       {/* Confirm Password */}
       <div>
-        <label htmlFor="reg-confirm-password" className="block text-label-md font-semibold text-on-surface mb-1">
+        <label htmlFor="reg-confirm-password" className="block text-[12px] font-bold text-on-surface mb-1">
           Confirm Password <span className="text-red-500">*</span>
         </label>
         <div className={wrapCls(!!errors.confirmPassword)}>
-          <span className="material-symbols-outlined text-outline flex-shrink-0 leading-none" style={{ fontSize: '18px' }}>
+          <span className="material-symbols-outlined text-outline flex-shrink-0 leading-none" style={{ fontSize: '16px' }}>
             lock_reset
           </span>
           <input
@@ -518,7 +518,7 @@ function RegisterForm({ onSuccess }) {
             onClick={() => setShowConfirmPassword((v) => !v)}
             className="text-outline hover:text-on-surface transition-colors flex-shrink-0"
           >
-            <span className="material-symbols-outlined leading-none" style={{ fontSize: '18px' }}>
+            <span className="material-symbols-outlined leading-none" style={{ fontSize: '16px' }}>
               {showConfirmPassword ? 'visibility_off' : 'visibility'}
             </span>
           </button>
@@ -533,10 +533,10 @@ function RegisterForm({ onSuccess }) {
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
-            className="flex items-start gap-2.5 px-4 py-3 rounded-[12px] bg-red-50 border border-red-200"
+            className="flex items-start gap-2.5 px-3 py-2 rounded-[12px] bg-red-50 border border-red-200"
           >
-            <span className="material-symbols-outlined text-red-500 flex-shrink-0 mt-0.5" style={{ fontSize: '16px' }}>warning</span>
-            <p className="text-[12px] font-medium text-red-700 leading-snug">{serverError}</p>
+            <span className="material-symbols-outlined text-red-500 flex-shrink-0 mt-0.5" style={{ fontSize: '14px' }}>warning</span>
+            <p className="text-[11px] font-medium text-red-700 leading-snug">{serverError}</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -545,8 +545,8 @@ function RegisterForm({ onSuccess }) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-full font-bold text-sm text-white tracking-wide transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:opacity-70 disabled:cursor-not-allowed"
-        style={{ background: 'linear-gradient(135deg, #0B4F3C, #0f6b52)', boxShadow: '0 4px 20px rgba(11,79,60,0.35)' }}
+        className="w-full flex items-center justify-center gap-2 py-2.5 px-6 rounded-full font-bold text-sm text-white tracking-wide transition-all duration-200 bg-primary hover:bg-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:opacity-70 disabled:cursor-not-allowed"
+        style={{ boxShadow: '0 2px 10px rgba(0,5,22,0.2)' }}
       >
         {loading ? (
           <>
@@ -556,7 +556,7 @@ function RegisterForm({ onSuccess }) {
         ) : (
           <>
             Register & Sign In
-            <span className="material-symbols-outlined leading-none" style={{ fontSize: '16px' }}>arrow_forward</span>
+            <span className="material-symbols-outlined leading-none" style={{ fontSize: '14px' }}>arrow_forward</span>
           </>
         )}
       </button>
@@ -598,82 +598,87 @@ export default function LoginPage({ isModal = false, onSuccess }) {
   }
 
   const content = (
-    <div className="space-y-6">
-      <div className="text-center mb-2">
+    <div className="px-2 py-1">
+      <div className="flex justify-center mb-4 -mt-4">
         <img
           src="/crest.png"
           alt="NH Salem Sea Foods Logo"
-          className="w-16 h-16 object-contain mx-auto mb-4"
+          className="w-12 h-12 object-contain"
         />
-        {!isModal && (
-          <>
-            <h1 className="font-serif text-3xl font-extrabold text-primary tracking-tight">NH Salem</h1>
-            <span className="mt-1 text-[10px] font-bold tracking-[0.22em] uppercase text-on-surface-variant block">
-              Sea Foods
-            </span>
-            <p className="text-body-md text-on-surface-variant mt-3">
-              {mode === 'login' 
-                ? 'Sign in to track orders, manage subscriptions, and get catch updates.'
-                : 'Create an account to start ordering fresh seafood catches.'
-              }
-            </p>
-          </>
-        )}
       </div>
+
+      <h2 className="text-xl font-bold text-center text-gray-900 mb-1">
+        Welcome to NH Salem
+      </h2>
+      <p className="text-sm text-center text-gray-500 mb-5">
+        {mode === 'login' ? 'Sign in to continue' : 'Create an account to continue'}
+      </p>
 
       {/* Tab switcher */}
       {mode === 'login' && (
-        <div className="flex bg-surface-container-low rounded-full p-1 border border-outline-variant/40">
-          <TabButton active={activeTab === 'email'} onClick={() => setActiveTab('email')}>
-            <span className="material-symbols-outlined mr-1 align-middle" style={{ fontSize: '14px' }}>alternate_email</span>
-            Email
-          </TabButton>
-          <TabButton active={activeTab === 'phone'} onClick={() => setActiveTab('phone')}>
-            <span className="material-symbols-outlined mr-1 align-middle" style={{ fontSize: '14px' }}>phone</span>
-            Phone
-          </TabButton>
+        <div className="flex bg-gray-100 rounded-full p-1 mb-5">
+          <button
+            type="button"
+            onClick={() => setActiveTab('email')}
+            className={`flex-1 py-2 text-sm font-medium rounded-full transition-all ${
+              activeTab === 'email' ? 'bg-primary text-white' : 'text-gray-500'
+            }`}
+          >
+            @ Email
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('phone')}
+            className={`flex-1 py-2 text-sm font-medium rounded-full transition-all ${
+              activeTab === 'phone' ? 'bg-primary text-white' : 'text-gray-500'
+            }`}
+          >
+            📞 Phone
+          </button>
         </div>
       )}
 
       {/* Animated form panels */}
-      <AnimatePresence mode="wait">
-        {mode === 'login' ? (
-          activeTab === 'email' ? (
-            <motion.div
-              key="email-login-tab"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.18 }}
-            >
-              <EmailForm onSuccess={handleSuccess} />
-            </motion.div>
+      <div className="mb-4">
+        <AnimatePresence mode="wait">
+          {mode === 'login' ? (
+            activeTab === 'email' ? (
+              <motion.div
+                key="email-login-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.15 }}
+              >
+                <EmailForm onSuccess={handleSuccess} />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="phone-login-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.15 }}
+              >
+                <PhoneForm onSuccess={handleSuccess} />
+              </motion.div>
+            )
           ) : (
             <motion.div
-              key="phone-login-tab"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.18 }}
+              key="register-tab"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.15 }}
             >
-              <PhoneForm onSuccess={handleSuccess} />
+              <RegisterForm onSuccess={handleSuccess} />
             </motion.div>
-          )
-        ) : (
-          <motion.div
-            key="register-tab"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.18 }}
-          >
-            <RegisterForm onSuccess={handleSuccess} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* Toggle link */}
-      <div className="text-center">
+      <div className="text-center mt-4">
         {mode === 'login' ? (
           <button
             type="button"
@@ -692,7 +697,6 @@ export default function LoginPage({ isModal = false, onSuccess }) {
           </button>
         )}
       </div>
-
       {/* Footer links */}
       <p className="text-label-sm text-on-surface-variant text-center">
         By continuing, you agree to our{' '}

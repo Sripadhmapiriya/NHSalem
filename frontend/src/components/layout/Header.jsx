@@ -411,19 +411,31 @@ function Header({ onLoginClick }) {
           <p className="text-body-md text-on-surface-variant mb-4 leading-relaxed">
             Enter your Order ID (e.g., <span className="font-mono text-primary font-bold">NHS-39102</span>) to view its live status and fresh catch details.
           </p>
-          <Input
-            id="track-order-id-input"
-            label="Order ID"
-            placeholder="e.g. NHS-39102"
-            value={orderIdInput}
-            onChange={(e) => {
-              setOrderIdInput(e.target.value)
-              if (trackError) setTrackError('')
-            }}
-            error={trackError}
-            required
-            autoFocus
-          />
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="track-order-id-input" className="text-label-md text-on-surface-variant font-semibold">
+              Order ID <span className="text-error ml-1">*</span>
+            </label>
+            <input
+              id="track-order-id-input"
+              type="text"
+              value={orderIdInput}
+              onChange={(e) => {
+                setOrderIdInput(e.target.value)
+                if (trackError) setTrackError('')
+              }}
+              placeholder="e.g. NHS-39102"
+              className="w-full px-4 py-3 border border-outline-variant rounded-full outline-none focus:ring-2 focus:ring-primary/15 focus:border-primary text-sm bg-surface-container-low text-on-surface"
+              autoFocus
+              autoComplete="off"
+              required
+            />
+            {trackError && (
+              <p className="text-label-sm text-error flex items-center gap-1 mt-1">
+                <span className="material-symbols-outlined" style={{ fontSize: '14px' }} aria-hidden="true">error</span>
+                {trackError}
+              </p>
+            )}
+          </div>
           <div className="flex justify-end gap-3 pt-2">
             <Button
               variant="secondary"

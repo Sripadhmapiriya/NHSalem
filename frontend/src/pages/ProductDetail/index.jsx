@@ -121,17 +121,38 @@ export default function ProductDetail() {
 
   return (
     <div className="bg-background min-h-screen">
-      <div className="container-max py-8">
+      <div className="container-max pt-6 pb-2 px-4">
+        {/* Back button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-sm text-gray-500 hover:text-green-700 transition-colors mb-3 group"
+        >
+          <span className="w-7 h-7 rounded-full bg-gray-100 group-hover:bg-green-50 flex items-center justify-center transition-colors">
+            ←
+          </span>
+          <span>Back</span>
+        </button>
+
         {/* Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-label-sm text-on-surface-variant mb-6">
-          <Link to="/" className="hover:text-primary transition-colors">Home</Link>
-          <span aria-hidden="true">/</span>
-          <Link to={`/category/${product.category}`} className="hover:text-primary transition-colors capitalize">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-sm text-gray-400 mb-6">
+          <Link to="/" className="text-gray-400 hover:text-green-700 transition-colors">
+            Home
+          </Link>
+          <span className="text-gray-300">/</span>
+          <Link
+            to={`/category/${product.category}`}
+            className="text-gray-400 hover:text-green-700 transition-colors capitalize"
+          >
             {product.category.replace(/-/g, ' ')}
           </Link>
-          <span aria-hidden="true">/</span>
-          <span className="text-on-surface font-semibold truncate">{product.name}</span>
+          <span className="text-gray-300">/</span>
+          <span className="text-gray-700 font-medium truncate max-w-xs">
+            {product.name}
+          </span>
         </nav>
+      </div>
+
+      <div className="container-max pb-8">
 
         {/* Main product section */}
         <div className="grid lg:grid-cols-2 gap-12 mb-16">

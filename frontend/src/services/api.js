@@ -264,3 +264,29 @@ export async function getRecipeBySlug(slug) {
   const response = await fetch(`${API_URL}/api/recipes/${slug}`)
   return handleResponse(response)
 }
+
+// ── Addresses ─────────────────────────────────────────────────────────────────
+
+export async function getUserAddresses() {
+  const response = await fetch(`${API_URL}/api/addresses`, {
+    headers: getHeaders(true)
+  })
+  return handleResponse(response)
+}
+
+export async function createUserAddress(addressData) {
+  const response = await fetch(`${API_URL}/api/addresses`, {
+    method: 'POST',
+    headers: getHeaders(true),
+    body: JSON.stringify(addressData)
+  })
+  return handleResponse(response)
+}
+
+export async function deleteUserAddress(id) {
+  const response = await fetch(`${API_URL}/api/addresses/${id}`, {
+    method: 'DELETE',
+    headers: getHeaders(true)
+  })
+  return handleResponse(response)
+}

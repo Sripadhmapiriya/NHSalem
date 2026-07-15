@@ -93,9 +93,10 @@ export default function Layout({ children }) {
       <Modal
         isOpen={loginModalOpen}
         onClose={() => setLoginModalOpen(false)}
-        title="Welcome to NH Salem"
+        title={null}
         id="login-modal"
         size="sm"
+        noScroll
       >
         <LoginPage
           isModal
