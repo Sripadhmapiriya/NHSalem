@@ -22,7 +22,6 @@ const NAV_LINKS = [
  * Gains glassmorphism blur on scroll past hero
  */
 function Header({ onLoginClick }) {
-  const [scrolled, setScrolled] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState([])
@@ -58,14 +57,6 @@ function Header({ onLoginClick }) {
     setOrderIdInput('')
   }
 
-  // Scroll glass effect
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 60)
-    }
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   // Live search
   useEffect(() => {
@@ -89,29 +80,29 @@ function Header({ onLoginClick }) {
   }, [searchOpen])
 
   return (
-    <header
-      className="sticky top-0 z-50 w-full bg-white shadow-sm border-b border-outline-variant/20 will-change-transform transform-gpu"
-      style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
-    >
-      {/* Top Deck Accent Bar (Hidden on Mobile) */}
-      {!scrolled && (
-        <div className="bg-primary text-white text-[11px] font-semibold py-1 px-4 hidden md:block border-b border-white/10">
-          <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
-            <div className="flex items-center gap-1.5 opacity-90">
-              <span className="material-symbols-outlined text-[14px]">location_on</span>
-              <span>Delivering Fresh across Salem, Tamil Nadu</span>
-            </div>
-            <div className="animate-pulse text-amber-300">
-              ✨ Use code <span className="font-bold">FRESH100</span> for free delivery on orders above ₹499!
-            </div>
-            <div className="flex items-center gap-4 opacity-90">
-              <Link to="/about" className="hover:text-amber-200 transition-colors">Our Story</Link>
-              <span>|</span>
-              <Link to="/stores" className="hover:text-amber-200 transition-colors">Stores</Link>
-            </div>
+    <>
+      {/* Top Deck Accent Bar (Hidden on Mobile, Scrolls naturally) */}
+      <div className="bg-primary text-white text-[11px] font-semibold py-1 px-4 hidden md:block border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
+          <div className="flex items-center gap-1.5 opacity-90">
+            <span className="material-symbols-outlined text-[14px]">location_on</span>
+            <span>Delivering Fresh across Salem, Tamil Nadu</span>
+          </div>
+          <div className="animate-pulse text-amber-300">
+            ✨ Use code <span className="font-bold">FRESH100</span> for free delivery on orders above ₹499!
+          </div>
+          <div className="flex items-center gap-4 opacity-90">
+            <Link to="/about" className="hover:text-amber-200 transition-colors">Our Story</Link>
+            <span>|</span>
+            <Link to="/stores" className="hover:text-amber-200 transition-colors">Stores</Link>
           </div>
         </div>
-      )}
+      </div>
+
+      <header
+        className="sticky top-0 z-50 w-full bg-white shadow-sm border-b border-outline-variant/20 will-change-transform transform-gpu"
+        style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
+      >
 
       <div className="max-w-7xl mx-auto px-4 flex items-center justify-between gap-4 h-14 md:h-16">
         {/* Logo */}
@@ -488,6 +479,7 @@ function Header({ onLoginClick }) {
         </div>
       </Modal>
     </header>
+    </>
   )
 }
 
