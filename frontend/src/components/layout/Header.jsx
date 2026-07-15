@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, memo } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SearchInput, IconButton, Modal, Input, Button } from '@/components/ui'
@@ -60,9 +60,11 @@ function Header({ onLoginClick }) {
 
   // Scroll glass effect
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 60)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   // Live search
@@ -88,7 +90,8 @@ function Header({ onLoginClick }) {
 
   return (
     <header
-      className="sticky top-0 z-50 w-full bg-white shadow-sm border-b border-outline-variant/20 transition-shadow duration-300 will-change-transform transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden]"
+      className="sticky top-0 z-50 w-full bg-white shadow-sm border-b border-outline-variant/20 will-change-transform transform-gpu"
+      style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
     >
       {/* Top Deck Accent Bar (Hidden on Mobile) */}
       {!scrolled && (
@@ -488,4 +491,4 @@ function Header({ onLoginClick }) {
   )
 }
 
-export default memo(Header)
+export default React.memo(Header)
