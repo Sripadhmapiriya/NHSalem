@@ -3,6 +3,7 @@ import { z } from 'zod'
 import pool from '../db/pool.js'
 import { requireAdmin } from '../middleware/adminAuth.js'
 import asyncHandler from '../utils/asyncHandler.js'
+import { broadcastToSubscribers } from '../utils/mailer.js'
 
 const router = express.Router()
 
@@ -123,6 +124,19 @@ router.post('/admin/promotions', requireAdmin, asyncHandler(async (req, res) => 
       JSON.stringify(body.applicable_product_ids)
     ]
   )
+
+  // Auto-send promo announcement to all subscribers
+  broadcastToSubscribers({
+    updateType: 'new_promotion',
+    subject: `🎉 New Offer: Use code ${body.code} — NH Salem Sea Foods`,
+    content: {
+      code: body.code,
+      type: body.type,
+      value: body.discount_value,
+      description: body.description,
+      expires_at: body.expires_at
+    }
+  }).catch(err => console.error('Promotion announcement broadcast failed:', err))
 
   res.status(201).json(formatPromo(result.rows[0]))
 }))

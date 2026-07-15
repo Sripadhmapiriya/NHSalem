@@ -90,9 +90,17 @@ export default function Home() {
   })
 
   const onNewsletterSubmit = async ({ email }) => {
-    await subscribeNewsletter(email)
-    addToast({ message: `🎉 You're subscribed! Watch your inbox for the best catches.`, type: 'success' })
-    reset()
+    try {
+      await subscribeNewsletter(email)
+      addToast({ message: `🎉 Subscribed! Check your email for a welcome message.`, type: 'success' })
+      reset()
+    } catch (err) {
+      if (err.message === 'You are already subscribed!') {
+        addToast({ message: 'You are already subscribed!', type: 'info' })
+      } else {
+        addToast({ message: err.message || 'Subscription failed. Please try again.', type: 'error' })
+      }
+    }
   }
 
   return (

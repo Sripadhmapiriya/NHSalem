@@ -4,6 +4,7 @@ import pool from '../db/pool.js'
 import { requireAdmin } from '../middleware/adminAuth.js'
 import { requireUser } from '../middleware/auth.js'
 import asyncHandler from '../utils/asyncHandler.js'
+import { broadcastToSubscribers } from '../utils/mailer.js'
 
 const router = express.Router()
 
@@ -252,6 +253,19 @@ router.post('/admin/products', requireAdmin, asyncHandler(async (req, res) => {
       JSON.stringify(p.variants || p.weights || [])
     ]
   )
+
+  // Auto-send product announcement to all subscribers
+  broadcastToSubscribers({
+    updateType: 'new_product',
+    subject: `🐟 New Arrival: ${p.name} — NH Salem Sea Foods`,
+    content: {
+      name: p.name,
+      tagline: p.tagline,
+      base_price: p.basePrice,
+      category: p.category,
+      image_url: p.image
+    }
+  }).catch(err => console.error('Product announcement broadcast failed:', err))
 
   res.status(201).json(formatProduct(result.rows[0]))
 }))

@@ -5,6 +5,9 @@ import { verifyUserToken } from '../utils/jwt.js'
 import { requireAdmin } from '../middleware/adminAuth.js'
 import { requireUser } from '../middleware/auth.js'
 import asyncHandler from '../utils/asyncHandler.js'
+import { sendMail } from '../utils/mailer.js'
+import { orderPlacedCustomer, newOrderAdmin, orderConfirmedCustomer } from '../utils/emailTemplates.js'
+
 
 const router = express.Router()
 
@@ -26,7 +29,7 @@ const placeOrderSchema = z.object({
 })
 
 const updateStatusSchema = z.object({
-  status: z.enum(['confirmed', 'packed', 'out_for_delivery', 'delivered', 'cancelled'])
+  status: z.enum(['confirmed', 'accepted', 'packed', 'out_for_delivery', 'delivered', 'cancelled'])
 })
 
 function getOptionalUser(req) {
@@ -269,6 +272,54 @@ router.post('/orders', asyncHandler(async (req, res) => {
     await pool.query('DELETE FROM cart_items WHERE user_id = $1', [user.id])
   }
 
+  // Send Order Placed emails asynchronously
+  try {
+    let customerEmail = user?.email
+    if (user?.id && !customerEmail) {
+      const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [user.id])
+      if (userRes.rows.length > 0) {
+        customerEmail = userRes.rows[0].email
+      }
+    }
+
+    if (customerEmail) {
+      const customerHtml = orderPlacedCustomer({
+        orderRef: orderNumber,
+        customerName: address.name || user?.name || 'Valued Customer',
+        items: dbItems,
+        total,
+        address,
+        slot
+      })
+      sendMail({
+        to: customerEmail,
+        subject: `Your NH Salem Order #${orderNumber} is Received!`,
+        html: customerHtml
+      }).catch(err => console.error('Error sending order confirmation email:', err))
+    }
+
+    const adminEmail = process.env.SHOP_ADMIN_EMAIL || 'sripadhmapiriya12@gmail.com'
+    const adminHtml = newOrderAdmin({
+      orderRef: orderNumber,
+      customerName: address.name || user?.name || 'Customer',
+      customerEmail: customerEmail || 'guest@example.com',
+      customerPhone: address.phone || user?.phone || 'N/A',
+      items: dbItems,
+      total,
+      address,
+      slot,
+      paymentMethod,
+      orderId: dbOrderId
+    })
+    sendMail({
+      to: adminEmail,
+      subject: `🆕 New Order #${orderNumber} — Action Required`,
+      html: adminHtml
+    }).catch(err => console.error('Error sending admin order alert email:', err))
+  } catch (emailErr) {
+    console.error('Error triggering order placement emails:', emailErr)
+  }
+
   res.status(201).json({ success: true, orderId: orderNumber })
 }))
 
@@ -354,6 +405,58 @@ router.put('/admin/orders/:id/status', requireAdmin, asyncHandler(async (req, re
 
   const updatedOrder = await pool.query('SELECT * FROM orders WHERE id = $1', [id])
   const details = await formatOrderDetails(updatedOrder.rows[0])
+
+  res.json({
+    success: true,
+    order: details
+  })
+}))
+
+// PATCH /api/orders/:id/accept (admin accepts order)
+router.patch('/orders/:id/accept', requireAdmin, asyncHandler(async (req, res) => {
+  const { id } = req.params
+
+  const check = await pool.query('SELECT * FROM orders WHERE id = $1', [id])
+  if (check.rows.length === 0) {
+    return res.status(404).json({ success: false, message: 'Order not found' })
+  }
+
+  const order = check.rows[0]
+
+  // Update order status to 'accepted' (which represents accepted status)
+  await pool.query("UPDATE orders SET status = 'accepted' WHERE id = $1", [id])
+
+  // Fetch full details + items
+  const details = await formatOrderDetails({ ...order, status: 'accepted' })
+
+  // Send "Order Confirmed" email to customer with full bill
+  let customerEmail = details.address?.email
+  if (order.user_id) {
+    const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [order.user_id])
+    if (userRes.rows.length > 0) {
+      customerEmail = userRes.rows[0].email
+    }
+  }
+
+  if (customerEmail) {
+    try {
+      const emailHtml = orderConfirmedCustomer({
+        orderRef: details.id,
+        customerName: details.address?.name || 'Valued Customer',
+        items: details.items,
+        total: details.total,
+        address: details.address,
+        slot: details.deliverySlot || order.delivery_slot
+      })
+      await sendMail({
+        to: customerEmail,
+        subject: `✅ Your Order #${details.id} has been Confirmed!`,
+        html: emailHtml
+      })
+    } catch (mailErr) {
+      console.error('Failed to send order acceptance confirmation email:', mailErr)
+    }
+  }
 
   res.json({
     success: true,

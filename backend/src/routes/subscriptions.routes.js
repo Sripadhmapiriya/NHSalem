@@ -4,6 +4,7 @@ import pool from '../db/pool.js'
 import { requireAdmin } from '../middleware/adminAuth.js'
 import { requireUser } from '../middleware/auth.js'
 import asyncHandler from '../utils/asyncHandler.js'
+import { broadcastToSubscribers } from '../utils/mailer.js'
 
 const router = express.Router()
 
@@ -211,6 +212,18 @@ router.post('/admin/subscriptions/plans', requireAdmin, asyncHandler(async (req,
       p.status
     ]
   )
+
+  // Auto-send plan announcement to all subscribers
+  broadcastToSubscribers({
+    updateType: 'new_subscription_plan',
+    subject: `⭐ New Plan: ${p.name} — NH Salem Sea Foods`,
+    content: {
+      name: p.name,
+      price: p.price,
+      period: p.period,
+      highlights: p.highlights
+    }
+  }).catch(err => console.error('Subscription plan announcement broadcast failed:', err))
 
   res.status(201).json(formatPlan(result.rows[0]))
 }))

@@ -198,6 +198,15 @@ export async function updateAdminOrderStatus(id, status) {
   return handleResponse(response)
 }
 
+export async function acceptAdminOrder(id) {
+  const response = await fetch(`${API_URL}/api/orders/${id}/accept`, {
+    method: 'PATCH',
+    headers: getHeaders(true)
+  })
+  return handleResponse(response)
+}
+
+
 // ── Admin Wholesale Inquiries ─────────────────────────────────────────────────
 
 export async function getAdminWholesale() {

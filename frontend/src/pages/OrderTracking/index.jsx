@@ -37,7 +37,8 @@ export default function OrderTracking() {
     )
   }
 
-  const currentStageIndex = order.stages.findIndex((s) => s.id === order.status)
+  const trackingStatus = order.status === 'accepted' ? 'confirmed' : order.status
+  const currentStageIndex = order.stages.findIndex((s) => s.id === trackingStatus)
 
   return (
     <div className="bg-surface-container-low min-h-screen py-8 md:py-12">
