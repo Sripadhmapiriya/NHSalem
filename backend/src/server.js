@@ -45,7 +45,16 @@ const allowedOrigins = [
 ].filter(Boolean)
 
 app.use(cors({
-  origin: allowedOrigins,
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true)
+    const isAllowed = allowedOrigins.some(allowed => allowed === origin || allowed === '*') || 
+                      origin.endsWith('.vercel.app')
+    if (isAllowed) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
   credentials: true
 }))
 app.use(morgan('dev'))
