@@ -39,13 +39,11 @@ export default function Footer() {
           <div className="lg:col-span-2 flex flex-col items-start pt-2 lg:pt-3">
             {/* Logo on transparent background */}
             <div className="inline-flex items-center gap-3.5 mb-5 select-none">
-              <div className="w-10 h-10 flex items-center justify-center p-0.5 flex-shrink-0">
-                <img
-                  src="/crest.png"
-                  alt="NH Salem Sea Foods Crest"
-                  className="w-full h-full object-contain"
-                />
-              </div>
+              <img
+                src="/crest.png"
+                alt="NH Salem Sea Foods Logo"
+                className="w-12 h-12 object-contain"
+              />
               <div className="text-left pl-3 border-l border-white/20">
                 <p className="font-serif text-headline-sm font-extrabold text-white leading-tight tracking-tight">NH Salem</p>
                 <p className="text-[10px] font-bold text-white/50 tracking-[0.22em] uppercase leading-none mt-0.5">Sea Foods</p>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, memo } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SearchInput, IconButton, Modal, Input, Button } from '@/components/ui'
@@ -21,7 +21,7 @@ const NAV_LINKS = [
  * Header — white main header with logo left, nav center, icons right
  * Gains glassmorphism blur on scroll past hero
  */
-export default function Header({ onLoginClick }) {
+function Header({ onLoginClick }) {
   const [scrolled, setScrolled] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -31,9 +31,10 @@ export default function Header({ onLoginClick }) {
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
   const navigate = useNavigate()
 
-  const { totalItems } = useCartStore()
-  const { count: wishlistCount } = useWishlistStore()
-  const { user, logout } = useAuthStore()
+  const totalItems = useCartStore((state) => state.totalItems)
+  const wishlistCount = useWishlistStore((state) => state.count)
+  const user = useAuthStore((state) => state.user)
+  const logout = useAuthStore((state) => state.logout)
   const debouncedSearch = useDebounce(searchQuery, 300)
 
   // Track Order Modal state
@@ -87,16 +88,12 @@ export default function Header({ onLoginClick }) {
 
   return (
     <header
-      className={`sticky top-0 z-50 transition-all duration-300 w-full ${
-        scrolled
-          ? 'bg-white/95 backdrop-blur-md shadow-md border-b border-outline-variant/30 py-1.5'
-          : 'bg-white border-b border-outline-variant/20 py-3'
-      }`}
+      className="sticky top-0 z-50 w-full bg-white shadow-sm border-b border-outline-variant/20 transition-shadow duration-300 will-change-transform transform-gpu [backface-visibility:hidden] [-webkit-backface-visibility:hidden]"
     >
       {/* Top Deck Accent Bar (Hidden on Mobile) */}
       {!scrolled && (
-        <div className="bg-primary text-white text-[11px] font-semibold py-1.5 px-4 hidden md:block border-b border-white/10 mb-2.5 -mt-3">
-          <div className="container-max flex justify-between items-center">
+        <div className="bg-primary text-white text-[11px] font-semibold py-1 px-4 hidden md:block border-b border-white/10">
+          <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
             <div className="flex items-center gap-1.5 opacity-90">
               <span className="material-symbols-outlined text-[14px]">location_on</span>
               <span>Delivering Fresh across Salem, Tamil Nadu</span>
@@ -113,20 +110,22 @@ export default function Header({ onLoginClick }) {
         </div>
       )}
 
-      <div className="container-max flex items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto px-4 flex items-center justify-between gap-4 h-14 md:h-16">
         {/* Logo */}
         <Link
           to="/"
           className="flex items-center gap-3 flex-shrink-0 select-none hover:opacity-95 transition-opacity"
           aria-label="NH Salem Sea Foods — Home"
         >
-          <div className="relative flex items-center justify-center w-11 h-11 transition-all duration-300 hover:scale-[1.02] p-0.5">
-            <img
-              src="/crest.png"
-              alt="NH Salem Sea Foods Crest"
-              className="w-full h-full object-contain flex-shrink-0"
-            />
-          </div>
+          <img
+            src="/crest.png"
+            alt="NH Salem Sea Foods Logo"
+            className="w-9 h-9 object-contain"
+            loading="eager"
+            fetchpriority="high"
+            width={36}
+            height={36}
+          />
           <div className="hidden sm:block text-left pl-3 border-l border-outline-variant/30">
             <p className="font-serif text-headline-sm font-black text-primary leading-tight tracking-tight">NH Salem</p>
             <p className="text-[10px] font-bold text-on-surface-variant tracking-[0.25em] uppercase leading-none mt-0.5">Sea Foods</p>
@@ -135,7 +134,7 @@ export default function Header({ onLoginClick }) {
 
         {/* Desktop Nav */}
         <nav
-          className="hidden md:flex items-center gap-1 px-2.5 py-1.5 bg-surface-container-low/60 border border-outline-variant/40 rounded-full shadow-inner-sm"
+          className="hidden md:flex items-center gap-1 px-2 py-1 bg-surface-container-low/60 border border-outline-variant/40 rounded-full shadow-inner-sm"
           aria-label="Product categories"
         >
           {NAV_LINKS.map((link) => (
@@ -143,35 +142,35 @@ export default function Header({ onLoginClick }) {
               key={link.slug}
               to={`/category/${link.slug}`}
               className={({ isActive }) =>
-                `px-3 py-1.5 rounded-full text-label-md font-bold transition-all duration-250 flex items-center gap-1.5 ${
+                `px-3 py-1 rounded-full text-sm font-bold transition-all duration-250 flex items-center gap-1.5 flex-shrink-0 whitespace-nowrap ${
                   isActive
                     ? 'bg-gradient-to-r from-primary to-blue-700 text-white shadow-sm shadow-primary/25 scale-[1.02]'
                     : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-low'
                 }`
               }
             >
-              <span className="text-[14px] leading-none">{link.emoji}</span>
+              <span className="text-[14px] leading-none flex-shrink-0">{link.emoji}</span>
               <span>{link.label}</span>
             </NavLink>
           ))}
           <NavLink
             to="/subscriptions"
             className={({ isActive }) =>
-              `px-3.5 py-1.5 rounded-full text-label-md font-bold transition-all duration-250 ml-1 flex items-center gap-1.5 ${
+              `px-3 py-1 rounded-full text-sm font-bold transition-all duration-250 ml-1 flex items-center gap-1.5 flex-shrink-0 whitespace-nowrap ${
                 isActive
                   ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-sm shadow-amber-600/25 scale-[1.02]'
                   : 'text-secondary hover:bg-secondary-container/20'
               }`
             }
           >
-            <span className="text-[14px] leading-none">✦</span>
+            <span className="text-[14px] leading-none flex-shrink-0">✦</span>
             <span>Subscribe</span>
           </NavLink>
         </nav>
 
         {/* Right icons / control deck */}
-        <div className="flex items-center gap-2 ml-auto md:ml-0">
-          <div className="flex items-center gap-1 px-1.5 py-1 bg-surface-container-low/70 border border-outline-variant/30 rounded-full shadow-inner-sm">
+        <div className="flex items-center gap-2.5 ml-auto md:ml-0">
+          <div className="flex items-center gap-1.5 px-1.5 py-1 bg-surface-container-low/70 border border-outline-variant/30 rounded-full shadow-inner-sm">
             {/* Search */}
             <div ref={searchRef} className="relative">
               {searchOpen ? (
@@ -223,6 +222,7 @@ export default function Header({ onLoginClick }) {
                     </AnimatePresence>
                   </div>
                   <IconButton
+                    size="sm"
                     icon="close"
                     aria-label="Close search"
                     onClick={() => { setSearchOpen(false); setSearchQuery(''); setSearchResults([]) }}
@@ -230,6 +230,7 @@ export default function Header({ onLoginClick }) {
                 </div>
               ) : (
                 <IconButton
+                  size="sm"
                   icon="search"
                   aria-label="Open search"
                   onClick={() => setSearchOpen(true)}
@@ -240,6 +241,7 @@ export default function Header({ onLoginClick }) {
             {/* Wishlist */}
             <Link to="/cart" aria-label={`Wishlist, ${wishlistCount} items`}>
               <IconButton
+                size="sm"
                 icon="favorite"
                 aria-label={`Wishlist (${wishlistCount} items)`}
                 badge={wishlistCount}
@@ -254,6 +256,7 @@ export default function Header({ onLoginClick }) {
                 transition={{ duration: 0.3 }}
               >
                 <IconButton
+                  size="sm"
                   icon="shopping_cart"
                   aria-label={`Cart (${totalItems} items)`}
                   badge={totalItems}
@@ -266,25 +269,25 @@ export default function Header({ onLoginClick }) {
           {/* Track Order */}
           <button
             onClick={() => setTrackModalOpen(true)}
-            className="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-outline-variant/30 bg-surface-container-low hover:bg-surface-container hover:border-primary/40 transition-all cursor-pointer select-none focus:outline-none"
+            className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant/30 bg-surface-container-low hover:bg-surface-container hover:border-primary/40 transition-all cursor-pointer select-none focus:outline-none"
             aria-label="Track your order live"
           >
             <motion.span
               animate={{ scale: [1, 1.18, 1], opacity: [0.75, 1, 0.75] }}
               transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
               className="material-symbols-outlined text-primary font-bold"
-              style={{ fontSize: '18px', display: 'flex', alignItems: 'center' }}
+              style={{ fontSize: '16px', display: 'flex', alignItems: 'center' }}
             >
               radar
             </motion.span>
-            <span className="text-label-sm font-bold text-on-surface-variant">Track Order</span>
+            <span className="text-xs font-bold text-on-surface-variant">Track Order</span>
           </button>
 
           {/* AuthControl */}
           {user ? (
             <button
               onClick={() => setLogoutConfirmOpen(true)}
-              className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-outline-variant/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/30 transition-all cursor-pointer select-none focus:outline-none animate-fade-in"
+              className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-outline-variant/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/30 transition-all cursor-pointer select-none focus:outline-none animate-fade-in whitespace-nowrap flex-shrink-0"
               aria-label={`Logged in as ${user.name}. Click to log out.`}
             >
               <div className="w-5 h-5 rounded-full flex items-center justify-center bg-primary text-white text-[10px] font-bold uppercase">
@@ -297,20 +300,21 @@ export default function Header({ onLoginClick }) {
           ) : (
             <button
               onClick={onLoginClick}
-              className="hidden md:flex items-center gap-2 px-4 py-1.5 rounded-full border border-outline-variant/30 bg-primary hover:bg-primary/95 text-white shadow-sm hover:shadow transition-all cursor-pointer select-none focus:outline-none"
+              className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full border border-outline-variant/30 bg-primary hover:bg-primary/95 text-white shadow-sm hover:shadow transition-all cursor-pointer select-none focus:outline-none text-sm font-bold whitespace-nowrap flex-shrink-0"
               aria-label="Account login"
             >
-              <div className="w-5 h-5 rounded-full flex items-center justify-center bg-white/20">
-                <span className="material-symbols-outlined text-white font-bold" style={{ fontSize: '12px' }}>
+              <div className="w-4 h-4 rounded-full flex items-center justify-center bg-white/20">
+                <span className="material-symbols-outlined text-white font-bold" style={{ fontSize: '10px' }}>
                   person
                 </span>
               </div>
-              <span className="text-label-sm font-bold">Log In</span>
+              <span className="whitespace-nowrap">Log In</span>
             </button>
           )}
 
           {/* Mobile menu */}
           <IconButton
+            size="sm"
             icon={mobileMenuOpen ? 'close' : 'menu'}
             aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -327,7 +331,7 @@ export default function Header({ onLoginClick }) {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="md:hidden border-t border-outline-variant/30 overflow-hidden bg-white"
+            className="absolute top-full left-0 right-0 md:hidden border-t border-b border-outline-variant/30 bg-white z-40 shadow-lg overflow-hidden"
           >
             <nav className="container-max py-4 flex flex-col gap-1" aria-label="Mobile navigation">
               {NAV_LINKS.map((link) => (
@@ -483,3 +487,5 @@ export default function Header({ onLoginClick }) {
     </header>
   )
 }
+
+export default memo(Header)

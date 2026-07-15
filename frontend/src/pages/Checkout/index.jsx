@@ -12,6 +12,7 @@ import useCart from '@/store/cartStore'
 import useToastStore from '@/store/toastStore'
 import useAuthStore from '@/store/authStore'
 import { placeOrder } from '@/services/api'
+import useRazorpay from '@/hooks/useRazorpay'
 
 const CHECKOUT_STEPS = [
   { id: 'address', label: 'Delivery Address', icon: 'location_on' },
@@ -96,12 +97,54 @@ export default function Checkout() {
     setStep('summary')
   }
 
+  const { initiatePayment, loading: paymentLoading } = useRazorpay()
+
   const handlePlaceOrder = async () => {
+    const orderAddress = currentAddress || addressForm.getValues()
+    const addressString = orderAddress 
+      ? `${orderAddress.line1 || ''}, ${orderAddress.city || ''}, ${orderAddress.state || ''}`.trim()
+      : ''
+
+    if (selectedPayment === 'upi' || selectedPayment === 'card') {
+      initiatePayment({
+        amount: total,
+        name: user?.name,
+        email: user?.email,
+        phone: user?.phone || orderAddress?.phone || '',
+        address: addressString,
+        onSuccess: async (paymentData) => {
+          setPlacingOrder(true)
+          try {
+            const { orderId } = await placeOrder({
+              items,
+              address: orderAddress,
+              slot: selectedSlot,
+              paymentMethod: selectedPayment,
+              razorpayOrderId: paymentData.razorpayOrderId,
+              razorpayPaymentId: paymentData.razorpayPaymentId,
+              razorpaySignature: paymentData.razorpaySignature,
+            })
+            clearCart()
+            addToast({ message: '🎉 Order placed successfully!', type: 'success', duration: 5000 })
+            navigate(`/orders/${orderId}`)
+          } catch {
+            addToast({ message: 'Something went wrong while placing the order. Please contact support.', type: 'error' })
+          } finally {
+            setPlacingOrder(false)
+          }
+        },
+        onFailure: (err) => {
+          console.error('Razorpay payment failed:', err)
+        }
+      })
+      return
+    }
+
     setPlacingOrder(true)
     try {
       const { orderId } = await placeOrder({
         items,
-        address: currentAddress || addressForm.getValues(),
+        address: orderAddress,
         slot: selectedSlot,
         paymentMethod: selectedPayment,
       })
@@ -365,7 +408,7 @@ export default function Checkout() {
                       variant="primary"
                       size="lg"
                       className="flex-1"
-                      loading={placingOrder}
+                      loading={placingOrder || paymentLoading}
                       onClick={handlePlaceOrder}
                     >
                       Place Order — ₹{total.toLocaleString()}

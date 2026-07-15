@@ -6,16 +6,15 @@ export default function NotFound() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center py-16 px-4">
       <div className="text-center max-w-lg">
-        {/* Animated crest */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
-          className="w-32 h-32 flex items-center justify-center mx-auto mb-8 p-3"
+          className="w-20 h-20 mx-auto mb-8"
         >
           <img
             src="/crest.png"
-            alt="NH Salem Sea Foods Crest"
+            alt="NH Salem Sea Foods Logo"
             className="w-full h-full object-contain"
           />
         </motion.div>

@@ -69,6 +69,7 @@ app.use('/api', subscriptionRoutes) // handles /subscriptions and /admin/subscri
 app.use('/api/cart', cartRoutes) // handles /cart
 app.use('/api', orderRoutes) // handles /orders and /admin/orders
 app.use('/api/payments', paymentRoutes) // handles /payments
+app.use('/api/payment', paymentRoutes) // handles /payment
 app.use('/api', wholesaleRoutes) // handles /wholesale and /admin/wholesale
 app.use('/api', recipeRoutes) // handles /recipes and /admin/recipes
 app.use('/api', storeLocatorRoutes) // handles /cities and /admin/cities
@@ -94,6 +95,14 @@ app.listen(PORT, async () => {
         ('combos', 'combos', 'Combos'),
         ('dried-fish', 'dried-fish', 'Dried Fish')
       ON CONFLICT (id) DO NOTHING;
+    `);
+
+    // Verify orders table columns
+    await pool.query(`
+      ALTER TABLE orders 
+      ADD COLUMN IF NOT EXISTS razorpay_order_id VARCHAR(100),
+      ADD COLUMN IF NOT EXISTS razorpay_payment_id VARCHAR(100),
+      ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) DEFAULT 'pending';
     `);
 
     // Add unique constraints to users table

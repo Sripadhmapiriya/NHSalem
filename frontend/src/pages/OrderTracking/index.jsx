@@ -289,6 +289,43 @@ export default function OrderTracking() {
             </div>
           </div>
 
+          {/* Payment Details */}
+          <div className="bg-white rounded-[28px] shadow-card border border-outline-variant/30 p-6 flex flex-col justify-between">
+            <div>
+              <h2 className="text-headline-sm text-on-surface font-serif mb-5">Payment Details</h2>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center pb-3 border-b border-outline-variant/20">
+                  <span className="text-body-md text-on-surface-variant">Method</span>
+                  <span className="text-label-md font-bold text-on-surface uppercase">
+                    {order.paymentMethod === 'razorpay' ? 'Razorpay (Online)' : 'Cash on Delivery (COD)'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center pb-3 border-b border-outline-variant/20">
+                  <span className="text-body-md text-on-surface-variant">Status</span>
+                  {order.paymentMethod === 'cod' ? (
+                    <span className="inline-flex px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold uppercase tracking-wider">
+                      Cash on Delivery
+                    </span>
+                  ) : order.paymentStatus === 'paid' ? (
+                    <span className="inline-flex px-3 py-1 rounded-full bg-green-100 text-green-800 text-xs font-bold uppercase tracking-wider">
+                      Paid
+                    </span>
+                  ) : (
+                    <span className="inline-flex px-3 py-1 rounded-full bg-red-100 text-red-800 text-xs font-bold uppercase tracking-wider">
+                      Pending
+                    </span>
+                  )}
+                </div>
+                {order.razorpayPaymentId && (
+                  <div className="flex justify-between items-center pt-1">
+                    <span className="text-body-sm text-on-surface-variant">Payment Ref ID</span>
+                    <span className="text-body-sm font-mono text-outline select-all">{order.razorpayPaymentId}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* Delivery Agent */}
           {order.agent && (
             <div className="bg-white rounded-[28px] shadow-card border border-outline-variant/30 p-6 flex flex-col justify-between">

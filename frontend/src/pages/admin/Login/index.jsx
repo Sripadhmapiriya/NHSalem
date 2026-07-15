@@ -101,13 +101,11 @@ export default function AdminLogin() {
 
           {/* Brand */}
           <div className="flex flex-col items-center mb-8">
-            <div className="w-20 h-20 flex items-center justify-center mb-5 p-2">
-              <img
-                src="/crest.png"
-                alt="NH Salem Sea Foods"
-                className="w-full h-full object-contain"
-              />
-            </div>
+            <img
+              src="/crest.png"
+              alt="NH Salem Sea Foods Logo"
+              className="w-16 h-16 object-contain mb-5"
+            />
             <h1 className="font-serif text-3xl font-extrabold text-admin-navy tracking-tight leading-tight">
               NH Salem
             </h1>

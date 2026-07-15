@@ -19,7 +19,10 @@ const placeOrderSchema = z.object({
   address: z.any(),
   slot: z.string(),
   paymentMethod: z.enum(['razorpay', 'cod']),
-  couponCode: z.string().optional().nullable()
+  couponCode: z.string().optional().nullable(),
+  razorpayOrderId: z.string().optional().nullable(),
+  razorpayPaymentId: z.string().optional().nullable(),
+  razorpaySignature: z.string().optional().nullable()
 })
 
 const updateStatusSchema = z.object({
@@ -215,8 +218,8 @@ router.post('/orders', asyncHandler(async (req, res) => {
 
   const orderInsertRes = await pool.query(
     `INSERT INTO orders (
-      order_number, user_id, status, address, delivery_slot, payment_method, payment_status, subtotal, discount, shipping, total, coupon_code, freshness_score, catch_time, estimated_delivery
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+      order_number, user_id, status, address, delivery_slot, payment_method, payment_status, subtotal, discount, shipping, total, coupon_code, freshness_score, catch_time, estimated_delivery, razorpay_order_id, razorpay_payment_id
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
      RETURNING id`,
     [
       orderNumber,
@@ -233,7 +236,9 @@ router.post('/orders', asyncHandler(async (req, res) => {
       validCouponCode,
       95,
       '2h ago',
-      estimatedDelivery
+      estimatedDelivery,
+      req.body.razorpayOrderId || null,
+      req.body.razorpayPaymentId || null
     ]
   )
 

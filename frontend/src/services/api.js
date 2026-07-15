@@ -71,8 +71,11 @@ export async function placeOrder(data) {
     })),
     address: data.address,
     slot: data.slot,
-    paymentMethod: data.paymentMethod === 'upi' ? 'razorpay' : 'cod', // map client 'upi' to server 'razorpay'
-    couponCode: couponCode || null
+    paymentMethod: data.paymentMethod === 'upi' || data.paymentMethod === 'card' || data.paymentMethod === 'razorpay' ? 'razorpay' : 'cod', // map client 'upi'/'card' to server 'razorpay'
+    couponCode: couponCode || null,
+    razorpayOrderId: data.razorpayOrderId || null,
+    razorpayPaymentId: data.razorpayPaymentId || null,
+    razorpaySignature: data.razorpaySignature || null
   }
 
   const response = await fetch(`${API_URL}/api/orders`, {

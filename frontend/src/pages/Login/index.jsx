@@ -599,15 +599,12 @@ export default function LoginPage({ isModal = false, onSuccess }) {
 
   const content = (
     <div className="space-y-6">
-      {/* Header */}
       <div className="text-center mb-2">
-        <div className="w-20 h-20 flex items-center justify-center mx-auto mb-4 p-2">
-          <img
-            src="/crest.png"
-            alt="NH Salem Sea Foods Crest"
-            className="w-full h-full object-contain"
-          />
-        </div>
+        <img
+          src="/crest.png"
+          alt="NH Salem Sea Foods Logo"
+          className="w-16 h-16 object-contain mx-auto mb-4"
+        />
         {!isModal && (
           <>
             <h1 className="font-serif text-3xl font-extrabold text-primary tracking-tight">NH Salem</h1>

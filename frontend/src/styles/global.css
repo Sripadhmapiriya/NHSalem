@@ -220,3 +220,11 @@ body {
   transform: scale(1.25);
   box-shadow: 0 4px 12px rgba(0, 5, 22, 0.4);
 }
+
+/* Prevent flash of unstyled content / flicker on sticky navigation */
+header, nav {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
