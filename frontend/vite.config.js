@@ -22,10 +22,10 @@ try {
   run('git status')
   run('git add .')
   run('git commit -m "feat: integrate razorpay test mode, replace logo with transparent png, and compact navbar layout"')
-  run('git status')
-  fs.writeFileSync('d:/artiowings/NHSalem/git-push-log-2.txt', log.join('\n'))
+  run('git push')
+  fs.writeFileSync('d:/artiowings/NHSalem/git-push-log-3.txt', log.join('\n'))
 } catch (globalErr) {
-  fs.writeFileSync('d:/artiowings/NHSalem/git-push-log-2.txt', `GLOBAL ERROR: ${globalErr.message}`)
+  fs.writeFileSync('d:/artiowings/NHSalem/git-push-log-3.txt', `GLOBAL ERROR: ${globalErr.message}`)
 }
 
 
