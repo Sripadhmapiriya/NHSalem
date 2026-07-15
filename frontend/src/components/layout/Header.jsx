@@ -152,7 +152,7 @@ function Header({ onLoginClick }) {
                 }`
               }
             >
-              <span className="text-[14px] leading-none flex-shrink-0">{link.emoji}</span>
+              <span className="text-[14px] leading-none flex-shrink-0 hidden xl:inline">{link.emoji}</span>
               <span>{link.label}</span>
             </NavLink>
           ))}
@@ -166,7 +166,7 @@ function Header({ onLoginClick }) {
               }`
             }
           >
-            <span className="text-[14px] leading-none flex-shrink-0">✦</span>
+            <span className="text-[14px] leading-none flex-shrink-0 hidden xl:inline">✦</span>
             <span>Subscribe</span>
           </NavLink>
         </nav>
@@ -272,7 +272,7 @@ function Header({ onLoginClick }) {
           {/* Track Order */}
           <button
             onClick={() => setTrackModalOpen(true)}
-            className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant/30 bg-surface-container-low hover:bg-surface-container hover:border-primary/40 transition-all cursor-pointer select-none focus:outline-none"
+            className="hidden lg:flex items-center gap-1.5 px-2 py-2 xl:px-3 xl:py-1.5 rounded-full border border-outline-variant/30 bg-surface-container-low hover:bg-surface-container hover:border-primary/40 transition-all cursor-pointer select-none focus:outline-none whitespace-nowrap flex-shrink-0"
             aria-label="Track your order live"
           >
             <motion.span
@@ -283,7 +283,7 @@ function Header({ onLoginClick }) {
             >
               radar
             </motion.span>
-            <span className="text-xs font-bold text-on-surface-variant">Track Order</span>
+            <span className="text-xs font-bold text-on-surface-variant whitespace-nowrap hidden xl:inline">Track Order</span>
           </button>
 
           {/* AuthControl */}
@@ -303,15 +303,15 @@ function Header({ onLoginClick }) {
           ) : (
             <button
               onClick={onLoginClick}
-              className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full border border-outline-variant/30 bg-primary hover:bg-primary/95 text-white shadow-sm hover:shadow transition-all cursor-pointer select-none focus:outline-none text-sm font-bold whitespace-nowrap flex-shrink-0"
+              className="hidden md:flex items-center gap-2 px-2 py-2 xl:px-4 xl:py-2 rounded-full border border-outline-variant/30 bg-primary hover:bg-primary/95 text-white shadow-sm hover:shadow transition-all cursor-pointer select-none focus:outline-none text-sm font-bold whitespace-nowrap flex-shrink-0"
               aria-label="Account login"
             >
-              <div className="w-4 h-4 rounded-full flex items-center justify-center bg-white/20">
+              <div className="w-4 h-4 rounded-full flex items-center justify-center bg-white/20 flex-shrink-0">
                 <span className="material-symbols-outlined text-white font-bold" style={{ fontSize: '10px' }}>
                   person
                 </span>
               </div>
-              <span className="whitespace-nowrap">Log In</span>
+              <span className="whitespace-nowrap hidden xl:inline">Log In</span>
             </button>
           )}
 
