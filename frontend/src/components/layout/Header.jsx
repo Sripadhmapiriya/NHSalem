@@ -30,7 +30,7 @@ function Header({ onLoginClick }) {
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
   const navigate = useNavigate()
 
-  const totalItems = useCartStore((state) => state.totalItems)
+  const totalItems = useCartStore((state) => state.items.reduce((sum, i) => sum + i.quantity, 0))
   const wishlistCount = useWishlistStore((state) => state.count)
   const user = useAuthStore((state) => state.user)
   const logout = useAuthStore((state) => state.logout)

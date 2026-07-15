@@ -61,6 +61,14 @@ export async function getOrderStatus(orderId) {
   return handleResponse(response).catch(() => null)
 }
 
+export async function getUserOrders() {
+  const response = await fetch(`${API_URL}/api/orders/mine`, {
+    headers: getHeaders(true)
+  })
+  return handleResponse(response)
+}
+
+
 export async function placeOrder(data) {
   const couponCode = useCartStore.getState().coupon?.code
   const payload = {

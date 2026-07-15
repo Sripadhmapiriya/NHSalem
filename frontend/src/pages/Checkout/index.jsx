@@ -6,7 +6,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import Button from '@/components/ui/Button'
 import { ProgressStepper } from '@/components/ui/Stepper'
-import Chip from '@/components/ui/Chip'
 import Input from '@/components/ui/Input'
 import useCart from '@/store/cartStore'
 import useToastStore from '@/store/toastStore'
@@ -21,9 +20,7 @@ const CHECKOUT_STEPS = [
   { id: 'summary', label: 'Order Summary', icon: 'receipt' },
 ]
 
-const SAVED_ADDRESSES = [
-  { id: 'addr1', label: 'Home', name: 'Karthik Rajan', line1: '42, Gandhi Nagar, 3rd Cross', city: 'Bangalore', state: 'Karnataka', pincode: '560038', phone: '+91 98765 43210' },
-]
+
 
 const DELIVERY_SLOTS = ['7–9 AM', '9–11 AM', '11 AM–1 PM', '5–7 PM', '7–9 PM']
 
@@ -43,9 +40,6 @@ const addressSchema = z.object({
   state: z.string().min(2, 'Enter your state'),
 })
 
-const upiSchema = z.object({
-  upiId: z.string().regex(/^[\w.-]+@[\w]+$/, 'Enter a valid UPI ID (e.g. name@upi)'),
-})
 
 export default function Checkout() {
   const navigate = useNavigate()
@@ -61,19 +55,13 @@ export default function Checkout() {
   const { addToast } = useToastStore()
 
   const [step, setStep] = useState('address')
-  const [selectedAddress, setSelectedAddress] = useState('addr1')
-  const [addingAddress, setAddingAddress] = useState(false)
   const [selectedSlot, setSelectedSlot] = useState(null)
   const [selectedPayment, setSelectedPayment] = useState(null)
   const [placingOrder, setPlacingOrder] = useState(false)
 
   const addressForm = useForm({ resolver: zodResolver(addressSchema) })
-  const upiForm = useForm({ resolver: zodResolver(upiSchema) })
-
-  const currentAddress = SAVED_ADDRESSES.find((a) => a.id === selectedAddress)
 
   const handleNextFromAddress = () => {
-    if (!selectedAddress && !addingAddress) return
     setStep('slot')
   }
 
@@ -90,22 +78,18 @@ export default function Checkout() {
       addToast({ message: 'Please select a payment method', type: 'warning' })
       return
     }
-    if (selectedPayment === 'upi') {
-      upiForm.handleSubmit(() => setStep('summary'))()
-      return
-    }
     setStep('summary')
   }
 
   const { initiatePayment, loading: paymentLoading } = useRazorpay()
 
   const handlePlaceOrder = async () => {
-    const orderAddress = currentAddress || addressForm.getValues()
+    const orderAddress = addressForm.getValues()
     const addressString = orderAddress 
       ? `${orderAddress.line1 || ''}, ${orderAddress.city || ''}, ${orderAddress.state || ''}`.trim()
       : ''
 
-    if (selectedPayment === 'upi' || selectedPayment === 'card') {
+    if (selectedPayment === 'upi' || selectedPayment === 'card' || selectedPayment === 'netbanking') {
       initiatePayment({
         amount: total,
         name: user?.name,
@@ -119,7 +103,7 @@ export default function Checkout() {
               items,
               address: orderAddress,
               slot: selectedSlot,
-              paymentMethod: selectedPayment,
+              paymentMethod: 'razorpay',
               razorpayOrderId: paymentData.razorpayOrderId,
               razorpayPaymentId: paymentData.razorpayPaymentId,
               razorpaySignature: paymentData.razorpaySignature,
@@ -127,7 +111,8 @@ export default function Checkout() {
             clearCart()
             addToast({ message: '🎉 Order placed successfully!', type: 'success', duration: 5000 })
             navigate(`/orders/${orderId}`)
-          } catch {
+          } catch (err) {
+            console.error('Order placement error:', err)
             addToast({ message: 'Something went wrong while placing the order. Please contact support.', type: 'error' })
           } finally {
             setPlacingOrder(false)
@@ -146,12 +131,13 @@ export default function Checkout() {
         items,
         address: orderAddress,
         slot: selectedSlot,
-        paymentMethod: selectedPayment,
+        paymentMethod: 'cod',
       })
       clearCart()
       addToast({ message: '🎉 Order placed successfully!', type: 'success', duration: 5000 })
       navigate(`/orders/${orderId}`)
-    } catch {
+    } catch (err) {
+      console.error('COD order error:', err)
       addToast({ message: 'Something went wrong. Please try again.', type: 'error' })
     } finally {
       setPlacingOrder(false)
@@ -187,71 +173,20 @@ export default function Checkout() {
                   transition={{ duration: 0.2 }}
                   className="space-y-4"
                 >
-                  <h2 className="text-headline-sm text-on-surface">Select Delivery Address</h2>
+                  <h2 className="text-headline-sm text-on-surface">Enter Delivery Address</h2>
 
-                  {/* Saved addresses */}
-                  {SAVED_ADDRESSES.map((addr) => (
-                    <label
-                      key={addr.id}
-                      htmlFor={`addr-${addr.id}`}
-                      className={`flex items-start gap-4 bg-white rounded-[20px] shadow-card p-5 cursor-pointer border-2 transition-all ${
-                        selectedAddress === addr.id && !addingAddress
-                          ? 'border-primary'
-                          : 'border-transparent hover:border-outline-variant'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        id={`addr-${addr.id}`}
-                        name="address"
-                        value={addr.id}
-                        checked={selectedAddress === addr.id && !addingAddress}
-                        onChange={() => { setSelectedAddress(addr.id); setAddingAddress(false) }}
-                        className="mt-1 accent-primary"
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <span className="text-label-md font-bold text-on-surface">{addr.name}</span>
-                          <span className="px-2 py-0.5 bg-surface-container rounded-full text-label-sm text-on-surface-variant">
-                            {addr.label}
-                          </span>
-                        </div>
-                        <p className="text-body-md text-on-surface-variant">{addr.line1}, {addr.city}, {addr.state} — {addr.pincode}</p>
-                        <p className="text-label-sm text-on-surface-variant mt-0.5">{addr.phone}</p>
-                      </div>
-                    </label>
-                  ))}
+                  <div className="bg-white rounded-[20px] shadow-card p-6 space-y-4">
+                    <Input label="Full Name" id="new-name" required {...addressForm.register('name')} error={addressForm.formState.errors.name?.message} />
+                    <Input label="Mobile Number" id="new-phone" type="tel" required {...addressForm.register('phone')} error={addressForm.formState.errors.phone?.message} />
+                    <Input label="Pincode" id="new-pincode" required {...addressForm.register('pincode')} error={addressForm.formState.errors.pincode?.message} />
+                    <Input label="Address Line 1" id="new-line1" required {...addressForm.register('line1')} error={addressForm.formState.errors.line1?.message} />
+                    <div className="grid grid-cols-2 gap-4">
+                      <Input label="City" id="new-city" required {...addressForm.register('city')} error={addressForm.formState.errors.city?.message} />
+                      <Input label="State" id="new-state" required {...addressForm.register('state')} error={addressForm.formState.errors.state?.message} />
+                    </div>
+                  </div>
 
-                  {/* Add new address */}
-                  <button
-                    onClick={() => { setAddingAddress(true); setSelectedAddress(null) }}
-                    className={`w-full flex items-center gap-4 bg-white rounded-[20px] p-5 border-2 border-dashed transition-all ${
-                      addingAddress ? 'border-primary' : 'border-outline-variant hover:border-primary'
-                    }`}
-                    aria-expanded={addingAddress}
-                  >
-                    <span className="material-symbols-outlined text-primary" style={{ fontSize: '24px' }} aria-hidden="true">add_location</span>
-                    <span className="text-label-md font-semibold text-primary">Add New Address</span>
-                  </button>
-
-                  {addingAddress && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      className="bg-white rounded-[20px] shadow-card p-6 space-y-4 overflow-hidden"
-                    >
-                      <Input label="Full Name" id="new-name" required {...addressForm.register('name')} error={addressForm.formState.errors.name?.message} />
-                      <Input label="Mobile Number" id="new-phone" type="tel" required {...addressForm.register('phone')} error={addressForm.formState.errors.phone?.message} />
-                      <Input label="Pincode" id="new-pincode" required {...addressForm.register('pincode')} error={addressForm.formState.errors.pincode?.message} />
-                      <Input label="Address Line 1" id="new-line1" required {...addressForm.register('line1')} error={addressForm.formState.errors.line1?.message} />
-                      <div className="grid grid-cols-2 gap-4">
-                        <Input label="City" id="new-city" required {...addressForm.register('city')} error={addressForm.formState.errors.city?.message} />
-                        <Input label="State" id="new-state" required {...addressForm.register('state')} error={addressForm.formState.errors.state?.message} />
-                      </div>
-                    </motion.div>
-                  )}
-
-                  <Button variant="primary" className="w-full" onClick={addingAddress ? addressForm.handleSubmit(handleNextFromAddress) : handleNextFromAddress}>
+                  <Button variant="primary" className="w-full" onClick={addressForm.handleSubmit(handleNextFromAddress)}>
                     Continue to Delivery Slot
                   </Button>
                 </motion.div>
@@ -331,23 +266,7 @@ export default function Checkout() {
                           <p className="text-label-sm text-on-surface-variant">{method.description}</p>
                         </div>
                       </label>
-                      {/* UPI ID field */}
-                      {selectedPayment === 'upi' && method.id === 'upi' && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          className="mt-2 px-4 overflow-hidden"
-                        >
-                          <Input
-                            label="UPI ID"
-                            id="upi-id"
-                            placeholder="name@upi"
-                            required
-                            {...upiForm.register('upiId')}
-                            error={upiForm.formState.errors.upiId?.message}
-                          />
-                        </motion.div>
-                      )}
+
                     </div>
                   ))}
                   <div className="flex gap-3">
@@ -388,8 +307,8 @@ export default function Checkout() {
                     <div className="flex gap-3">
                       <span className="material-symbols-outlined text-primary" style={{ fontSize: '20px' }} aria-hidden="true">location_on</span>
                       <div>
-                        <p className="font-semibold text-on-surface">{currentAddress?.name}</p>
-                        <p className="text-on-surface-variant">{currentAddress?.line1}, {currentAddress?.city} {currentAddress?.pincode}</p>
+                        <p className="font-semibold text-on-surface">{addressForm.getValues('name')}</p>
+                        <p className="text-on-surface-variant">{addressForm.getValues('line1')}, {addressForm.getValues('city')} {addressForm.getValues('pincode')}</p>
                       </div>
                     </div>
                     <div className="flex gap-3">

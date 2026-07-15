@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
  * 1. "quantity" — inline +/- stepper (used in cart/product)
  * 2. "progress" — horizontal step indicator (used in checkout)
  */
-export function QuantityStepper({ value, onIncrease, onDecrease, min = 1, max = 99 }) {
+export function QuantityStepper({ value, onIncrease, onDecrease, min = 0, max = 99 }) {
   return (
     <div className="flex items-center bg-surface-container rounded-full overflow-hidden border border-outline-variant">
       <motion.button
