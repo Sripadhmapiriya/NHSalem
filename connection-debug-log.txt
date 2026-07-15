@@ -1,7 +1,0 @@
---- Debug Connection Check at 2026-07-15T04:46:05.986Z ---
-Port 4000 on 127.0.0.1 is OPEN.
-Port 4000 on localhost is OPEN.
-DNS lookup for ep-shy-fog-atbitjce-pooler.c-9.us-east-1.aws.neon.tech SUCCEEDED: 2600:1f10:4e4e:bb01:bcd7:5da7:f955:1da2 (family: v6)
-Port 5432 on ep-shy-fog-atbitjce-pooler.c-9.us-east-1.aws.neon.tech is OPEN.
-HTTP GET /api/products: Status = 200, Body length = 30699
-HTTP GET /api/products body sample: [{"id":"2214bde3-d3c2-497d-9b14-dbbb6bb97263","slug":"blue-swimmer-crab","category":"crabs","name":"

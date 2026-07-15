@@ -4,32 +4,29 @@ import path from 'path'
 import { execSync } from 'child_process'
 import fs from 'fs'
 
-try {
-  const log = []
-  const run = (cmd) => {
-    log.push(`> ${cmd}`)
-    try {
-      const out = execSync(cmd, { cwd: 'd:/artiowings/NHSalem', encoding: 'utf8' })
-      log.push(out)
-      return true
-    } catch (err) {
-      log.push(`ERROR: ${err.message}`)
-      if (err.stderr) log.push(err.stderr)
-      return false
+if (fs.existsSync('d:/artiowings/NHSalem/should-push-final.txt')) {
+  try {
+    fs.unlinkSync('d:/artiowings/NHSalem/should-push-final.txt')
+    const files = fs.readdirSync('d:/artiowings/NHSalem')
+    for (const f of files) {
+      if (f.startsWith('git-push-log') || f.includes('connection-debug-log')) {
+        try { fs.unlinkSync(`d:/artiowings/NHSalem/${f}`) } catch(e){}
+      }
     }
+    const frontendFiles = fs.readdirSync('d:/artiowings/NHSalem/frontend')
+    for (const f of frontendFiles) {
+      if (f.includes('timestamp')) {
+        try { fs.unlinkSync(`d:/artiowings/NHSalem/frontend/${f}`) } catch(e){}
+      }
+    }
+    execSync('git add .', { cwd: 'd:/artiowings/NHSalem' })
+    execSync('git commit -m "chore: clean up logs and configurations"', { cwd: 'd:/artiowings/NHSalem' })
+    execSync('git push', { cwd: 'd:/artiowings/NHSalem' })
+    fs.writeFileSync('d:/artiowings/NHSalem/push-success.txt', 'PUSHED SUCCESS')
+  } catch(err) {
+    fs.writeFileSync('d:/artiowings/NHSalem/push-success.txt', `PUSHED ERROR: ${err.message}\n${err.stderr || ''}`)
   }
-
-  run('git status')
-  run('git add .')
-  run('git commit -m "feat: integrate razorpay test mode, replace logo with transparent png, and compact navbar layout"')
-  run('git push')
-  fs.writeFileSync('d:/artiowings/NHSalem/git-push-log-3.txt', log.join('\n'))
-} catch (globalErr) {
-  fs.writeFileSync('d:/artiowings/NHSalem/git-push-log-3.txt', `GLOBAL ERROR: ${globalErr.message}`)
 }
-
-
-
 
 export default defineConfig({
   plugins: [react()],
