@@ -142,7 +142,7 @@ function Header({ onLoginClick }) {
 
         {/* Desktop Nav */}
         <nav
-          className="hidden md:flex items-center gap-1 px-2 py-1 bg-surface-container-low/60 border border-outline-variant/40 rounded-full shadow-inner-sm"
+          className="hidden lg:flex items-center gap-1 px-2 py-1 bg-surface-container-low/60 border border-outline-variant/40 rounded-full shadow-inner-sm"
           aria-label="Product categories"
         >
           {NAV_LINKS.map((link) => (
@@ -296,7 +296,7 @@ function Header({ onLoginClick }) {
             <div className="relative" ref={profileDropdownRef}>
               <button
                 onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-outline-variant/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/30 transition-all cursor-pointer select-none focus:outline-none animate-fade-in whitespace-nowrap flex-shrink-0"
+                className="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-outline-variant/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/30 transition-all cursor-pointer select-none focus:outline-none animate-fade-in whitespace-nowrap flex-shrink-0"
                 aria-label={`Logged in as ${user.name}. Click to view menu.`}
               >
                 <div className="w-5 h-5 rounded-full flex items-center justify-center bg-primary text-white text-[10px] font-bold uppercase">
@@ -352,7 +352,7 @@ function Header({ onLoginClick }) {
           ) : (
             <button
               onClick={onLoginClick}
-              className="hidden md:flex items-center gap-2 px-2 py-2 xl:px-4 xl:py-2 rounded-full border border-outline-variant/30 bg-primary hover:bg-primary/95 text-white shadow-sm hover:shadow transition-all cursor-pointer select-none focus:outline-none text-sm font-bold whitespace-nowrap flex-shrink-0"
+              className="hidden lg:flex items-center gap-2 px-2 py-2 xl:px-4 xl:py-2 rounded-full border border-outline-variant/30 bg-primary hover:bg-primary/95 text-white shadow-sm hover:shadow transition-all cursor-pointer select-none focus:outline-none text-sm font-bold whitespace-nowrap flex-shrink-0"
               aria-label="Account login"
             >
               <div className="w-4 h-4 rounded-full flex items-center justify-center bg-white/20 flex-shrink-0">
@@ -370,7 +370,7 @@ function Header({ onLoginClick }) {
             icon={mobileMenuOpen ? 'close' : 'menu'}
             aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden"
+            className="lg:hidden"
           />
         </div>
       </div>
@@ -383,7 +383,7 @@ function Header({ onLoginClick }) {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="absolute top-full left-0 right-0 md:hidden border-t border-b border-outline-variant/30 bg-white z-40 shadow-lg overflow-hidden"
+            className="absolute top-full left-0 right-0 lg:hidden border-t border-b border-outline-variant/30 bg-white z-40 shadow-lg overflow-hidden"
           >
             <nav className="container-max py-4 flex flex-col gap-1" aria-label="Mobile navigation">
               {NAV_LINKS.map((link) => (

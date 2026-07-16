@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { getMyOrders } from '@/services/api'
+import { getUserOrders } from '@/services/api'
 import useToastStore from '@/store/toastStore'
 import { SeafoodLoader } from '@/components/ui'
 
@@ -35,7 +35,7 @@ export default function MyOrders() {
   useEffect(() => {
     async function fetchOrders() {
       try {
-        const data = await getMyOrders()
+        const data = await getUserOrders()
         // If data is wrapped in an object like { success: true, orders: [...] }, extract it.
         // Otherwise, use it directly.
         const list = Array.isArray(data) ? data : (data.orders || [])

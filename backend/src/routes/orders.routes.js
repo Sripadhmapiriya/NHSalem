@@ -330,8 +330,15 @@ router.get('/orders/mine', requireUser, asyncHandler(async (req, res) => {
   res.json({ success: true, orders })
 }))
 
-// ── GET /api/orders/my-orders (and aliased /my-orders) ──────────────────────────
-router.get(['/orders/my-orders', '/my-orders'], requireUser, asyncHandler(async (req, res) => {
+// ── GET /api/orders/my-orders ──────────────────────────────────────────────────
+router.get('/orders/my-orders', requireUser, asyncHandler(async (req, res) => {
+  const result = await pool.query('SELECT * FROM orders WHERE user_id = $1 ORDER BY placed_at DESC', [req.user.id])
+  const orders = await getOrdersDetailed(result.rows)
+  res.json(orders)
+}))
+
+// ── GET /api/my-orders ──────────────────────────────────────────────────────────
+router.get('/my-orders', requireUser, asyncHandler(async (req, res) => {
   const result = await pool.query('SELECT * FROM orders WHERE user_id = $1 ORDER BY placed_at DESC', [req.user.id])
   const orders = await getOrdersDetailed(result.rows)
   res.json(orders)
