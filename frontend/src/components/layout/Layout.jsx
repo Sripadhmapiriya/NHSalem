@@ -26,6 +26,7 @@ const pageVariants = {
  */
 export default function Layout({ children }) {
   const [loginModalOpen, setLoginModalOpen] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { user, cartLoginPopupOpen, setCartLoginPopupOpen, pendingAction, setPendingAction } = useAuthStore()
   const { addItem } = useCartStore()
   const { setSubscription } = useSubscriptionStore()
@@ -79,7 +80,11 @@ export default function Layout({ children }) {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <Header onLoginClick={() => setLoginModalOpen(true)} />
+      <Header
+        onLoginClick={() => setLoginModalOpen(true)}
+        mobileMenuOpen={mobileMenuOpen}
+        setMobileMenuOpen={setMobileMenuOpen}
+      />
 
       <main className={`flex-1 ${isCartBarVisible ? 'pb-20' : ''}`} id="main-content" tabIndex={-1}>
         <motion.div
@@ -96,7 +101,7 @@ export default function Layout({ children }) {
 
       <Footer />
 
-      <FloatingCartBar hidden={loginModalOpen || cartLoginPopupOpen} />
+      <FloatingCartBar hidden={loginModalOpen || cartLoginPopupOpen || mobileMenuOpen} />
 
       {/* Global Login Modal */}
       <Modal
