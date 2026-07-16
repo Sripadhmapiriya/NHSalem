@@ -493,10 +493,14 @@ export default function CategoryListing() {
       <div className="container-max">
         {/* Header */}
         <div className="mb-8">
-          <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-label-sm text-on-surface-variant mb-4">
-            <a href="/" className="hover:text-primary transition-colors">Home</a>
-            <span aria-hidden="true">/</span>
-            <span className="text-on-surface font-semibold">{meta.title}</span>
+          <nav aria-label="Breadcrumb" className="mb-4 w-full overflow-x-auto hide-scrollbar">
+            <ul className="flex flex-row items-center flex-nowrap gap-2 text-label-sm text-on-surface-variant whitespace-nowrap pb-1 min-w-max">
+              <li className="flex-none">
+                <a href="/" className="hover:text-primary transition-colors">Home</a>
+              </li>
+              <li className="flex-none" aria-hidden="true">/</li>
+              <li className="flex-none text-on-surface font-semibold">{meta.title}</li>
+            </ul>
           </nav>
           <h1 className="text-display-lg-mobile text-on-surface mb-2">{meta.title}</h1>
           <p className="text-body-lg text-on-surface-variant max-w-2xl">{meta.description}</p>

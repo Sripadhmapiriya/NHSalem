@@ -134,21 +134,27 @@ export default function ProductDetail() {
         </button>
 
         {/* Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs md:text-sm text-gray-400 mb-6 overflow-x-auto hide-scrollbar whitespace-nowrap pb-1">
-          <Link to="/" className="text-gray-400 hover:text-green-700 transition-colors shrink-0">
-            Home
-          </Link>
-          <span className="text-gray-300 shrink-0">/</span>
-          <Link
-            to={`/category/${product.category}`}
-            className="text-gray-400 hover:text-green-700 transition-colors capitalize shrink-0"
-          >
-            {product.category.replace(/-/g, ' ')}
-          </Link>
-          <span className="text-gray-300 shrink-0">/</span>
-          <span className="text-gray-700 font-medium truncate max-w-[200px] sm:max-w-xs shrink-0">
-            {product.name}
-          </span>
+        <nav aria-label="Breadcrumb" className="mb-6 w-full overflow-x-auto hide-scrollbar">
+          <ul className="flex flex-row items-center flex-nowrap gap-2 text-xs md:text-sm text-gray-400 whitespace-nowrap pb-1 min-w-max">
+            <li className="flex-none">
+              <Link to="/" className="text-gray-400 hover:text-green-700 transition-colors">
+                Home
+              </Link>
+            </li>
+            <li className="flex-none text-gray-300">/</li>
+            <li className="flex-none">
+              <Link
+                to={`/category/${product.category}`}
+                className="text-gray-400 hover:text-green-700 transition-colors capitalize"
+              >
+                {product.category.replace(/-/g, ' ')}
+              </Link>
+            </li>
+            <li className="flex-none text-gray-300">/</li>
+            <li className="flex-none text-gray-700 font-medium truncate max-w-[200px] sm:max-w-xs">
+              {product.name}
+            </li>
+          </ul>
         </nav>
       </div>
 

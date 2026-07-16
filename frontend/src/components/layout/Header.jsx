@@ -106,31 +106,6 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
 
   return (
     <>
-      {/* Top Deck Accent Bar (Marquee on mobile, Two-column flex on desktop) */}
-      <div className="bg-primary text-white text-[11px] font-semibold py-1 px-4 border-b border-white/10 overflow-hidden">
-        {/* Mobile Scrolling Marquee */}
-        <div className="md:hidden w-full overflow-hidden relative whitespace-nowrap">
-          <div className="animate-marquee inline-block">
-            <span>Delivering Fresh across Salem, Tamil Nadu &nbsp;&bull;&nbsp; ✨ Use code <span className="font-bold">FRESH100</span> for free delivery on orders above ₹499!</span>
-          </div>
-        </div>
-
-        {/* Desktop Split Deck */}
-        <div className="hidden md:flex max-w-7xl mx-auto px-4 justify-between items-center">
-          <div className="flex items-center gap-1.5 opacity-90">
-            <span className="material-symbols-outlined text-[14px]">location_on</span>
-            <span>Delivering Fresh across Salem, Tamil Nadu</span>
-          </div>
-          <div className="animate-pulse text-amber-300">
-            ✨ Use code <span className="font-bold">FRESH100</span> for free delivery on orders above ₹499!
-          </div>
-          <div className="flex items-center gap-4 opacity-90">
-            <Link to="/about" className="hover:text-amber-200 transition-colors">Our Story</Link>
-            <span>|</span>
-            <Link to="/stores" className="hover:text-amber-200 transition-colors">Stores</Link>
-          </div>
-        </div>
-      </div>
 
       <header
         className="sticky top-[-1.5px] z-50 w-full bg-white shadow-[0_4px_30px_rgba(0,0,0,0.06)] border-b border-outline-variant/15 will-change-transform transform-gpu"
