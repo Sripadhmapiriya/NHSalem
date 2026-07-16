@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useCartStore } from '@/store/cartStore'
@@ -12,6 +13,16 @@ const FloatingCartBar = () => {
 
   const totalItems = items.reduce((sum, i) => sum + i.quantity, 0)
 
+  const [bump, setBump] = useState(false)
+
+  useEffect(() => {
+    if (totalItems > 0) {
+      setBump(true)
+      const timer = setTimeout(() => setBump(false), 300)
+      return () => clearTimeout(timer)
+    }
+  }, [totalItems])
+
   const hiddenRoutes = ['/cart', '/checkout', '/admin']
   const shouldHide = hiddenRoutes.some((r) => location.pathname.startsWith(r))
 
@@ -19,35 +30,35 @@ const FloatingCartBar = () => {
 
   return (
     <motion.div
-      initial={{ y: 100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      exit={{ y: 100, opacity: 0 }}
-      transition={{ type: 'spring', stiffness: 260, damping: 26 }}
-      className="fixed bottom-5 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:max-w-2xl z-[999] bg-[#0f172a] text-white px-5 py-3.5 rounded-[18px] shadow-[0_12px_40px_rgba(0,0,0,0.3)] cursor-pointer flex items-center justify-between h-14 border border-white/10 hover:bg-[#131d33] transition-colors"
+      initial={{ x: 150, opacity: 0, scale: 0.9 }}
+      animate={bump ? { x: 0, opacity: 1, scale: [1, 1.08, 1], y: [0, -6, 0] } : { x: 0, opacity: 1, scale: 1, y: 0 }}
+      exit={{ x: 150, opacity: 0, scale: 0.9 }}
+      transition={bump ? { duration: 0.3, ease: 'easeInOut' } : { type: 'spring', stiffness: 280, damping: 22 }}
+      className="fixed bottom-5 right-4 md:right-8 z-[999] w-[calc(100%-2rem)] sm:w-auto sm:min-w-[290px] max-w-sm bg-[#0f172a]/95 backdrop-blur-md text-white px-4 py-2.5 rounded-[14px] shadow-[0_12px_45px_rgba(0,0,0,0.35)] cursor-pointer flex items-center justify-between h-12 border border-white/10 hover:bg-[#131d33] transition-all"
       onClick={() => navigate('/cart')}
     >
       {/* Left side: Cart icon + items count + separator + total */}
-      <div className="flex items-center gap-3">
-        <div className="bg-white/10 text-white p-1.5 rounded-lg flex items-center justify-center">
-          <span className="material-symbols-outlined text-[18px] font-bold text-white">
+      <div className="flex items-center gap-2.5">
+        <div className="bg-white/10 text-white p-1 rounded-md flex items-center justify-center">
+          <span className="material-symbols-outlined text-[16px] font-bold text-white">
             shopping_cart
           </span>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="font-semibold text-xs md:text-sm">
+        <div className="flex items-center gap-1.5">
+          <span className="font-semibold text-xs text-white/90">
             {totalItems} {totalItems === 1 ? 'item' : 'items'}
           </span>
-          <span className="text-white/30 text-xs select-none">•</span>
-          <span className="font-black text-xs md:text-sm text-amber-400">
+          <span className="text-white/20 text-xs select-none">•</span>
+          <span className="font-black text-xs text-amber-400">
             ₹{total.toLocaleString()}
           </span>
         </div>
       </div>
 
       {/* Right side: View Cart text + Chevron */}
-      <div className="flex items-center gap-1 font-bold text-xs uppercase tracking-wider text-white">
+      <div className="flex items-center gap-0.5 font-bold text-[10px] uppercase tracking-wider text-white">
         <span>View Cart</span>
-        <span className="material-symbols-outlined text-[16px] font-bold" style={{ display: 'flex', alignItems: 'center' }}>
+        <span className="material-symbols-outlined text-[14px] font-bold" style={{ display: 'flex', alignItems: 'center' }}>
           chevron_right
         </span>
       </div>

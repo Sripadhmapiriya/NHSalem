@@ -114,11 +114,11 @@ function Header({ onLoginClick }) {
       </div>
 
       <header
-        className="sticky top-0 z-50 w-full bg-white shadow-sm border-b border-outline-variant/20 will-change-transform transform-gpu"
+        className="sticky top-0 z-50 w-full bg-white shadow-[0_4px_30px_rgba(0,0,0,0.06)] border-b border-outline-variant/15 will-change-transform transform-gpu"
         style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
       >
 
-      <div className="max-w-7xl mx-auto px-4 flex items-center justify-between gap-4 h-14 md:h-16">
+      <div className="max-w-7xl mx-auto px-4 flex items-center justify-between gap-2 xl:gap-4 h-14 md:h-16">
         {/* Logo */}
         <Link
           to="/"
@@ -142,7 +142,7 @@ function Header({ onLoginClick }) {
 
         {/* Desktop Nav */}
         <nav
-          className="hidden lg:flex items-center gap-1 px-2 py-1 bg-surface-container-low/60 border border-outline-variant/40 rounded-full shadow-inner-sm"
+          className="hidden xl:flex items-center gap-1 px-2 py-1 bg-surface-container-low/60 border border-outline-variant/40 rounded-full shadow-inner-sm"
           aria-label="Product categories"
         >
           {NAV_LINKS.map((link) => (
@@ -150,34 +150,34 @@ function Header({ onLoginClick }) {
               key={link.slug}
               to={`/category/${link.slug}`}
               className={({ isActive }) =>
-                `px-3 py-1 rounded-full text-sm font-bold transition-all duration-250 flex items-center gap-1.5 flex-shrink-0 whitespace-nowrap ${
+                `px-1.5 xl:px-2.5 py-1 rounded-full text-xs xl:text-sm font-bold transition-all duration-250 flex items-center gap-1 flex-shrink-0 whitespace-nowrap ${
                   isActive
                     ? 'bg-gradient-to-r from-primary to-blue-700 text-white shadow-sm shadow-primary/25 scale-[1.02]'
                     : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-low'
                 }`
               }
             >
-              <span className="text-[14px] leading-none flex-shrink-0 hidden xl:inline">{link.emoji}</span>
+              <span className="text-[12px] xl:text-[14px] leading-none flex-shrink-0 hidden xl:inline">{link.emoji}</span>
               <span>{link.label}</span>
             </NavLink>
           ))}
           <NavLink
             to="/subscriptions"
             className={({ isActive }) =>
-              `px-3 py-1 rounded-full text-sm font-bold transition-all duration-250 ml-1 flex items-center gap-1.5 flex-shrink-0 whitespace-nowrap ${
+              `px-1.5 xl:px-2.5 py-1 rounded-full text-xs xl:text-sm font-bold transition-all duration-250 ml-1 flex items-center gap-1 flex-shrink-0 whitespace-nowrap ${
                 isActive
                   ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-sm shadow-amber-600/25 scale-[1.02]'
                   : 'text-secondary hover:bg-secondary-container/20'
               }`
             }
           >
-            <span className="text-[14px] leading-none flex-shrink-0 hidden xl:inline">✦</span>
+            <span className="text-[12px] xl:text-[14px] leading-none flex-shrink-0 hidden xl:inline">✦</span>
             <span>Subscribe</span>
           </NavLink>
         </nav>
 
         {/* Right icons / control deck */}
-        <div className="flex items-center gap-2.5 ml-auto md:ml-0">
+        <div className="flex items-center gap-1.5 xl:gap-2.5 ml-auto md:ml-0">
           <div className="flex items-center gap-1.5 px-1.5 py-1 bg-surface-container-low/70 border border-outline-variant/30 rounded-full shadow-inner-sm">
             {/* Search */}
             <div ref={searchRef} className="relative">
@@ -277,7 +277,7 @@ function Header({ onLoginClick }) {
           {/* Track Order */}
           <button
             onClick={() => setTrackModalOpen(true)}
-            className="hidden lg:flex items-center gap-1.5 px-2 py-2 xl:px-3 xl:py-1.5 rounded-full border border-outline-variant/30 bg-surface-container-low hover:bg-surface-container hover:border-primary/40 transition-all cursor-pointer select-none focus:outline-none whitespace-nowrap flex-shrink-0"
+            className="hidden xl:flex items-center gap-1.5 px-2 py-2 xl:px-3 xl:py-1.5 rounded-full border border-outline-variant/30 bg-surface-container-low hover:bg-surface-container hover:border-primary/40 transition-all cursor-pointer select-none focus:outline-none whitespace-nowrap flex-shrink-0"
             aria-label="Track your order live"
           >
             <motion.span
@@ -296,7 +296,7 @@ function Header({ onLoginClick }) {
             <div className="relative" ref={profileDropdownRef}>
               <button
                 onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                className="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-outline-variant/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/30 transition-all cursor-pointer select-none focus:outline-none animate-fade-in whitespace-nowrap flex-shrink-0"
+                className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-outline-variant/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/30 transition-all cursor-pointer select-none focus:outline-none animate-fade-in whitespace-nowrap flex-shrink-0"
                 aria-label={`Logged in as ${user.name}. Click to view menu.`}
               >
                 <div className="w-5 h-5 rounded-full flex items-center justify-center bg-primary text-white text-[10px] font-bold uppercase">
@@ -352,7 +352,7 @@ function Header({ onLoginClick }) {
           ) : (
             <button
               onClick={onLoginClick}
-              className="hidden lg:flex items-center gap-2 px-2 py-2 xl:px-4 xl:py-2 rounded-full border border-outline-variant/30 bg-primary hover:bg-primary/95 text-white shadow-sm hover:shadow transition-all cursor-pointer select-none focus:outline-none text-sm font-bold whitespace-nowrap flex-shrink-0"
+              className="hidden md:flex items-center gap-2 px-2 py-2 xl:px-4 xl:py-2 rounded-full border border-outline-variant/30 bg-primary hover:bg-primary/95 text-white shadow-sm hover:shadow transition-all cursor-pointer select-none focus:outline-none text-sm font-bold whitespace-nowrap flex-shrink-0"
               aria-label="Account login"
             >
               <div className="w-4 h-4 rounded-full flex items-center justify-center bg-white/20 flex-shrink-0">
@@ -370,7 +370,7 @@ function Header({ onLoginClick }) {
             icon={mobileMenuOpen ? 'close' : 'menu'}
             aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden"
+            className="xl:hidden"
           />
         </div>
       </div>
@@ -383,7 +383,7 @@ function Header({ onLoginClick }) {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="absolute top-full left-0 right-0 lg:hidden border-t border-b border-outline-variant/30 bg-white z-40 shadow-lg overflow-hidden"
+            className="absolute top-full left-0 right-0 xl:hidden border-t border-b border-outline-variant/30 bg-white z-40 shadow-lg overflow-hidden"
           >
             <nav className="container-max py-4 flex flex-col gap-1" aria-label="Mobile navigation">
               {NAV_LINKS.map((link) => (
