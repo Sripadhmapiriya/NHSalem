@@ -302,3 +302,21 @@ export async function deleteAdminRecipe(id) {
   })
   return handleResponse(response)
 }
+
+// ── Admin Customer Details & Status Toggle ────────────────────────────────────
+
+export async function getCustomerOrders(customerId) {
+  const response = await fetch(`${API_URL}/api/admin/customers/${customerId}/orders`, {
+    headers: getHeaders(true)
+  })
+  return handleResponse(response)
+}
+
+export async function toggleCustomerStatus(customerId, status) {
+  const response = await fetch(`${API_URL}/api/admin/customers/${customerId}/status`, {
+    method: 'PATCH',
+    headers: getHeaders(true),
+    body: JSON.stringify({ status })
+  })
+  return handleResponse(response)
+}

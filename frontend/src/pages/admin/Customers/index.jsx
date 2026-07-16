@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { getCustomers } from '@/services/adminApi'
 import {
   AdminPage,
@@ -18,6 +19,7 @@ import {
 import { SeafoodLoader } from '@/components/ui'
 
 export default function AdminCustomers() {
+  const navigate = useNavigate()
   const [customers, setCustomers] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -93,7 +95,7 @@ export default function AdminCustomers() {
           className="w-64"
         />
         <FilterBar
-          options={['all', 'active', 'new', 'inactive', 'suspended']}
+          options={['all', 'active', 'guest', 'suspended']}
           active={statusFilter}
           onSelect={setStatusFilter}
         />
@@ -104,9 +106,13 @@ export default function AdminCustomers() {
           <SeafoodLoader text="Loading customers..." className="py-8" />
         ) : (
           <>
-            <AdminTable headers={['Customer', 'City', 'Orders', 'Total Spent', 'Joined', 'Last Order', 'Status']}>
+            <AdminTable headers={['Customer', 'City', 'Orders', 'Total Spent', 'Joined', 'Last Order', 'Status', '']}>
               {paginated.map((c) => (
-                <Tr key={c.id}>
+                <Tr 
+                  key={c.id} 
+                  onClick={() => navigate(`/admin/customers/${c.id}`)}
+                  className="cursor-pointer hover:bg-gray-50 transition-colors"
+                >
                   <Td>
                     <div className="flex items-center gap-2.5">
                       <Avatar name={c.name} />
@@ -122,6 +128,12 @@ export default function AdminCustomers() {
                   <Td>{formatDate(c.joinedAt)}</Td>
                   <Td>{c.lastOrder ? formatDate(c.lastOrder) : <span className="text-admin-text-sub">—</span>}</Td>
                   <Td><StatusBadge status={c.status} /></Td>
+                  <Td>
+                    <button className="flex items-center gap-1 text-xs text-green-700 font-medium hover:underline">
+                      View Orders
+                      <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                    </button>
+                  </Td>
                 </Tr>
               ))}
             </AdminTable>

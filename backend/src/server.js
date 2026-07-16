@@ -97,6 +97,11 @@ app.listen(PORT, async () => {
     await pool.query(`
       ALTER TABLE products ADD COLUMN IF NOT EXISTS variants JSONB NOT NULL DEFAULT '[]';
     `);
+    
+    // Ensure users table has status column
+    await pool.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS status VARCHAR(50) NOT NULL DEFAULT 'active';
+    `);
     await pool.query(`
       INSERT INTO categories (id, slug, name) 
       VALUES 
