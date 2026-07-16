@@ -72,8 +72,7 @@ export default function Layout({ children }) {
     }
   }, [user, pendingAction, addItem, setSubscription, addToast, plans, setPendingAction])
 
-  const items = useCartStore((state) => state.items) || []
-  const totalItems = items.reduce((sum, i) => sum + i.quantity, 0)
+  const { items = [], totalItems = 0 } = useCartStore()
   const location = useLocation()
   const hiddenRoutes = ['/cart', '/checkout', '/admin']
   const isCartBarVisible = totalItems > 0 && !hiddenRoutes.some(r => location.pathname.startsWith(r))
