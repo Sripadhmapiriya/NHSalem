@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import Header from './Header'
 import Footer from './Footer'
@@ -11,6 +12,7 @@ import useSubscriptionStore from '@/store/subscriptionStore'
 import useToastStore from '@/store/toastStore'
 import { createSubscription, getSubscriptionPlans } from '@/services/api'
 import { MOCK_SUBSCRIPTION } from '@/mock/subscriptions'
+import { FloatingCartBar } from '@/components/ui'
 
 const pageVariants = {
   initial: { opacity: 0, y: 8 },
@@ -70,11 +72,17 @@ export default function Layout({ children }) {
     }
   }, [user, pendingAction, addItem, setSubscription, addToast, plans, setPendingAction])
 
+  const items = useCartStore((state) => state.items) || []
+  const totalItems = items.reduce((sum, i) => sum + i.quantity, 0)
+  const location = useLocation()
+  const hiddenRoutes = ['/cart', '/checkout', '/admin']
+  const isCartBarVisible = totalItems > 0 && !hiddenRoutes.some(r => location.pathname.startsWith(r))
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header onLoginClick={() => setLoginModalOpen(true)} />
 
-      <main className="flex-1" id="main-content" tabIndex={-1}>
+      <main className={`flex-1 ${isCartBarVisible ? 'pb-20' : ''}`} id="main-content" tabIndex={-1}>
         <motion.div
           key={typeof window !== 'undefined' ? window.location.pathname : 'page'}
           variants={pageVariants}
@@ -88,6 +96,8 @@ export default function Layout({ children }) {
       </main>
 
       <Footer />
+
+      <FloatingCartBar />
 
       {/* Global Login Modal */}
       <Modal

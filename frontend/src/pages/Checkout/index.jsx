@@ -12,6 +12,7 @@ import useToastStore from '@/store/toastStore'
 import useAuthStore from '@/store/authStore'
 import { placeOrder, getUserAddresses, createUserAddress } from '@/services/api'
 import useRazorpay from '@/hooks/useRazorpay'
+import Modal from '@/components/ui/Modal'
 
 const CHECKOUT_STEPS = [
   { id: 'address', label: 'Delivery Address', icon: 'location_on' },
@@ -55,6 +56,7 @@ export default function Checkout() {
   const [selectedSlot, setSelectedSlot] = useState(null)
   const [selectedPayment, setSelectedPayment] = useState(null)
   const [placingOrder, setPlacingOrder] = useState(false)
+  const [successOrderRef, setSuccessOrderRef] = useState(null)
 
   // Address management state
   const [savedAddresses, setSavedAddresses] = useState([])
@@ -177,7 +179,7 @@ export default function Checkout() {
             })
             clearCart()
             addToast({ message: '🎉 Order placed successfully!', type: 'success', duration: 5000 })
-            navigate(`/orders/${orderId}`)
+            setSuccessOrderRef(orderId)
           } catch (err) {
             console.error('Order placement error:', err)
             addToast({ message: 'Something went wrong while placing the order. Please contact support.', type: 'error' })
@@ -202,7 +204,7 @@ export default function Checkout() {
       })
       clearCart()
       addToast({ message: '🎉 Order placed successfully!', type: 'success', duration: 5000 })
-      navigate(`/orders/${orderId}`)
+      setSuccessOrderRef(orderId)
     } catch (err) {
       console.error('COD order error:', err)
       addToast({ message: 'Something went wrong. Please try again.', type: 'error' })
@@ -211,7 +213,7 @@ export default function Checkout() {
     }
   }
 
-  if (items.length === 0) {
+  if (items.length === 0 && !successOrderRef) {
     navigate('/cart')
     return null
   }
@@ -515,6 +517,67 @@ export default function Checkout() {
           </div>
         </div>
       </div>
+
+      {/* Success Modal */}
+      <Modal
+        isOpen={!!successOrderRef}
+        onClose={() => {
+          navigate('/my-orders')
+        }}
+        title={null}
+        id="order-success-modal"
+        size="sm"
+        showClose={false}
+      >
+        <div className="text-center py-6">
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-green-200">
+            <span className="material-symbols-outlined text-green-600 text-3xl font-black animate-pulse">
+              check_circle
+            </span>
+          </div>
+          <h2 className="text-xl font-bold text-on-surface mb-2 font-serif">
+            Order Placed Successfully!
+          </h2>
+          <p className="text-on-surface-variant text-sm mb-6 font-medium">
+            Your order has been received and is being prepared.
+          </p>
+          
+          {/* Order ID - copyable */}
+          <div className="bg-surface-container-low rounded-2xl px-4 py-3 flex items-center justify-between mb-6 border border-outline-variant/30">
+            <div className="text-left">
+              <p className="text-[10px] uppercase font-bold text-on-surface-variant tracking-wider mb-0.5">Your Order ID</p>
+              <p className="font-mono font-black text-lg text-primary">{successOrderRef}</p>
+            </div>
+            <button
+              onClick={() => {
+                if (successOrderRef) {
+                  navigator.clipboard.writeText(successOrderRef)
+                  addToast({ message: '📋 Order ID copied!', type: 'success' })
+                }
+              }}
+              className="text-primary hover:bg-primary/5 p-2 rounded-full transition-colors flex items-center"
+              title="Copy Order ID"
+            >
+              <span className="material-symbols-outlined text-[20px]">content_copy</span>
+            </button>
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={() => navigate(`/orders/${successOrderRef}`)}
+              className="flex-1 bg-primary hover:bg-primary/95 text-white py-3 rounded-full font-bold text-sm shadow-sm transition-all cursor-pointer"
+            >
+              Track Order
+            </button>
+            <button
+              onClick={() => navigate('/my-orders')}
+              className="flex-1 border border-outline-variant hover:bg-surface-container-low text-on-surface py-3 rounded-full font-bold text-sm transition-all cursor-pointer"
+            >
+              My Orders
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }

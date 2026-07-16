@@ -19,6 +19,19 @@ const StoreLocator = lazy(() => import('@/pages/StoreLocator'))
 const BulkOrders   = lazy(() => import('@/pages/BulkOrders'))
 const HelpCenter   = lazy(() => import('@/pages/HelpCenter'))
 const NotFound     = lazy(() => import('@/pages/NotFound'))
+const MyOrders     = lazy(() => import('@/pages/MyOrders'))
+const OrderDetail   = lazy(() => import('@/pages/MyOrders/OrderDetail'))
+
+import useAuthStore from '@/store/authStore'
+import { Navigate } from 'react-router-dom'
+
+function ProtectedRoute({ children }) {
+  const user = useAuthStore((state) => state.user)
+  if (!user) {
+    return <Navigate to="/" replace />
+  }
+  return children
+}
 
 function PageLoader() {
   return <SeafoodLoader text="Netting the latest updates…" className="min-h-[60vh]" />
@@ -67,6 +80,8 @@ function RootRoutes() {
 
           {/* Auth */}
           <Route path="/login" element={<Login />} />
+          <Route path="/my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
+          <Route path="/my-orders/:orderRef" element={<ProtectedRoute><OrderDetail /></ProtectedRoute>} />
 
           {/* Content pages */}
           <Route path="/about" element={<About />} />
@@ -75,6 +90,7 @@ function RootRoutes() {
 
           {/* Operational */}
           <Route path="/orders/:orderId" element={<OrderTracking />} />
+          <Route path="/track-order/:orderId" element={<OrderTracking />} />
           <Route path="/stores" element={<StoreLocator />} />
           <Route path="/bulk-orders" element={<BulkOrders />} />
           <Route path="/help" element={<HelpCenter />} />

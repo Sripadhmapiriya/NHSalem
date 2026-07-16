@@ -36,6 +36,20 @@ function Header({ onLoginClick }) {
   const logout = useAuthStore((state) => state.logout)
   const debouncedSearch = useDebounce(searchQuery, 300)
 
+  // Profile dropdown state
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
+  const profileDropdownRef = useRef(null)
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+        setProfileDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   // Track Order Modal state
   const [trackModalOpen, setTrackModalOpen] = useState(false)
   const [orderIdInput, setOrderIdInput] = useState('')
@@ -279,18 +293,62 @@ function Header({ onLoginClick }) {
 
           {/* AuthControl */}
           {user ? (
-            <button
-              onClick={() => setLogoutConfirmOpen(true)}
-              className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-outline-variant/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/30 transition-all cursor-pointer select-none focus:outline-none animate-fade-in whitespace-nowrap flex-shrink-0"
-              aria-label={`Logged in as ${user.name}. Click to log out.`}
-            >
-              <div className="w-5 h-5 rounded-full flex items-center justify-center bg-primary text-white text-[10px] font-bold uppercase">
-                {user.name?.charAt(0) || 'U'}
-              </div>
-              <span className="text-label-sm font-bold text-primary truncate max-w-[90px]">
-                {user.name?.split(' ')[0] || 'User'}
-              </span>
-            </button>
+            <div className="relative" ref={profileDropdownRef}>
+              <button
+                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-outline-variant/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/30 transition-all cursor-pointer select-none focus:outline-none animate-fade-in whitespace-nowrap flex-shrink-0"
+                aria-label={`Logged in as ${user.name}. Click to view menu.`}
+              >
+                <div className="w-5 h-5 rounded-full flex items-center justify-center bg-primary text-white text-[10px] font-bold uppercase">
+                  {user.name?.charAt(0) || 'U'}
+                </div>
+                <span className="text-label-sm font-bold text-primary truncate max-w-[90px]">
+                  {user.name?.split(' ')[0] || 'User'}
+                </span>
+                <span className="material-symbols-outlined text-primary font-bold text-xs">
+                  expand_more
+                </span>
+              </button>
+
+              <AnimatePresence>
+                {profileDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-stat border border-outline-variant/30 py-1 z-50 overflow-hidden"
+                  >
+                    <div className="px-4 py-2.5 border-b border-outline-variant/20 bg-surface-container-low/40">
+                      <p className="font-semibold text-xs text-on-surface truncate">{user.name}</p>
+                      <p className="text-[10px] text-on-surface-variant truncate mt-0.5">{user.email}</p>
+                    </div>
+                    <Link
+                      to="/my-orders"
+                      onClick={() => setProfileDropdownOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-on-surface hover:bg-surface-container transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-sm font-bold text-on-surface-variant">
+                        local_shipping
+                      </span>
+                      My Orders
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setProfileDropdownOpen(false)
+                        setLogoutConfirmOpen(true)
+                      }}
+                      className="flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-error hover:bg-error/5 w-full text-left transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-sm font-bold text-error">
+                        logout
+                      </span>
+                      Log Out
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           ) : (
             <button
               onClick={onLoginClick}
@@ -374,10 +432,19 @@ function Header({ onLoginClick }) {
                   <div className="text-center py-2 text-label-md font-semibold text-primary bg-primary/5 rounded-[12px] border border-outline-variant/30">
                     Hi, {user.name} 👋
                   </div>
+                  <NavLink
+                    to="/my-orders"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="py-3 bg-white border border-outline-variant/50 text-on-surface rounded-full text-label-md font-semibold flex items-center justify-center gap-2 shadow-sm hover:bg-surface-container-low transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">local_shipping</span>
+                    My Orders
+                  </NavLink>
                   <button
                     onClick={() => { setMobileMenuOpen(false); setLogoutConfirmOpen(true) }}
-                    className="py-3 bg-surface-container-highest border border-outline-variant/50 text-on-surface rounded-full text-label-md font-semibold flex items-center justify-center gap-2"
+                    className="py-3 bg-surface-container-highest border border-outline-variant/50 text-on-surface rounded-full text-label-md font-semibold flex items-center justify-center gap-2 hover:bg-surface-container transition-colors"
                   >
+                    <span className="material-symbols-outlined text-[18px]">logout</span>
                     Log Out
                   </button>
                 </div>
