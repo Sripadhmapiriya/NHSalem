@@ -29,9 +29,10 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
   const navigate = useNavigate()
 
-  const totalItems = useCartStore((state) => state.items.reduce((sum, i) => sum + i.quantity, 0))
+  const rawTotalItems = useCartStore((state) => state.items.reduce((sum, i) => sum + i.quantity, 0))
   const wishlistCount = useWishlistStore((state) => state.count)
   const user = useAuthStore((state) => state.user)
+  const totalItems = user ? rawTotalItems : 0
   const logout = useAuthStore((state) => state.logout)
   const debouncedSearch = useDebounce(searchQuery, 300)
 
@@ -48,6 +49,17 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [mobileMenuOpen])
 
   // Track Order Modal state
   const [trackModalOpen, setTrackModalOpen] = useState(false)

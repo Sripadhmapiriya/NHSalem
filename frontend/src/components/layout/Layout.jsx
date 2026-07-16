@@ -76,7 +76,7 @@ export default function Layout({ children }) {
   const { items = [], totalItems = 0 } = useCartStore()
   const location = useLocation()
   const hiddenRoutes = ['/cart', '/checkout', '/admin']
-  const isCartBarVisible = totalItems > 0 && !hiddenRoutes.some(r => location.pathname.startsWith(r))
+  const isCartBarVisible = user && totalItems > 0 && !hiddenRoutes.some(r => location.pathname.startsWith(r))
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -101,7 +101,7 @@ export default function Layout({ children }) {
 
       <Footer />
 
-      <FloatingCartBar hidden={loginModalOpen || cartLoginPopupOpen || mobileMenuOpen} />
+      <FloatingCartBar hidden={!user || loginModalOpen || cartLoginPopupOpen || mobileMenuOpen} />
 
       {/* Global Login Modal */}
       <Modal

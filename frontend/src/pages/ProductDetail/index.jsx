@@ -134,19 +134,19 @@ export default function ProductDetail() {
         </button>
 
         {/* Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1 text-xs md:text-sm text-gray-400 mb-6">
-          <Link to="/" className="text-gray-400 hover:text-green-700 transition-colors">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs md:text-sm text-gray-400 mb-6 overflow-x-auto hide-scrollbar whitespace-nowrap pb-1">
+          <Link to="/" className="text-gray-400 hover:text-green-700 transition-colors shrink-0">
             Home
           </Link>
-          <span className="text-gray-300">/</span>
+          <span className="text-gray-300 shrink-0">/</span>
           <Link
             to={`/category/${product.category}`}
-            className="text-gray-400 hover:text-green-700 transition-colors capitalize"
+            className="text-gray-400 hover:text-green-700 transition-colors capitalize shrink-0"
           >
             {product.category.replace(/-/g, ' ')}
           </Link>
-          <span className="text-gray-300">/</span>
-          <span className="text-gray-700 font-medium truncate max-w-[200px] sm:max-w-xs">
+          <span className="text-gray-300 shrink-0">/</span>
+          <span className="text-gray-700 font-medium truncate max-w-[200px] sm:max-w-xs shrink-0">
             {product.name}
           </span>
         </nav>
