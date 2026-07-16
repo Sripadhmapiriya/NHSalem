@@ -53,7 +53,7 @@ export default function AdminLayout() {
       {/* Brand */}
       <div className="px-5 py-5 border-b border-white/8 flex-shrink-0">
         <div className="flex items-center gap-3">
-          <img src="/crest.png" alt="NH Salem Sea Foods Logo" className="w-8 h-8 object-contain" />
+          <img src="/crest.png" alt="NH Salem Sea Foods Logo" className="w-12 h-12 object-contain" />
           <div className="min-w-0 pl-3 border-l border-white/10">
             <p className="font-serif text-white font-extrabold text-[15px] leading-tight tracking-tight">NH Salem</p>
             <p className="text-white/45 text-[9px] font-bold tracking-[0.18em] uppercase">Admin Portal</p>

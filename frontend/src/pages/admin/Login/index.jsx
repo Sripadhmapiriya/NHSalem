@@ -104,7 +104,7 @@ export default function AdminLogin() {
             <img
               src="/crest.png"
               alt="NH Salem Sea Foods Logo"
-              className="w-16 h-16 object-contain mb-5"
+              className="w-28 h-28 object-contain mb-5"
             />
             <h1 className="font-serif text-3xl font-extrabold text-admin-navy tracking-tight leading-tight">
               NH Salem

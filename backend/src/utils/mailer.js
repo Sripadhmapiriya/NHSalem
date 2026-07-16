@@ -60,8 +60,9 @@ export async function broadcastToSubscribers({ updateType, subject, content }) {
     `)
     const customers = res2.rows.map(r => r.email)
 
-    // 3. Merge lists and remove duplicates
-    const allEmails = Array.from(new Set([...subs, ...customers])).filter(Boolean)
+    // 3. Merge lists, remove duplicates, and filter out mock domains to prevent bounce-backs
+    const allEmails = Array.from(new Set([...subs, ...customers]))
+      .filter(email => email && !email.endsWith('@example.com') && !email.endsWith('@nhsalem.com'))
     
     console.log(`Starting broadcast of type ${updateType} to ${allEmails.length} recipients...`)
     

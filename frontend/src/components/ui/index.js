@@ -19,4 +19,4 @@ export { default as Skeleton, ProductCardSkeleton, RecipeCardSkeleton, PageSkele
 export { default as OTPInput } from './OTPInput'
 export { default as QuantityStepper, ProgressStepper } from './Stepper'
 export { default as SeafoodLoader } from './SeafoodLoader'
-
+export { default as FloatingCartBar } from './FloatingCartBar'

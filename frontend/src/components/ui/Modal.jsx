@@ -36,22 +36,29 @@ export default function Modal({
     if (e.key === 'Escape') onClose()
   }, [onClose])
 
+  // Handle initial focus and body overflow when opening/closing
   useEffect(() => {
     if (isOpen) {
       prevFocusRef.current = document.activeElement
       document.body.style.overflow = 'hidden'
-      document.addEventListener('keydown', trapFocus)
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         panelRef.current?.querySelector('button, input')?.focus()
       }, 100)
-    } else {
-      document.body.style.overflow = ''
-      document.removeEventListener('keydown', trapFocus)
-      prevFocusRef.current?.focus()
+      return () => {
+        clearTimeout(timer)
+        document.body.style.overflow = ''
+        prevFocusRef.current?.focus()
+      }
     }
-    return () => {
-      document.body.style.overflow = ''
-      document.removeEventListener('keydown', trapFocus)
+  }, [isOpen])
+
+  // Handle keydown listener for focus trapping
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener('keydown', trapFocus)
+      return () => {
+        document.removeEventListener('keydown', trapFocus)
+      }
     }
   }, [isOpen, trapFocus])
 

@@ -185,6 +185,23 @@ export function orderPlacedCustomer({ orderRef, customerName, items, total, addr
   const discount = subtotal + deliveryCharge - total
 
   const contentHtml = `
+    <!-- Order ID Banner -->
+    <div style="background:#f0fdf4; border:2px solid #166534; 
+                border-radius:8px; padding:16px; text-align:center; 
+                margin-bottom:24px;">
+      <p style="margin:0; font-size:12px; color:#666; 
+                text-transform:uppercase; letter-spacing:1px;">
+        Your Order ID
+      </p>
+      <p style="margin:4px 0 0; font-size:28px; font-weight:900; 
+                color:#166534; letter-spacing:2px;">
+        ${orderRef}
+      </p>
+      <p style="margin:8px 0 0; font-size:12px; color:#888;">
+        Save this ID to track your order anytime
+      </p>
+    </div>
+
     <h2>Your Order #${orderRef} is Confirmed! 🎉</h2>
     <p>Thank you for shopping with NH Salem Sea Foods, <strong>${customerName}</strong>! We've received your order and are getting it ready for dispatch.</p>
     
@@ -230,8 +247,13 @@ export function orderPlacedCustomer({ orderRef, customerName, items, total, addr
       <p><strong>Delivery Slot:</strong> ${slot}</p>
     </div>
 
-    <div style="text-align: center;">
-      <a href="${BASE_URL}/orders/${orderRef}" class="btn">Track Your Order Live</a>
+    <div style="text-align:center; margin-top:24px;">
+      <a href="${BASE_URL}/track-order/${orderRef}"
+         style="display:inline-block; background:#166534; color:white; padding:12px 32px; 
+                border-radius:24px; text-decoration:none; 
+                font-weight:600; font-size:14px;">
+        Track Order #${orderRef} →
+      </a>
     </div>
   `
   return baseLayout(`Order Confirmed - #${orderRef}`, contentHtml)
@@ -305,6 +327,23 @@ export function orderConfirmedCustomer({ orderRef, customerName, items, total, a
   const discount = subtotal + deliveryCharge - total
 
   const contentHtml = `
+    <!-- Order ID Banner -->
+    <div style="background:#f0fdf4; border:2px solid #166534; 
+                border-radius:8px; padding:16px; text-align:center; 
+                margin-bottom:24px;">
+      <p style="margin:0; font-size:12px; color:#666; 
+                text-transform:uppercase; letter-spacing:1px;">
+        Your Order ID
+      </p>
+      <p style="margin:4px 0 0; font-size:28px; font-weight:900; 
+                color:#166534; letter-spacing:2px;">
+        ${orderRef}
+      </p>
+      <p style="margin:8px 0 0; font-size:12px; color:#888;">
+        Save this ID to track your order anytime
+      </p>
+    </div>
+
     <h2>✅ Your Order #${orderRef} has been Confirmed!</h2>
     <p>Great news, <strong>${customerName}</strong>! Your order has been accepted by our store manager and is currently being prepared with fresh, premium seafood.</p>
 
@@ -349,8 +388,13 @@ export function orderConfirmedCustomer({ orderRef, customerName, items, total, a
       <p><strong>Scheduled Slot:</strong> ${slot}</p>
     </div>
 
-    <div style="text-align: center;">
-      <a href="${BASE_URL}/orders/${orderRef}" class="btn">Track Delivery Status</a>
+    <div style="text-align:center; margin-top:24px;">
+      <a href="${BASE_URL}/track-order/${orderRef}"
+         style="display:inline-block; background:#166534; color:white; padding:12px 32px; 
+                border-radius:24px; text-decoration:none; 
+                font-weight:600; font-size:14px;">
+        Track Order #${orderRef} →
+      </a>
     </div>
   `
   return baseLayout(`Order Confirmed - #${orderRef}`, contentHtml)

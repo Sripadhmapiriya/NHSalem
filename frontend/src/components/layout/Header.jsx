@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SearchInput, IconButton, Modal, Input, Button } from '@/components/ui'
-import useCartStore from '@/store/cartStore'
+import { useCartStore } from '@/store/cartStore'
 import useWishlistStore from '@/store/wishlistStore'
 import useAuthStore from '@/store/authStore'
 import useDebounce from '@/hooks/useDebounce'
@@ -114,11 +114,11 @@ function Header({ onLoginClick }) {
           <img
             src="/crest.png"
             alt="NH Salem Sea Foods Logo"
-            className="w-9 h-9 object-contain"
+            className="w-12 h-12 md:w-14 md:h-14 object-contain"
             loading="eager"
             fetchpriority="high"
-            width={36}
-            height={36}
+            width={56}
+            height={56}
           />
           <div className="hidden sm:block text-left pl-3 border-l border-outline-variant/30">
             <p className="font-serif text-headline-sm font-black text-primary leading-tight tracking-tight">NH Salem</p>
