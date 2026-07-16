@@ -287,9 +287,9 @@ export default function Home() {
         aria-label="NH Salem by the numbers"
       >
         <div className="container-max">
-          <div className="grid grid-cols-3 gap-8 text-center">
-            <StatBand value={cities} suffix="+" label="Cities Served" />
-            <StatBand value={orders.toLocaleString()} label="Daily Orders" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 text-center">
+            <StatBand value={cities} suffix="Live" label="Salem Delivery Hubs" />
+            <StatBand value={orders.toLocaleString()} label="Satisfied Customers" />
             <StatBand value={partners} suffix="+" label="Fishing Partners" />
           </div>
         </div>

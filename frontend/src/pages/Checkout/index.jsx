@@ -319,7 +319,7 @@ export default function Checkout() {
                               <Input label="Mobile Number" id="new-phone" type="tel" required {...addressForm.register('phone')} error={addressForm.formState.errors.phone?.message} />
                               <Input label="Pincode" id="new-pincode" required {...addressForm.register('pincode')} error={addressForm.formState.errors.pincode?.message} />
                               <Input label="Address Line 1" id="new-line1" required {...addressForm.register('line1')} error={addressForm.formState.errors.line1?.message} />
-                              <div className="grid grid-cols-2 gap-4">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <Input label="City" id="new-city" required {...addressForm.register('city')} error={addressForm.formState.errors.city?.message} />
                                 <Input label="State" id="new-state" required {...addressForm.register('state')} error={addressForm.formState.errors.state?.message} />
                               </div>

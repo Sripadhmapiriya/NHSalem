@@ -48,7 +48,7 @@ export default function AdminLayout() {
     navigate('/admin/login', { replace: true })
   }
 
-  const SidebarContent = () => (
+  const sidebarHtml = (
     <div className="flex flex-col h-full">
       {/* Brand */}
       <div className="px-5 py-5 border-b border-white/8 flex-shrink-0">
@@ -133,7 +133,7 @@ export default function AdminLayout() {
         style={{ background: '#0B1E3D' }}
         aria-label="Admin sidebar"
       >
-        <SidebarContent />
+        {sidebarHtml}
       </aside>
 
       {/* ── Mobile Sidebar (off-canvas drawer) ─────────────────── */}
@@ -157,7 +157,7 @@ export default function AdminLayout() {
               className="fixed inset-y-0 left-0 w-[260px] z-50 md:hidden flex flex-col overflow-hidden"
               style={{ background: '#0B1E3D' }}
             >
-              <SidebarContent />
+              {sidebarHtml}
             </motion.aside>
           </>
         )}

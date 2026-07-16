@@ -137,9 +137,9 @@ export function AdminTable({ headers, children, emptyMessage = 'No data availabl
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-admin-border/40">
-            {headers.map((h) => (
+            {headers.map((h, i) => (
               <th
-                key={h}
+                key={`${h}-${i}`}
                 className="text-left px-5 py-3 text-[10px] font-bold text-admin-text-sub uppercase tracking-[0.1em] whitespace-nowrap"
               >
                 {h}

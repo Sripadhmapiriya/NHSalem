@@ -125,16 +125,16 @@ export default function ProductDetail() {
         {/* Back button */}
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-sm text-gray-500 hover:text-green-700 transition-colors mb-3 group"
+          className="flex items-center gap-2 text-sm text-[#5c6b7d] hover:text-[#0b1e3d] font-semibold group transition-colors select-none focus:outline-none mb-3"
         >
-          <span className="w-7 h-7 rounded-full bg-gray-100 group-hover:bg-green-50 flex items-center justify-center transition-colors">
+          <span className="w-8 h-8 rounded-full bg-[#f0f3f6] group-hover:bg-[#e4e9f0] flex items-center justify-center text-[16px] transition-colors">
             ←
           </span>
-          <span>Back</span>
+          Back
         </button>
 
         {/* Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-sm text-gray-400 mb-6">
+        <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1 text-xs md:text-sm text-gray-400 mb-6">
           <Link to="/" className="text-gray-400 hover:text-green-700 transition-colors">
             Home
           </Link>
@@ -146,13 +146,13 @@ export default function ProductDetail() {
             {product.category.replace(/-/g, ' ')}
           </Link>
           <span className="text-gray-300">/</span>
-          <span className="text-gray-700 font-medium truncate max-w-xs">
+          <span className="text-gray-700 font-medium truncate max-w-[200px] sm:max-w-xs">
             {product.name}
           </span>
         </nav>
       </div>
 
-      <div className="container-max pb-8">
+      <div className="container-max pb-24 md:pb-8">
 
         {/* Main product section */}
         <div className="grid lg:grid-cols-2 gap-12 mb-16">
@@ -203,7 +203,7 @@ export default function ProductDetail() {
           <div className="space-y-6">
             {/* Name */}
             <div>
-              <h1 className="text-display-lg-mobile text-on-surface font-bold mb-1">{product.name}</h1>
+              <h1 className="text-display-lg-mobile md:text-display-lg text-on-surface font-bold mb-1">{product.name}</h1>
               {product.tagline && (
                 <p className="text-body-lg text-on-surface-variant italic">"{product.tagline}"</p>
               )}
@@ -240,17 +240,17 @@ export default function ProductDetail() {
               />
             )}
 
-            {/* Weight selector */}
+            {/* Weight selector - horizontal scroll on mobile */}
             {product.weights?.length > 0 && (
               <div>
                 <p className="text-label-md font-semibold text-on-surface mb-3">Select Weight</p>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex gap-2 overflow-x-auto scrollbar-hide py-2 flex-nowrap">
                   {product.weights.map((w, i) => (
                     <button
                       key={w.label}
                       onClick={() => setSelectedWeight(i)}
                       aria-pressed={selectedWeight === i}
-                      className={`px-4 py-2.5 rounded-full border-2 text-label-md font-semibold transition-all ${
+                      className={`px-4 py-2.5 rounded-full border-2 text-label-md font-semibold transition-all flex-shrink-0 ${
                         selectedWeight === i
                           ? 'bg-secondary-container text-on-secondary-container border-secondary-container'
                           : 'bg-white text-on-surface-variant border-outline-variant hover:border-primary'
@@ -263,8 +263,8 @@ export default function ProductDetail() {
               </div>
             )}
 
-            {/* Price */}
-            <div className="flex items-baseline gap-3">
+            {/* Price (Desktop display) */}
+            <div className="hidden md:flex items-baseline gap-3">
               <p className="text-4xl font-black text-on-surface">₹{currentWeight?.price?.toLocaleString()}</p>
               {currentWeight?.originalPrice && (
                 <>
@@ -276,45 +276,59 @@ export default function ProductDetail() {
               )}
             </div>
 
-            {/* CTA buttons */}
-            <div className="flex gap-3">
-              {!cartItem ? (
-                <Button variant="primary" size="lg" className="flex-1" onClick={handleAddToCart}>
-                  Add to Cart
-                </Button>
-              ) : (
-                <div className="flex items-center gap-0 bg-primary rounded-full overflow-hidden flex-1 justify-center">
-                  <button
-                    onClick={() => {
-                      if (cartItem.quantity <= 1) removeItem(product.id, currentWeight.label)
-                      else updateQuantity(product.id, currentWeight.label, cartItem.quantity - 1)
-                    }}
-                    aria-label="Decrease quantity"
-                    className="flex-1 py-4 flex items-center justify-center text-on-primary hover:bg-primary-container transition-colors"
-                  >
-                    <span className="material-symbols-outlined" style={{ fontSize: '22px' }} aria-hidden="true">remove</span>
-                  </button>
-                  <span className="px-6 text-on-primary text-headline-sm font-bold">{cartItem.quantity}</span>
-                  <button
-                    onClick={() => updateQuantity(product.id, currentWeight.label, cartItem.quantity + 1)}
-                    aria-label="Increase quantity"
-                    className="flex-1 py-4 flex items-center justify-center text-on-primary hover:bg-primary-container transition-colors"
-                  >
-                    <span className="material-symbols-outlined" style={{ fontSize: '22px' }} aria-hidden="true">add</span>
-                  </button>
-                </div>
-              )}
-              <button
-                onClick={() => toggleWishlist(product.id)}
-                aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-                className="w-14 h-14 bg-white border border-outline-variant rounded-full flex items-center justify-center hover:border-on-tertiary-container transition-colors"
-              >
-                <span
-                  className={`material-symbols-outlined ${wishlisted ? 'filled' : ''} text-on-tertiary-container`}
-                  style={{ fontSize: '24px' }}
-                  aria-hidden="true"
-                >favorite</span>
-              </button>
+            {/* Price & CTA Action Deck - Sticky on Mobile, Static on Desktop */}
+            <div className="fixed md:static bottom-0 left-0 right-0 bg-white md:bg-transparent border-t md:border-0 border-outline-variant/30 md:border-transparent p-4 md:p-0 z-30 flex items-center justify-between md:justify-start gap-4 pb-safe md:pb-0 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] md:shadow-none">
+              {/* Left price summary (Mobile only) */}
+              <div className="md:hidden flex flex-col items-start">
+                <p className="text-2xl font-black text-on-surface">
+                  ₹{currentWeight?.price?.toLocaleString()}
+                </p>
+                <p className="text-[10px] font-bold text-outline-variant uppercase">
+                  {currentWeight?.label}
+                </p>
+              </div>
+
+              {/* Stepper / Add button */}
+              <div className="flex-1 md:flex-none flex items-center gap-2">
+                {!cartItem ? (
+                  <Button variant="primary" size="lg" className="w-full md:w-56" onClick={handleAddToCart}>
+                    Add to Cart
+                  </Button>
+                ) : (
+                  <div className="flex items-center bg-primary rounded-full overflow-hidden h-12 w-full md:w-56 justify-between">
+                    <button
+                      onClick={() => {
+                        if (cartItem.quantity <= 1) removeItem(product.id, currentWeight.label)
+                        else updateQuantity(product.id, currentWeight.label, cartItem.quantity - 1)
+                      }}
+                      aria-label="Decrease quantity"
+                      className="px-4 py-3 flex items-center justify-center text-on-primary hover:bg-primary-container transition-colors cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>remove</span>
+                    </button>
+                    <span className="px-4 text-on-primary font-bold text-label-lg">{cartItem.quantity}</span>
+                    <button
+                      onClick={() => updateQuantity(product.id, currentWeight.label, cartItem.quantity + 1)}
+                      aria-label="Increase quantity"
+                      className="px-4 py-3 flex items-center justify-center text-on-primary hover:bg-primary-container transition-colors cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>add</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* Wishlist toggle */}
+                <button
+                  onClick={() => toggleWishlist(product.id)}
+                  aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                  className="w-12 h-12 bg-surface-container-low border border-outline-variant rounded-full flex items-center justify-center hover:border-on-tertiary-container transition-colors flex-shrink-0"
+                >
+                  <span
+                    className={`material-symbols-outlined ${wishlisted ? 'filled' : ''} text-on-tertiary-container`}
+                    style={{ fontSize: '20px' }}
+                  >favorite</span>
+                </button>
+              </div>
             </div>
 
             {/* Delivery check */}

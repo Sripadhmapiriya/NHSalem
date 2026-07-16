@@ -120,9 +120,9 @@ export default function CustomerDetail() {
       back={
         <button
           onClick={() => navigate('/admin/customers')}
-          className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 mb-6 group transition-colors"
+          className="flex items-center gap-2.5 text-sm text-[#5c6b7d] hover:text-[#0b1e3d] font-semibold group transition-colors select-none focus:outline-none"
         >
-          <span className="w-7 h-7 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors">
+          <span className="w-8 h-8 rounded-full bg-[#f0f3f6] group-hover:bg-[#e4e9f0] flex items-center justify-center text-[16px] transition-colors">
             ←
           </span>
           Back to Customers

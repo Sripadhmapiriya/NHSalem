@@ -74,7 +74,7 @@ export default function Modal({
     <AnimatePresence>
       {isOpen && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+          className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4"
           role="dialog"
           aria-modal="true"
           aria-labelledby={id ? `${id}-title` : undefined}
@@ -92,12 +92,17 @@ export default function Modal({
           {/* Panel */}
           <motion.div
             ref={panelRef}
-            initial={{ opacity: 0, scale: 0.95, y: 16 }}
+            initial={{ opacity: 0, scale: 0.95, y: 32 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 16 }}
+            exit={{ opacity: 0, scale: 0.95, y: 32 }}
             transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-            className={`relative bg-white rounded-[28px] shadow-stat w-full ${sizeMap[size]} ${noScroll ? '' : 'max-h-[90vh] overflow-y-auto'}`}
+            className={`relative bg-white rounded-t-[28px] sm:rounded-[28px] shadow-stat w-full ${sizeMap[size]} ${noScroll ? '' : 'max-h-[90vh] overflow-y-auto'}`}
           >
+            {/* Drag handle - mobile only */}
+            <div className="sm:hidden flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 bg-outline-variant/60 rounded-full"></div>
+            </div>
+
             {/* Header */}
             {(title || showClose) && (
               <div className="flex items-center justify-between p-6 pb-4">
@@ -123,7 +128,7 @@ export default function Modal({
               </div>
             )}
             {/* Content */}
-            <div className={title || showClose ? 'px-6 pb-6' : 'p-6'}>
+            <div className={title || showClose ? 'px-6 pb-8 sm:pb-6' : 'p-6 pb-8 sm:p-6'}>
               {children}
             </div>
           </motion.div>

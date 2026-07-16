@@ -21,11 +21,10 @@ const NAV_LINKS = [
  * Header — white main header with logo left, nav center, icons right
  * Gains glassmorphism blur on scroll past hero
  */
-function Header({ onLoginClick }) {
+function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState([])
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const searchRef = useRef(null)
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
   const navigate = useNavigate()
@@ -95,9 +94,17 @@ function Header({ onLoginClick }) {
 
   return (
     <>
-      {/* Top Deck Accent Bar (Hidden on Mobile, Scrolls naturally) */}
-      <div className="bg-primary text-white text-[11px] font-semibold py-1 px-4 hidden md:block border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
+      {/* Top Deck Accent Bar (Marquee on mobile, Two-column flex on desktop) */}
+      <div className="bg-primary text-white text-[11px] font-semibold py-1 px-4 border-b border-white/10 overflow-hidden">
+        {/* Mobile Scrolling Marquee */}
+        <div className="md:hidden w-full overflow-hidden relative whitespace-nowrap">
+          <div className="animate-marquee inline-block">
+            <span>Delivering Fresh across Salem, Tamil Nadu &nbsp;&bull;&nbsp; ✨ Use code <span className="font-bold">FRESH100</span> for free delivery on orders above ₹499!</span>
+          </div>
+        </div>
+
+        {/* Desktop Split Deck */}
+        <div className="hidden md:flex max-w-7xl mx-auto px-4 justify-between items-center">
           <div className="flex items-center gap-1.5 opacity-90">
             <span className="material-symbols-outlined text-[14px]">location_on</span>
             <span>Delivering Fresh across Salem, Tamil Nadu</span>
@@ -374,91 +381,120 @@ function Header({ onLoginClick }) {
           />
         </div>
       </div>
+    </header>
 
-      {/* Mobile Menu */}
+      {/* Mobile Drawer Sidebar */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            className="absolute top-full left-0 right-0 xl:hidden border-t border-b border-outline-variant/30 bg-white z-40 shadow-lg overflow-hidden"
-          >
-            <nav className="container-max py-4 flex flex-col gap-1" aria-label="Mobile navigation">
-              {NAV_LINKS.map((link) => (
-                <NavLink
-                  key={link.slug}
-                  to={`/category/${link.slug}`}
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileMenuOpen(false)}
+              className="fixed inset-0 bg-[#000516]/40 backdrop-blur-sm z-50 xl:hidden"
+            />
+            {/* Sidebar Panel */}
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'tween', duration: 0.25 }}
+              className="fixed top-0 right-0 bottom-0 w-[290px] bg-white z-50 xl:hidden shadow-2xl flex flex-col"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b border-outline-variant/30 flex-shrink-0">
+                <span className="font-serif font-black text-primary text-headline-sm">Menu</span>
+                <button
                   onClick={() => setMobileMenuOpen(false)}
-                  className={({ isActive }) =>
-                    `px-4 py-3 rounded-[12px] text-body-md font-semibold transition-colors flex items-center gap-2 ${
-                      isActive ? 'bg-primary text-on-primary' : 'text-on-surface hover:bg-surface-container'
-                    }`
-                  }
+                  className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-container transition-colors"
                 >
-                  <span className="text-[16px]">{link.emoji}</span>
-                  <span>{link.label}</span>
-                </NavLink>
-              ))}
-              <NavLink
-                to="/subscriptions"
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-4 py-3 rounded-[12px] text-body-md font-semibold text-secondary hover:bg-secondary-container/20 transition-colors"
-              >
-                ✦ Subscribe
-              </NavLink>
-              <div className="border-t border-outline-variant/30 mt-2 pt-4 flex flex-col gap-1">
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false)
-                    setTrackModalOpen(true)
-                  }}
-                  className="px-4 py-2.5 rounded-[12px] text-label-md text-on-surface-variant hover:bg-surface-container transition-colors flex items-center gap-2.5 text-left w-full cursor-pointer select-none"
-                >
-                  <span className="material-symbols-outlined text-primary font-bold" style={{ fontSize: '18px' }}>
-                    radar
-                  </span>
-                  Track Order
+                  <span className="material-symbols-outlined text-on-surface-variant text-[20px]">close</span>
                 </button>
-                <NavLink to="/about" onClick={() => setMobileMenuOpen(false)} className="px-4 py-2.5 rounded-[12px] text-label-md text-on-surface-variant hover:bg-surface-container transition-colors">About Us</NavLink>
-                <NavLink to="/quality" onClick={() => setMobileMenuOpen(false)} className="px-4 py-2.5 rounded-[12px] text-label-md text-on-surface-variant hover:bg-surface-container transition-colors">Quality Promise</NavLink>
-                <NavLink to="/stores" onClick={() => setMobileMenuOpen(false)} className="px-4 py-2.5 rounded-[12px] text-label-md text-on-surface-variant hover:bg-surface-container transition-colors">Store Locator</NavLink>
-                <NavLink to="/bulk-orders" onClick={() => setMobileMenuOpen(false)} className="px-4 py-2.5 rounded-[12px] text-label-md text-on-surface-variant hover:bg-surface-container transition-colors">B2B / Bulk</NavLink>
-                <NavLink to="/help" onClick={() => setMobileMenuOpen(false)} className="px-4 py-2.5 rounded-[12px] text-label-md text-on-surface-variant hover:bg-surface-container transition-colors">Help Center</NavLink>
               </div>
-              {user ? (
-                <div className="flex flex-col gap-2 mx-4 mt-2">
-                  <div className="text-center py-2 text-label-md font-semibold text-primary bg-primary/5 rounded-[12px] border border-outline-variant/30">
-                    Hi, {user.name} 👋
-                  </div>
+
+              {/* Navigation Content */}
+              <nav className="flex-1 overflow-y-auto p-4 flex flex-col gap-1" aria-label="Mobile navigation">
+                {NAV_LINKS.map((link) => (
                   <NavLink
-                    to="/my-orders"
+                    key={link.slug}
+                    to={`/category/${link.slug}`}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="py-3 bg-white border border-outline-variant/50 text-on-surface rounded-full text-label-md font-semibold flex items-center justify-center gap-2 shadow-sm hover:bg-surface-container-low transition-colors"
+                    className={({ isActive }) =>
+                      `px-4 py-3 rounded-[12px] text-body-md font-semibold transition-colors flex items-center gap-2 ${
+                        isActive ? 'bg-primary text-on-primary' : 'text-on-surface hover:bg-surface-container'
+                      }`
+                    }
                   >
-                    <span className="material-symbols-outlined text-[18px]">local_shipping</span>
-                    My Orders
+                    <span className="text-[16px]">{link.emoji}</span>
+                    <span>{link.label}</span>
                   </NavLink>
-                  <button
-                    onClick={() => { setMobileMenuOpen(false); setLogoutConfirmOpen(true) }}
-                    className="py-3 bg-surface-container-highest border border-outline-variant/50 text-on-surface rounded-full text-label-md font-semibold flex items-center justify-center gap-2 hover:bg-surface-container transition-colors"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">logout</span>
-                    Log Out
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={() => { setMobileMenuOpen(false); onLoginClick?.() }}
-                  className="mx-4 mt-2 py-3 bg-primary text-on-primary rounded-full text-label-md font-semibold flex items-center justify-center gap-2"
+                ))}
+                <NavLink
+                  to="/subscriptions"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-4 py-3 rounded-[12px] text-body-md font-semibold text-secondary hover:bg-secondary-container/20 transition-colors"
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }} aria-hidden="true">person</span>
-                  Log In / Sign Up
-                </button>
-              )}
-            </nav>
-          </motion.div>
+                  ✦ Subscribe
+                </NavLink>
+                
+                <div className="border-t border-outline-variant/30 mt-2 pt-4 flex flex-col gap-1">
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false)
+                      setTrackModalOpen(true)
+                    }}
+                    className="px-4 py-2.5 rounded-[12px] text-label-md text-on-surface-variant hover:bg-surface-container transition-colors flex items-center gap-2.5 text-left w-full cursor-pointer select-none"
+                  >
+                    <span className="material-symbols-outlined text-primary font-bold" style={{ fontSize: '18px' }}>
+                      radar
+                    </span>
+                    Track Order
+                  </button>
+                  <NavLink to="/about" onClick={() => setMobileMenuOpen(false)} className="px-4 py-2.5 rounded-[12px] text-label-md text-on-surface-variant hover:bg-surface-container transition-colors">About Us</NavLink>
+                  <NavLink to="/quality" onClick={() => setMobileMenuOpen(false)} className="px-4 py-2.5 rounded-[12px] text-label-md text-on-surface-variant hover:bg-surface-container transition-colors">Quality Promise</NavLink>
+                  <NavLink to="/stores" onClick={() => setMobileMenuOpen(false)} className="px-4 py-2.5 rounded-[12px] text-label-md text-on-surface-variant hover:bg-surface-container transition-colors">Store Locator</NavLink>
+                  <NavLink to="/bulk-orders" onClick={() => setMobileMenuOpen(false)} className="px-4 py-2.5 rounded-[12px] text-label-md text-on-surface-variant hover:bg-surface-container transition-colors">B2B / Bulk</NavLink>
+                  <NavLink to="/help" onClick={() => setMobileMenuOpen(false)} className="px-4 py-2.5 rounded-[12px] text-label-md text-on-surface-variant hover:bg-surface-container transition-colors">Help Center</NavLink>
+                </div>
+
+                {/* Login option kept inside the sidebar */}
+                <div className="mt-auto border-t border-outline-variant/20 pt-4 flex-shrink-0">
+                  {user ? (
+                    <div className="flex flex-col gap-2">
+                      <div className="text-center py-2 text-label-md font-semibold text-primary bg-primary/5 rounded-[12px] border border-outline-variant/30">
+                        Hi, {user.name} 👋
+                      </div>
+                      <NavLink
+                        to="/my-orders"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="py-3 bg-white border border-outline-variant/50 text-on-surface rounded-full text-label-md font-semibold flex items-center justify-center gap-2 shadow-sm hover:bg-surface-container-low transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">local_shipping</span>
+                        My Orders
+                      </NavLink>
+                      <button
+                        onClick={() => { setMobileMenuOpen(false); setLogoutConfirmOpen(true) }}
+                        className="py-3 bg-surface-container-highest border border-outline-variant/50 text-on-surface rounded-full text-label-md font-semibold flex items-center justify-center gap-2 hover:bg-surface-container transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">logout</span>
+                        Log Out
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => { setMobileMenuOpen(false); onLoginClick?.() }}
+                      className="w-full py-3 bg-primary text-on-primary rounded-full text-label-md font-semibold flex items-center justify-center gap-2 hover:bg-primary/95 transition-colors"
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '18px' }} aria-hidden="true">person</span>
+                      Log In / Sign Up
+                    </button>
+                  )}
+                </div>
+              </nav>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 
@@ -557,7 +593,6 @@ function Header({ onLoginClick }) {
           </div>
         </div>
       </Modal>
-    </header>
     </>
   )
 }

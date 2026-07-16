@@ -85,7 +85,7 @@ export default function ProductCard({ product }) {
       className="bg-white rounded-[28px] shadow-card overflow-hidden group flex flex-col"
     >
       {/* Image */}
-      <div className="relative overflow-hidden aspect-[4/3]">
+      <div className="relative overflow-hidden aspect-square w-full">
         <Link to={`/product/${id}`} aria-label={`View ${name}`}>
           <img
             src={image}
@@ -123,16 +123,16 @@ export default function ProductCard({ product }) {
       </div>
 
       {/* Content */}
-      <div className="p-5 flex flex-col gap-3 flex-1">
+      <div className="p-4 md:p-5 flex flex-col gap-3 flex-1">
         {/* Name + tagline */}
         <div>
           <Link to={`/product/${id}`}>
-            <h3 className="text-headline-sm text-on-surface font-semibold line-clamp-1 hover:text-primary transition-colors">
+            <h3 className="text-headline-sm text-on-surface font-semibold line-clamp-2 hover:text-primary transition-colors text-sm md:text-base">
               {name}
             </h3>
           </Link>
           {tagline && (
-            <p className="text-label-sm text-on-surface-variant mt-0.5 line-clamp-1">{tagline}</p>
+            <p className="text-label-sm text-on-surface-variant mt-0.5 line-clamp-1 text-xs">{tagline}</p>
           )}
         </div>
 
@@ -164,15 +164,15 @@ export default function ProductCard({ product }) {
           )}
         </div>
 
-        {/* Variant chips */}
+        {/* Variant chips - scrollable on mobile */}
         {finalVariants.length > 0 && (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 flex-nowrap">
             {finalVariants.map((v, i) => (
               <button
                 key={v.label}
                 onClick={() => setSelectedVariant(i)}
                 aria-pressed={selectedVariant === i}
-                className={`px-3 py-1 rounded-full text-label-sm border transition-all ${
+                className={`px-3 py-1 rounded-full text-label-sm border transition-all flex-shrink-0 ${
                   selectedVariant === i
                     ? 'bg-secondary-container text-on-secondary-container border-secondary-container font-semibold'
                     : 'bg-surface-container-low text-on-surface-variant border-outline-variant hover:border-primary'

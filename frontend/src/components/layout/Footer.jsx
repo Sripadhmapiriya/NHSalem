@@ -33,10 +33,10 @@ export default function Footer() {
   return (
     <footer className="bg-primary text-on-primary mt-auto border-t border-white/5" aria-label="Site footer">
       <div className="container-max pt-16 pb-8">
-        {/* Top grid - 5 columns: Brand (2 spans) + Links (3 spans) to make 2fr 1fr 1fr 1fr */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 lg:gap-8 pb-12 border-b border-white/10 items-start">
-          {/* Brand block (taking up 2/5ths of the grid width) */}
-          <div className="lg:col-span-2 flex flex-col items-start pt-2 lg:pt-3">
+        {/* Top grid - 2 columns mobile, 5 columns desktop */}
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-6 lg:gap-8 pb-12 border-b border-white/10 items-start">
+          {/* Brand block (taking up 2 columns on mobile, 2/5ths on desktop) */}
+          <div className="col-span-2 lg:col-span-2 flex flex-col items-start pt-2 lg:pt-3">
             {/* Logo on transparent background */}
             <div className="inline-flex items-center gap-3.5 mb-5 select-none">
               <img
@@ -85,14 +85,14 @@ export default function Footer() {
 
           {/* Link groups (Quick Links, Categories, Support) */}
           {Object.entries(FOOTER_LINKS).map(([group, links]) => (
-            <div key={group} className="flex flex-col items-start lg:pt-3">
+            <div key={group} className="col-span-1 lg:col-span-1 flex flex-col items-start lg:pt-3">
               <h3 className="text-label-md font-bold text-white mb-4.5 tracking-wider uppercase text-opacity-95">{group}</h3>
               <ul className="space-y-2.5 text-left w-full">
                 {links.map((link) => (
                   <li key={link.label}>
                     <Link
                       to={link.to}
-                      className="text-label-md text-white/60 hover:text-white transition-colors block"
+                      className="text-label-md text-white/60 hover:text-white transition-colors block text-sm"
                     >
                       {link.label}
                     </Link>

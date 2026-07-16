@@ -96,7 +96,7 @@ export default function Layout({ children }) {
 
       <Footer />
 
-      <FloatingCartBar />
+      <FloatingCartBar hidden={loginModalOpen || cartLoginPopupOpen} />
 
       {/* Global Login Modal */}
       <Modal

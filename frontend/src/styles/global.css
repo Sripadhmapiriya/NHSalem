@@ -229,3 +229,36 @@ body {
   transform: scale(1.25);
   box-shadow: 0 4px 12px rgba(0, 5, 22, 0.4);
 }
+
+/* ─── Mobile Responsiveness Utilities ─────────────────────────────────── */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 12px);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button, a {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Marquee scrolling animation */
+@keyframes marquee {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+.animate-marquee {
+  display: inline-block;
+  white-space: nowrap;
+  animation: marquee 20s linear infinite;
+}

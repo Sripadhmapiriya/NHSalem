@@ -595,9 +595,9 @@ export default function CategoryListing() {
               </div>
             )}
 
-            {/* Product grid */}
+            {/* Product grid - 2 columns mobile, 3-4 columns desktop */}
             <div
-              className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6"
+              className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6"
               aria-live="polite"
               aria-label={`${filteredProducts.length} products found`}
             >
@@ -624,6 +624,21 @@ export default function CategoryListing() {
           </div>
         </div>
       </div>
+
+      {/* Floating Filters Button - Mobile Only */}
+      <button
+        onClick={() => setFiltersOpen(true)}
+        className="lg:hidden fixed bottom-20 left-4 z-40 bg-white text-primary border border-outline-variant shadow-lg rounded-full px-4 py-2.5 flex items-center gap-2 text-xs font-bold hover:bg-surface-container transition-colors active:scale-95 duration-100"
+        aria-label="Open filter preferences"
+      >
+        <span className="material-symbols-outlined text-[16px]">tune</span>
+        <span>Filters</span>
+        {activeCount > 0 && (
+          <span className="bg-primary text-white text-[10px] rounded-full w-5 h-5 flex items-center justify-center font-bold">
+            {activeCount}
+          </span>
+        )}
+      </button>
 
       {/* Mobile filter drawer */}
       <Drawer

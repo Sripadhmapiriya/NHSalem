@@ -92,21 +92,21 @@ function EmailForm({ onSuccess }) {
     `flex-1 bg-transparent text-sm font-medium text-on-surface placeholder:text-outline/70 focus:outline-none disabled:opacity-60 ${hasError ? 'text-red-700' : ''}`
 
   const wrapCls = (hasError) =>
-    `flex items-center gap-3 px-4 py-2 rounded-full border bg-surface-container-low transition-all duration-150 ${
+    `flex items-center gap-2 px-3 py-1.5 rounded-full border bg-surface-container-low transition-all duration-150 ${
       hasError
         ? 'border-red-400 ring-2 ring-red-400/20'
         : 'border-outline-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15'
     }`
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-3">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-2">
       {/* Email */}
       <div>
-        <label htmlFor="email-login-email" className="block text-[12px] font-bold text-on-surface mb-1">
+        <label htmlFor="email-login-email" className="block text-[11px] font-bold text-on-surface mb-0.5">
           Email Address <span className="text-red-500">*</span>
         </label>
         <div className={wrapCls(!!errors.email)}>
-          <span className="material-symbols-outlined text-outline flex-shrink-0 leading-none" style={{ fontSize: '16px' }}>
+          <span className="material-symbols-outlined text-outline flex-shrink-0 leading-none" style={{ fontSize: '15px' }}>
             alternate_email
           </span>
           <input
@@ -124,12 +124,12 @@ function EmailForm({ onSuccess }) {
 
       {/* Password */}
       <div>
-        <div className="flex items-center justify-between mb-1">
-          <label htmlFor="email-login-password" className="text-[12px] font-bold text-on-surface">
+        <div className="flex items-center justify-between mb-0.5">
+          <label htmlFor="email-login-password" className="text-[11px] font-bold text-on-surface">
             Password <span className="text-red-500">*</span>
           </label>
-          <a href="/help" className="text-[11px] text-primary hover:underline">
-            Forgot password?
+          <a href="/help" className="text-[10px] text-primary hover:underline font-semibold">
+            Forgot?
           </a>
         </div>
         <div className={wrapCls(!!errors.password)}>
@@ -234,21 +234,21 @@ function PhoneForm({ onSuccess }) {
     `flex-1 bg-transparent text-sm font-medium text-on-surface placeholder:text-outline/70 focus:outline-none disabled:opacity-60 ${hasError ? 'text-red-700' : ''}`
 
   const wrapCls = (hasError) =>
-    `flex items-center gap-3 px-4 py-2 rounded-full border bg-surface-container-low transition-all duration-150 ${
+    `flex items-center gap-2 px-3 py-1.5 rounded-full border bg-surface-container-low transition-all duration-150 ${
       hasError
         ? 'border-red-400 ring-2 ring-red-400/20'
         : 'border-outline-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15'
     }`
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-3">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-2">
       {/* Phone */}
       <div>
-        <label htmlFor="phone-login-phone" className="block text-[12px] font-bold text-on-surface mb-1">
+        <label htmlFor="phone-login-phone" className="block text-[11px] font-bold text-on-surface mb-0.5">
           Mobile Number <span className="text-red-500">*</span>
         </label>
         <div className={wrapCls(!!errors.phone)}>
-          <span className="flex items-center px-2 border-r border-outline-variant text-sm text-on-surface-variant flex-shrink-0 mr-1 leading-none">
+          <span className="flex items-center px-1.5 border-r border-outline-variant text-xs text-on-surface-variant flex-shrink-0 mr-1 leading-none">
             +91
           </span>
           <input
@@ -256,7 +256,7 @@ function PhoneForm({ onSuccess }) {
             type="tel"
             inputMode="numeric"
             maxLength={10}
-            placeholder="10-digit mobile number"
+            placeholder="10-digit mobile"
             autoComplete="tel"
             disabled={loading}
             {...register('phone', {
@@ -272,12 +272,12 @@ function PhoneForm({ onSuccess }) {
 
       {/* Password */}
       <div>
-        <div className="flex items-center justify-between mb-1">
-          <label htmlFor="phone-login-password" className="text-[12px] font-bold text-on-surface">
+        <div className="flex items-center justify-between mb-0.5">
+          <label htmlFor="phone-login-password" className="text-[11px] font-bold text-on-surface">
             Password <span className="text-red-500">*</span>
           </label>
-          <a href="/help" className="text-[11px] text-primary hover:underline">
-            Forgot password?
+          <a href="/help" className="text-[10px] text-primary hover:underline font-semibold">
+            Forgot?
           </a>
         </div>
         <div className={wrapCls(!!errors.password)}>
@@ -598,30 +598,30 @@ export default function LoginPage({ isModal = false, onSuccess }) {
   }
 
   const content = (
-    <div className="px-2 py-1">
-      <div className="flex justify-center mb-4 -mt-4">
+    <div className="px-2 py-0.5">
+      {/* Redesigned Header Row: Logo next to Title */}
+      <div className="flex items-center justify-center gap-2.5 mb-2.5 mt-1.5 select-none">
         <img
           src="/crest.png"
           alt="NH Salem Sea Foods Logo"
-          className="w-12 h-12 object-contain"
+          className="w-8 h-8 object-contain"
         />
+        <h2 className="text-base font-extrabold text-gray-900 leading-none">
+          Welcome to NH Salem
+        </h2>
       </div>
-
-      <h2 className="text-xl font-bold text-center text-gray-900 mb-1">
-        Welcome to NH Salem
-      </h2>
-      <p className="text-sm text-center text-gray-500 mb-5">
+      <p className="text-[11px] text-center text-gray-500 mb-2.5">
         {mode === 'login' ? 'Sign in to continue' : 'Create an account to continue'}
       </p>
 
       {/* Tab switcher */}
       {mode === 'login' && (
-        <div className="flex bg-gray-100 rounded-full p-1 mb-5">
+        <div className="flex bg-gray-100 rounded-full p-0.5 mb-2.5">
           <button
             type="button"
             onClick={() => setActiveTab('email')}
-            className={`flex-1 py-2 text-sm font-medium rounded-full transition-all ${
-              activeTab === 'email' ? 'bg-primary text-white' : 'text-gray-500'
+            className={`flex-1 py-1.5 text-xs font-medium rounded-full transition-all ${
+              activeTab === 'email' ? 'bg-primary text-white font-bold' : 'text-gray-500'
             }`}
           >
             @ Email
@@ -629,8 +629,8 @@ export default function LoginPage({ isModal = false, onSuccess }) {
           <button
             type="button"
             onClick={() => setActiveTab('phone')}
-            className={`flex-1 py-2 text-sm font-medium rounded-full transition-all ${
-              activeTab === 'phone' ? 'bg-primary text-white' : 'text-gray-500'
+            className={`flex-1 py-1.5 text-xs font-medium rounded-full transition-all ${
+              activeTab === 'phone' ? 'bg-primary text-white font-bold' : 'text-gray-500'
             }`}
           >
             📞 Phone
