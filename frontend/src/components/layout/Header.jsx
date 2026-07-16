@@ -114,7 +114,7 @@ function Header({ onLoginClick }) {
       </div>
 
       <header
-        className="sticky top-0 z-50 w-full bg-white shadow-[0_4px_30px_rgba(0,0,0,0.06)] border-b border-outline-variant/15 will-change-transform transform-gpu"
+        className="sticky top-[-1.5px] z-50 w-full bg-white shadow-[0_4px_30px_rgba(0,0,0,0.06)] border-b border-outline-variant/15 will-change-transform transform-gpu"
         style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
       >
 
