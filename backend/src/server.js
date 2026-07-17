@@ -142,6 +142,18 @@ async function verifyDatabase(pool) {
         ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) DEFAULT 'pending'
     `)
 
+    // Create cities table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS cities (
+        id VARCHAR(100) PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        pincode VARCHAR(20),
+        status VARCHAR(20) DEFAULT 'live',
+        slots JSONB DEFAULT '[]',
+        stores INTEGER DEFAULT 0
+      )
+    `)
+
     // Fix user_addresses: drop old SERIAL version and recreate with UUID FK matching users table
     // This is safe because we use CREATE TABLE IF NOT EXISTS — only creates if absent
     await pool.query(`

@@ -177,15 +177,14 @@ export default function Home() {
         {/* Slide indicators */}
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
           {HERO_SLIDES.map((_, i) => (
-            <button
+            <div
               key={i}
               onClick={(e) => {
                 e.stopPropagation()
                 setCurrentSlide(i)
               }}
-              aria-label={`Go to slide ${i + 1}`}
-              className={`h-2 rounded-full cursor-pointer hover:bg-white hover:scale-110 active:scale-95 transition-all duration-300 ${
-                i === currentSlide ? 'w-8 bg-white shadow-sm' : 'w-2 bg-white/40'
+              className={`w-2 h-2 rounded-full cursor-pointer transition-colors duration-300 ${
+                i === currentSlide ? 'bg-white shadow-sm' : 'bg-white/40 hover:bg-white/60'
               }`}
             />
           ))}
