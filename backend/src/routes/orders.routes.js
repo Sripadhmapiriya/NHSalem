@@ -462,13 +462,13 @@ router.patch('/orders/:id/accept', requireAdmin, asyncHandler(async (req, res) =
         address: details.address,
         slot: details.deliverySlot || order.delivery_slot
       })
-      await sendMail({
+      sendMail({
         to: customerEmail,
         subject: `✅ Your Order #${details.id} has been Confirmed!`,
         html: emailHtml
-      })
+      }).catch(mailErr => console.error('Failed to send order acceptance confirmation email:', mailErr))
     } catch (mailErr) {
-      console.error('Failed to send order acceptance confirmation email:', mailErr)
+      console.error('Failed to build order acceptance confirmation email:', mailErr)
     }
   }
 

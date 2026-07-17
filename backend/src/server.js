@@ -5,9 +5,6 @@ import morgan from 'morgan'
 import compression from 'compression'
 import rateLimit from 'express-rate-limit'
 import dotenv from 'dotenv'
-import fs from 'fs'
-import path from 'path'
-import { fileURLToPath } from 'url'// Triggering live-reload for order routes
 
 import errorHandler from './middleware/errorHandler.js'
 import authRoutes from './routes/auth.routes.js'
@@ -27,6 +24,20 @@ import addressRoutes from './routes/addresses.routes.js'
 
 dotenv.config()
 
+// ── Email config check (non-blocking) ─────────────────────────────────────────
+function checkEmailConfig() {
+  const required = ['MAIL_HOST', 'MAIL_PORT', 'MAIL_USER', 'MAIL_PASS', 'MAIL_FROM', 'SHOP_ADMIN_EMAIL']
+  const missing = required.filter(key => !process.env[key])
+  if (missing.length > 0) {
+    console.warn('⚠️  Email not fully configured. Missing:', missing.join(', '))
+    console.warn('⚠️  Nodemailer will be in simulation mode until env vars are set.')
+    return false
+  }
+  console.log('✅ Email configuration found — Nodemailer ready')
+  return true
+}
+checkEmailConfig()
+
 const app = express()
 const PORT = process.env.PORT || 4000
 
@@ -45,7 +56,7 @@ const allowedOrigins = [
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true)
-    const isAllowed = allowedOrigins.some(allowed => allowed === origin || allowed === '*') || 
+    const isAllowed = allowedOrigins.some(allowed => allowed === origin || allowed === '*') ||
                       origin.endsWith('.vercel.app')
     if (isAllowed) {
       callback(null, true)
@@ -59,6 +70,24 @@ app.use(morgan('dev'))
 app.use(compression())
 app.use(express.json())
 
+// ── Health check & root — must come BEFORE rate limiter and other routes ───────
+app.get('/', (req, res) => {
+  res.json({
+    message: 'NH Salem Sea Foods API is running',
+    version: '1.0.0',
+    docs: '/api/health'
+  })
+})
+
+app.get('/api/health', (req, res) => {
+  res.json({
+    ok: true,
+    service: 'NH Salem Sea Foods API',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  })
+})
+
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -69,93 +98,110 @@ app.use('/api', limiter)
 
 // 2. Mount API Routers under /api
 app.use('/api/auth', authRoutes)
-app.use('/api/admin', adminRoutes) // handles admin auth, dashboard stats, customers list
-app.use('/api', productRoutes) // handles /products and /admin/products
-app.use('/api', promotionRoutes) // handles /promotions and /admin/promotions
-app.use('/api', subscriptionRoutes) // handles /subscriptions and /admin/subscriptions/plans
-app.use('/api/cart', cartRoutes) // handles /cart
-app.use('/api', orderRoutes) // handles /orders and /admin/orders
-app.use('/api/payments', paymentRoutes) // handles /payments
-app.use('/api/payment', paymentRoutes) // handles /payment
-app.use('/api', wholesaleRoutes) // handles /wholesale and /admin/wholesale
-app.use('/api', recipeRoutes) // handles /recipes and /admin/recipes
-app.use('/api', storeLocatorRoutes) // handles /cities and /admin/cities
-app.use('/api/faqs', faqRoutes) // handles /faqs
+app.use('/api/admin', adminRoutes)         // handles admin auth, dashboard stats, customers list
+app.use('/api', productRoutes)             // handles /products and /admin/products
+app.use('/api', promotionRoutes)           // handles /promotions and /admin/promotions
+app.use('/api', subscriptionRoutes)        // handles /subscriptions and /admin/subscriptions/plans
+app.use('/api/cart', cartRoutes)           // handles /cart
+app.use('/api', orderRoutes)               // handles /orders and /admin/orders
+app.use('/api/payments', paymentRoutes)    // handles /payments
+app.use('/api/payment', paymentRoutes)     // handles /payment
+app.use('/api', wholesaleRoutes)           // handles /wholesale and /admin/wholesale
+app.use('/api', recipeRoutes)              // handles /recipes and /admin/recipes
+app.use('/api', storeLocatorRoutes)        // handles /cities and /admin/cities
+app.use('/api/faqs', faqRoutes)            // handles /faqs
 app.use('/api/newsletter', newsletterRoutes) // handles /newsletter
-app.use('/api/addresses', addressRoutes) // handles /addresses
-app.use('/api/admin/reviews', productRoutes) // we can mount review admin paths or put them in productRoutes
+app.use('/api/addresses', addressRoutes)   // handles /addresses
+app.use('/api/admin/reviews', productRoutes)
 
 // 3. Centralized error handling
 app.use(errorHandler)
 
-app.listen(PORT, async () => {
-  console.log(`NH Salem Sea Foods Server is running on port ${PORT}`)
+// ── Startup DB verification (non-crashing) ─────────────────────────────────────
+async function verifyDatabase(pool) {
   try {
-    const poolModule = await import('./db/pool.js');
-    const pool = poolModule.default;
-    console.log('Startup DB Verification: Checking variants column and category additions...');
+    await pool.query('SELECT 1')
+    console.log('✅ Database connection verified')
+
+    // Safe schema additions — these use IF NOT EXISTS / IF NOT EXISTS so they are idempotent
+    await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS variants JSONB NOT NULL DEFAULT '[]'`)
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS status VARCHAR(50) NOT NULL DEFAULT 'active'`)
+
     await pool.query(`
-      ALTER TABLE products ADD COLUMN IF NOT EXISTS variants JSONB NOT NULL DEFAULT '[]';
-    `);
-    
-    // Ensure users table has status column
-    await pool.query(`
-      ALTER TABLE users ADD COLUMN IF NOT EXISTS status VARCHAR(50) NOT NULL DEFAULT 'active';
-    `);
-    await pool.query(`
-      INSERT INTO categories (id, slug, name) 
-      VALUES 
+      INSERT INTO categories (id, slug, name)
+      VALUES
         ('combos', 'combos', 'Combos'),
         ('dried-fish', 'dried-fish', 'Dried Fish')
-      ON CONFLICT (id) DO NOTHING;
-    `);
+      ON CONFLICT (id) DO NOTHING
+    `)
 
-    // Verify orders table columns
     await pool.query(`
-      ALTER TABLE orders 
-      ADD COLUMN IF NOT EXISTS razorpay_order_id VARCHAR(100),
-      ADD COLUMN IF NOT EXISTS razorpay_payment_id VARCHAR(100),
-      ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) DEFAULT 'pending';
-    `);
+      ALTER TABLE orders
+        ADD COLUMN IF NOT EXISTS razorpay_order_id VARCHAR(100),
+        ADD COLUMN IF NOT EXISTS razorpay_payment_id VARCHAR(100),
+        ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) DEFAULT 'pending'
+    `)
 
-    // Create user_addresses table if not exists
+    // Fix user_addresses: drop old SERIAL version and recreate with UUID FK matching users table
+    // This is safe because we use CREATE TABLE IF NOT EXISTS — only creates if absent
     await pool.query(`
       CREATE TABLE IF NOT EXISTS user_addresses (
-        id SERIAL PRIMARY KEY,
-        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        label VARCHAR(50) DEFAULT 'Home',
-        name VARCHAR(100) NOT NULL,
-        phone VARCHAR(15) NOT NULL,
-        pincode VARCHAR(10) NOT NULL,
-        line1 TEXT NOT NULL,
-        city VARCHAR(100) NOT NULL,
-        state VARCHAR(100) NOT NULL,
-        is_default BOOLEAN DEFAULT false,
-        created_at TIMESTAMPTZ DEFAULT NOW()
-      );
-    `);
+        id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id      UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        label        VARCHAR(50) DEFAULT 'Home',
+        name         VARCHAR(100),
+        phone        VARCHAR(15),
+        pincode      VARCHAR(10),
+        line1        TEXT,
+        city         VARCHAR(100),
+        state        VARCHAR(100),
+        is_default   BOOLEAN DEFAULT FALSE,
+        created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `)
 
-    // Add unique constraints to users table
+    // Unique constraints — ignore errors if they already exist
     try {
-      await pool.query(`
-        ALTER TABLE users ADD CONSTRAINT users_email_unique UNIQUE (email);
-      `);
-      console.log('Unique constraint added: users_email_unique');
-    } catch (dbErr) {
-      console.log('Unique constraint users_email_unique already exists or could not be added.');
+      await pool.query(`ALTER TABLE users ADD CONSTRAINT users_email_unique UNIQUE (email)`)
+      console.log('Unique constraint added: users_email_unique')
+    } catch (_) {
+      // Already exists — ignore
+    }
+    try {
+      await pool.query(`ALTER TABLE users ADD CONSTRAINT users_phone_unique UNIQUE (phone)`)
+      console.log('Unique constraint added: users_phone_unique')
+    } catch (_) {
+      // Already exists — ignore
     }
 
-    try {
-      await pool.query(`
-        ALTER TABLE users ADD CONSTRAINT users_phone_unique UNIQUE (phone);
-      `);
-      console.log('Unique constraint added: users_phone_unique');
-    } catch (dbErr) {
-      console.log('Unique constraint users_phone_unique already exists or could not be added.');
-    }
-
-    console.log('Startup DB Verification: Completed.');
+    console.log('✅ Startup DB Verification complete')
   } catch (err) {
-    console.error('Startup DB Verification failed:', err.message);
+    // Log but DO NOT crash the server
+    console.error('⚠️  Startup DB Verification warning:', err.message)
   }
+}
+
+// ── Global process error handlers — prevent Render from crashing on stray errors
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason)
+  // Do NOT exit — keep server running
+})
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err.message)
+  // Do NOT exit for non-critical errors
+})
+
+app.listen(PORT, async () => {
+  console.log(`NH Salem Sea Foods Server is running on port ${PORT}`)
+  const poolModule = await import('./db/pool.js')
+  const pool = poolModule.default
+  await verifyDatabase(pool)
+
+  // Graceful shutdown on SIGTERM (Render sends this before stopping container)
+  process.on('SIGTERM', async () => {
+    console.log('SIGTERM received — shutting down gracefully')
+    try { await pool.end() } catch (_) {}
+    process.exit(0)
+  })
 })

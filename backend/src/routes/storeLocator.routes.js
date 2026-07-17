@@ -44,7 +44,7 @@ async function notifyCitySubscribers(cityId, cityName) {
       const emailHtml = cityLaunchedNotification({ cityName })
       
       for (const email of emails) {
-        await sendMail({
+        sendMail({
           to: email,
           subject: `NH Salem is now LIVE in ${cityName}! 🐟`,
           html: emailHtml
