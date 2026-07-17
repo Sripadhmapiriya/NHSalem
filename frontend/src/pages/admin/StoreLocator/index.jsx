@@ -161,7 +161,7 @@ function PaginationControls({ currentPage, totalItems, itemsPerPage, onPageChang
   if (totalPages <= 1) return null
 
   return (
-    <div className="flex items-center justify-between border-t border-admin-border/30 pt-3 mt-3 px-1">
+    <div className="flex items-center justify-between border-t border-admin-border/30 px-5 py-3 mt-auto">
       <span className="text-[11px] text-admin-text-sub font-medium">
         Showing Page {currentPage} of {totalPages}
       </span>
@@ -381,6 +381,7 @@ export default function AdminStoreLocator() {
         {/* Live cities table */}
         <AdminCard
           title="Live Delivery Zones"
+          className="min-h-[400px]"
           action={
             <AdminBtn size="sm" icon="add" onClick={() => setCityModal({ mode: 'add' })}>
               Add City
@@ -479,6 +480,7 @@ export default function AdminStoreLocator() {
           ) : (
             <AdminCard
               title="Coming Soon Cities"
+              className="min-h-[400px]"
               action={
                 <AdminBtn size="sm" icon="add" onClick={() => setCityModal({ mode: 'add' })}>
                   Add City

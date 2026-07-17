@@ -115,9 +115,9 @@ export function AdminPage({ children, action, back }) {
 // ── Section Card ───────────────────────────────────────────────────────────────
 export function AdminCard({ title, subtitle, children, className = '', action }) {
   return (
-    <div className={`bg-white rounded-[16px] border border-admin-border/60 shadow-[0_2px_12px_rgba(11,30,61,0.06)] overflow-hidden ${className}`}>
+    <div className={`bg-white rounded-[16px] border border-admin-border/60 shadow-[0_2px_12px_rgba(11,30,61,0.06)] overflow-hidden flex flex-col ${className}`}>
       {(title || action) && (
-        <div className="flex items-center justify-between px-5 py-4 border-b border-admin-border/40">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-admin-border/40 shrink-0">
           <div>
             {title && <h2 className="text-[14px] font-bold text-admin-navy">{title}</h2>}
             {subtitle && <p className="text-[11px] text-admin-text-sub mt-0.5">{subtitle}</p>}
@@ -129,6 +129,7 @@ export function AdminCard({ title, subtitle, children, className = '', action })
     </div>
   )
 }
+
 
 // ── Table ──────────────────────────────────────────────────────────────────────
 export function AdminTable({ headers, children, emptyMessage = 'No data available.' }) {

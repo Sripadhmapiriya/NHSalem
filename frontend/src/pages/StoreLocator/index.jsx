@@ -32,6 +32,8 @@ export default function StoreLocator() {
   const liveCities = useMemo(() => cities.filter((c) => c.status === 'live'), [cities])
   const comingSoonCities = useMemo(() => cities.filter((c) => c.status === 'coming_soon'), [cities])
 
+
+
   const filteredLive = useMemo(() => {
     if (!debouncedSearch) return liveCities
     const q = debouncedSearch.toLowerCase()

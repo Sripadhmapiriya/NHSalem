@@ -72,13 +72,13 @@ router.post('/cities/notify', asyncHandler(async (req, res) => {
   const normalizedEmail = email.toLowerCase().trim()
 
   // Verify city exists and is coming_soon
-  const cityResult = await pool.query('SELECT name, status FROM cities WHERE id = $1', [cityId])
+  const cityResult = await pool.query('SELECT name, status, stores FROM cities WHERE id = $1', [cityId])
   if (cityResult.rows.length === 0) {
     return res.status(404).json({ success: false, message: 'City not found' })
   }
   
   const city = cityResult.rows[0]
-  if (city.status === 'live') {
+  if (city.status === 'live' && (city.stores ?? 0) > 0) {
     return res.status(400).json({ success: false, message: `We are already live in ${city.name}! You can place your order now.` })
   }
 
