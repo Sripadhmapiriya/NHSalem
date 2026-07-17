@@ -160,6 +160,8 @@ async function getOrdersDetailed(ordersRows) {
 
 // ── POST /api/orders ──────────────────────────────────────────────────────────
 router.post('/orders', asyncHandler(async (req, res) => {
+  console.log('🔵 POST /api/orders received — user:', getOptionalUser(req)?.id || 'guest')
+
   const { items, address, slot, paymentMethod, couponCode } = placeOrderSchema.parse(req.body)
   const user = getOptionalUser(req)
 
@@ -246,6 +248,7 @@ router.post('/orders', asyncHandler(async (req, res) => {
   )
 
   const dbOrderId = orderInsertRes.rows[0].id
+  console.log('📦 Order created:', orderNumber, '| DB ID:', dbOrderId, '| User:', user?.id || 'guest')
 
   for (const item of dbItems) {
     await pool.query(
@@ -274,14 +277,20 @@ router.post('/orders', asyncHandler(async (req, res) => {
 
   // Send Order Placed emails asynchronously
   try {
-    let customerEmail = user?.email
+    // Step 1: Resolve customer email
+    let customerEmail = user?.email || null
+
     if (user?.id && !customerEmail) {
-      const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [user.id])
+      console.log('🔍 Fetching customer email from DB for user:', user.id)
+      const userRes = await pool.query('SELECT email, name FROM users WHERE id = $1', [user.id])
       if (userRes.rows.length > 0) {
         customerEmail = userRes.rows[0].email
       }
     }
 
+    console.log('📬 Customer email resolved:', customerEmail || '(none — guest order or email missing)')
+
+    // Step 2: Send customer confirmation email
     if (customerEmail) {
       const customerHtml = orderPlacedCustomer({
         orderRef: orderNumber,
@@ -291,13 +300,19 @@ router.post('/orders', asyncHandler(async (req, res) => {
         address,
         slot
       })
+      console.log('📧 Sending order confirmation to:', customerEmail)
       sendMail({
         to: customerEmail,
         subject: `Your NH Salem Order #${orderNumber} is Received!`,
         html: customerHtml
-      }).catch(err => console.error('Error sending order confirmation email:', err))
+      })
+        .then(() => console.log('✅ Customer email sent successfully to:', customerEmail))
+        .catch(err => console.error('❌ Customer email failed:', err.message, err.stack))
+    } else {
+      console.warn('⚠️  No customer email found — skipping customer confirmation email')
     }
 
+    // Step 3: Send admin alert email
     const adminEmail = process.env.SHOP_ADMIN_EMAIL || 'sripadhmapiriya12@gmail.com'
     const adminHtml = newOrderAdmin({
       orderRef: orderNumber,
@@ -311,19 +326,23 @@ router.post('/orders', asyncHandler(async (req, res) => {
       paymentMethod,
       orderId: dbOrderId
     })
+    console.log('📧 Sending admin alert to:', adminEmail)
     sendMail({
       to: adminEmail,
       subject: `🆕 New Order #${orderNumber} — Action Required`,
       html: adminHtml
-    }).catch(err => console.error('Error sending admin order alert email:', err))
+    })
+      .then(() => console.log('✅ Admin email sent successfully to:', adminEmail))
+      .catch(err => console.error('❌ Admin email failed:', err.message, err.stack))
   } catch (emailErr) {
-    console.error('Error triggering order placement emails:', emailErr)
+    console.error('❌ Email error:', emailErr.message, emailErr.stack)
   }
 
   res.status(201).json({ success: true, orderId: orderNumber })
 }))
 
 // ── GET /api/orders/mine ──────────────────────────────────────────────────────
+
 router.get('/orders/mine', requireUser, asyncHandler(async (req, res) => {
   const result = await pool.query('SELECT * FROM orders WHERE user_id = $1 ORDER BY placed_at DESC', [req.user.id])
   const orders = await getOrdersDetailed(result.rows)
