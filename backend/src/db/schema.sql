@@ -230,3 +230,13 @@ CREATE TABLE IF NOT EXISTS newsletter_subscribers (
   email VARCHAR(255) UNIQUE NOT NULL,
   subscribed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- 18. City Launch Notifications Table
+CREATE TABLE IF NOT EXISTS city_notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email VARCHAR(255) NOT NULL,
+  city_id VARCHAR(100) NOT NULL REFERENCES cities(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(email, city_id)
+);
+

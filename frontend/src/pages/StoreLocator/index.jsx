@@ -6,7 +6,7 @@ import { z } from 'zod'
 import Button from '@/components/ui/Button'
 import Chip from '@/components/ui/Chip'
 import useToastStore from '@/store/toastStore'
-import { getCities } from '@/services/api'
+import { getCities, registerCityNotification } from '@/services/api'
 import useDebounce from '@/hooks/useDebounce'
 
 const notifySchema = z.object({
@@ -39,9 +39,23 @@ export default function StoreLocator() {
   }, [liveCities, debouncedSearch])
 
   const onNotifySubmit = async ({ email }) => {
-    addToast({ message: `We'll notify ${email} when we arrive in your city! 📍`, type: 'success' })
-    reset()
-    setNotifyCity('')
+    if (!notifyCity) {
+      addToast({ message: 'Please select a city first!', type: 'warning' })
+      return
+    }
+    const city = comingSoonCities.find((c) => c.name === notifyCity)
+    if (!city) return
+
+    try {
+      const res = await registerCityNotification(email, city.id)
+      if (res.success) {
+        addToast({ message: `We'll notify ${email} when we arrive in ${notifyCity}! 📍`, type: 'success' })
+        reset()
+        setNotifyCity('')
+      }
+    } catch (err) {
+      addToast({ message: err.message || 'Failed to register notification interest.', type: 'error' })
+    }
   }
 
   return (

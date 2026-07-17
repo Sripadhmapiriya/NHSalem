@@ -320,3 +320,39 @@ export async function toggleCustomerStatus(customerId, status) {
   })
   return handleResponse(response)
 }
+
+// ── Admin Store Locator (Cities) ──────────────────────────────────────────────
+
+export async function getAdminCities() {
+  const response = await fetch(`${API_URL}/api/admin/cities`, {
+    headers: getHeaders(true)
+  })
+  return handleResponse(response)
+}
+
+export async function addAdminCity(cityData) {
+  const response = await fetch(`${API_URL}/api/admin/cities`, {
+    method: 'POST',
+    headers: getHeaders(true),
+    body: JSON.stringify(cityData)
+  })
+  return handleResponse(response)
+}
+
+export async function updateAdminCity(id, cityData) {
+  const response = await fetch(`${API_URL}/api/admin/cities/${id}`, {
+    method: 'PUT',
+    headers: getHeaders(true),
+    body: JSON.stringify(cityData)
+  })
+  return handleResponse(response)
+}
+
+export async function deleteAdminCity(id) {
+  const response = await fetch(`${API_URL}/api/admin/cities/${id}`, {
+    method: 'DELETE',
+    headers: getHeaders(true)
+  })
+  return handleResponse(response)
+}
+

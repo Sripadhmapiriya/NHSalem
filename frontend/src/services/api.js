@@ -131,6 +131,18 @@ export async function getCities() {
   return handleResponse(response)
 }
 
+export async function registerCityNotification(email, cityId) {
+  const response = await fetch(`${API_URL}/api/cities/notify`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ email, cityId })
+  })
+  return handleResponse(response)
+}
+
+
 export async function getCityByPincode(pincode) {
   const response = await fetch(`${API_URL}/api/cities/${pincode}`)
   const data = await handleResponse(response).catch(() => null)

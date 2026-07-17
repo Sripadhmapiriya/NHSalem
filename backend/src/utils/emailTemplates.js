@@ -482,3 +482,42 @@ export function productOfferUpdate({ updateType, subject, content, unsubscribeUr
 
   return baseLayout(subject, innerContentHtml, unsubscribeUrl)
 }
+
+// 6. CITY LAUNCH INTEREST REGISTERED (Customer Template)
+export function cityInterestRegistered({ email, cityName }) {
+  const contentHtml = `
+    <h2>We've registered your interest! 📍</h2>
+    <p>Thank you for your interest in NH Salem Sea Foods! We have successfully registered your request to be notified when we launch in <strong>${cityName}</strong>.</p>
+    <p>Our team is working hard to bring the freshest, premium seafood to your neighborhood. We will email you the moment we are live!</p>
+    
+    <div class="details-box" style="background-color: #f0fdf4; border-color: #bbf7d0; text-align: center;">
+      <p style="margin: 0; color: #166534; font-weight: 700;">🌊 Launching Soon in ${cityName}</p>
+      <p style="margin: 5px 0 0 0; font-size: 14px;">We will contact you at <strong>${email}</strong> once delivery slots are open.</p>
+    </div>
+
+    <div style="text-align: center; margin-top: 25px;">
+      <a href="${BASE_URL}" class="btn">Explore Our Menu</a>
+    </div>
+  `
+  return baseLayout(`Interest Registered for ${cityName} - NH Salem Sea Foods`, contentHtml)
+}
+
+// 7. CITY LAUNCHED / NOW LIVE (Customer Announcement Template)
+export function cityLaunchedNotification({ cityName }) {
+  const contentHtml = `
+    <h2>Great News: NH Salem is now LIVE in ${cityName}! 🎉</h2>
+    <p>The wait is over! We have officially launched our premium seafood delivery service in <strong>${cityName}</strong>.</p>
+    <p>You can now browse our daily catch, order fresh fish, prawns, crabs, lobsters, and more, and choose your preferred delivery slots.</p>
+    
+    <div class="details-box" style="background-color: #f0fdf4; border-color: #bbf7d0; text-align: center;">
+      <p style="margin: 0; color: #166534; font-weight: 700;">🎁 WELCOME OFFER</p>
+      <p style="margin: 5px 0 0 0; font-size: 16px;">Use code <strong>FRESH100</strong> for free delivery on your first order above ₹499!</p>
+    </div>
+
+    <div style="text-align: center; margin-top: 25px;">
+      <a href="${BASE_URL}/stores" class="btn">Order Now in ${cityName}</a>
+    </div>
+  `
+  return baseLayout(`NH Salem is now LIVE in ${cityName}! 🐟`, contentHtml)
+}
+
