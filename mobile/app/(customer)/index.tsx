@@ -34,9 +34,22 @@ export default function CustomerHome() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Fresh Arrivals</Text>
           {isLoading ? (
-            <ActivityIndicator size="large" color={Colors.primary} style={{ marginTop: 20 }} />
+            <View style={{ alignItems: 'center', marginTop: 20 }}>
+              <ActivityIndicator size="large" color={Colors.primary} />
+              <Text style={{ marginTop: 10, color: Colors.textSecondary }}>
+                Connecting to: {apiClient.defaults.baseURL}
+              </Text>
+            </View>
           ) : error ? (
-            <Text style={styles.errorText}>Failed to load products.</Text>
+            <View style={{ padding: 20 }}>
+              <Text style={{ color: Colors.error, fontWeight: 'bold' }}>Failed to load products.</Text>
+              <Text style={{ color: Colors.textSecondary, marginTop: 5 }}>
+                URL: {apiClient.defaults.baseURL}
+              </Text>
+              <Text style={{ color: Colors.error, marginTop: 5 }}>
+                Error: {error instanceof Error ? error.message : String(error)}
+              </Text>
+            </View>
           ) : (
             <FlatList
               horizontal

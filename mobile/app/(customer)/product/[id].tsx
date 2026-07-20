@@ -58,6 +58,13 @@ export default function ProductDetailScreen() {
     router.push('/(customer)/cart');
   };
 
+  const getImageUrl = () => {
+    const img = product.image || product.images?.[0];
+    if (!img) return 'https://via.placeholder.com/400';
+    if (img.startsWith('/')) return `${process.env.EXPO_PUBLIC_API_URL}${img}`;
+    return img;
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
@@ -66,7 +73,7 @@ export default function ProductDetailScreen() {
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={24} color={Colors.text} />
           </TouchableOpacity>
-          <Image source={{ uri: product.image || 'https://via.placeholder.com/400' }} style={styles.image} />
+          <Image source={{ uri: getImageUrl() }} style={styles.image} />
         </View>
 
         {/* Content */}

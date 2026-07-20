@@ -7,7 +7,8 @@ interface ProductProps {
     id: string;
     name: string;
     basePrice: number;
-    image: string;
+    image?: string;
+    images?: string[];
     category: string;
     rating?: number;
   };
@@ -15,10 +16,17 @@ interface ProductProps {
 }
 
 export default function ProductCard({ product, onPress }: ProductProps) {
+  const getImageUrl = () => {
+    const img = product.image || product.images?.[0];
+    if (!img) return 'https://via.placeholder.com/150';
+    if (img.startsWith('/')) return `${process.env.EXPO_PUBLIC_API_URL}${img}`;
+    return img;
+  };
+
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
       <Image 
-        source={{ uri: product.image || 'https://via.placeholder.com/150' }} 
+        source={{ uri: getImageUrl() }} 
         style={styles.image} 
       />
       <View style={styles.content}>
@@ -26,7 +34,7 @@ export default function ProductCard({ product, onPress }: ProductProps) {
         <Text style={styles.name} numberOfLines={1}>{product.name}</Text>
         <View style={styles.bottomRow}>
           <Text style={styles.price}>₹{product.basePrice}</Text>
-          <TouchableOpacity style={styles.addButton}>
+          <TouchableOpacity style={styles.addButton} onPress={onPress}>
             <Ionicons name="add" size={20} color={Colors.surface} />
           </TouchableOpacity>
         </View>

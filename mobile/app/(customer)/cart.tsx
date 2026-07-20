@@ -34,9 +34,17 @@ export default function CartScreen() {
         data={items}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
-        renderItem={({ item }) => (
+        renderItem={({ item }) => {
+          const getImageUrl = () => {
+            const img = item.image;
+            if (!img) return 'https://via.placeholder.com/100';
+            if (img.startsWith('/')) return `${process.env.EXPO_PUBLIC_API_URL}${img}`;
+            return img;
+          };
+
+          return (
           <View style={styles.cartItem}>
-            <Image source={{ uri: item.image || 'https://via.placeholder.com/100' }} style={styles.itemImage} />
+            <Image source={{ uri: getImageUrl() }} style={styles.itemImage} />
             
             <View style={styles.itemDetails}>
               <Text style={styles.itemName} numberOfLines={2}>{item.name}</Text>
@@ -60,7 +68,8 @@ export default function CartScreen() {
               </View>
             </View>
           </View>
-        )}
+          );
+        }}
       />
 
       <View style={styles.footer}>
@@ -68,7 +77,7 @@ export default function CartScreen() {
           <Text style={styles.totalLabel}>Subtotal</Text>
           <Text style={styles.totalValue}>₹{total}</Text>
         </View>
-        <TouchableOpacity style={styles.checkoutBtn} onPress={() => console.log('Proceed to checkout')}>
+        <TouchableOpacity style={styles.checkoutBtn} onPress={() => router.push('/(customer)/checkout')}>
           <Text style={styles.checkoutBtnText}>Proceed to Checkout</Text>
         </TouchableOpacity>
       </View>
