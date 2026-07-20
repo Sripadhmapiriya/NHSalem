@@ -6,9 +6,11 @@ import { Button, Input, Card } from '../../src/components/ui';
 import { authApi } from '../../src/api/auth';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
 export default function LoginScreen() {
   const { login } = useAuthStore();
+  const router = useRouter();
   
   const [isCustomerMode, setIsCustomerMode] = useState(true);
   const [identifier, setIdentifier] = useState(isCustomerMode ? 'user@nhsalem.com' : 'admin@nhsalem.com');
@@ -34,12 +36,14 @@ export default function LoginScreen() {
         if (response.success) {
           // The backend returns user without role, but we know it's a customer
           await login(response.token, { ...response.user, role: 'customer' });
+          router.replace('/(customer)');
         }
       } else {
         const response = await authApi.loginAdmin(identifier, password);
         if (response.success) {
           // Admin response includes role
           await login(response.token, response.admin);
+          router.replace('/(admin)');
         }
       }
     } catch (error: any) {
