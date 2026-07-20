@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, TextInput } from 'react-native';
 import { Colors } from '../../src/constants/theme';
 import { useCartStore } from '../../src/store/cartStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -73,11 +73,42 @@ export default function CartScreen() {
       />
 
       <View style={styles.footer}>
-        <View style={styles.totalRow}>
-          <Text style={styles.totalLabel}>Subtotal</Text>
-          <Text style={styles.totalValue}>₹{total}</Text>
+        <View style={styles.couponContainer}>
+          <Text style={{display: 'none'}}>Placeholder</Text>
+          <View style={{flex: 1}}><Text style={{display:'none'}}>Replace</Text></View>
         </View>
-        <TouchableOpacity style={styles.checkoutBtn} onPress={() => router.push('/(customer)/checkout')}>
+        
+        {/* We will add real coupon state later, this is just UI update for now */}
+        <View style={styles.couponContainer}>
+          <TextInput 
+            style={styles.couponInput} 
+            placeholder="Enter Coupon Code" 
+            autoCapitalize="characters"
+          />
+          <TouchableOpacity style={styles.couponBtn}>
+            <Text style={styles.couponBtnText}>Apply</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.summaryCard}>
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Items Subtotal</Text>
+            <Text style={styles.summaryValue}>₹{total}</Text>
+          </View>
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Delivery Fee</Text>
+            <Text style={styles.summaryValue}>FREE</Text>
+          </View>
+          <View style={styles.totalRow}>
+            <Text style={styles.totalLabel}>Grand Total</Text>
+            <Text style={styles.totalValue}>₹{total}</Text>
+          </View>
+        </View>
+
+        <TouchableOpacity 
+          style={styles.checkoutBtn} 
+          onPress={() => router.push('/(customer)/checkout')}
+        >
           <Text style={styles.checkoutBtnText}>Proceed to Checkout</Text>
         </TouchableOpacity>
       </View>
@@ -173,20 +204,68 @@ const styles = StyleSheet.create({
     borderTopColor: Colors.border,
     paddingBottom: 40,
   },
+  couponContainer: {
+    flexDirection: 'row',
+    marginBottom: Spacing.md,
+    gap: 8,
+  },
+  couponInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 8,
+    paddingHorizontal: Spacing.md,
+    height: 48,
+    fontSize: 16,
+  },
+  couponBtn: {
+    backgroundColor: Colors.secondary || '#334155',
+    paddingHorizontal: Spacing.lg,
+    justifyContent: 'center',
+    borderRadius: 8,
+  },
+  couponBtnText: {
+    color: Colors.white,
+    fontWeight: 'bold',
+  },
+  summaryCard: {
+    backgroundColor: '#F8FAFC',
+    padding: Spacing.md,
+    borderRadius: 8,
+    marginBottom: Spacing.md,
+    gap: 8,
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  summaryLabel: {
+    color: Colors.textSecondary,
+    fontSize: 14,
+  },
+  summaryValue: {
+    color: Colors.text,
+    fontSize: 14,
+    fontWeight: '500',
+  },
   totalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
   },
   totalLabel: {
     fontSize: 16,
-    color: Colors.textSecondary,
-  },
-  totalValue: {
-    fontSize: 24,
     fontWeight: 'bold',
     color: Colors.text,
+  },
+  totalValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: Colors.primary,
   },
   checkoutBtn: {
     backgroundColor: Colors.primary,

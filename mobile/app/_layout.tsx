@@ -1,55 +1,34 @@
 import { useEffect } from 'react';
-import { Slot, useRouter, useSegments } from 'expo-router';
+import { Stack } from 'expo-router';
 import { useAuthStore } from '../src/store/authStore';
-import { View, ActivityIndicator } from 'react-native';
-
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { StatusBar } from 'expo-status-bar';
 
 const queryClient = new QueryClient();
 
 export default function RootLayout() {
-  const { user, isLoading, restoreToken } = useAuthStore();
-  const segments = useSegments();
-  const router = useRouter();
+  const { loadFromStorage } = useAuthStore();
 
   useEffect(() => {
-    restoreToken();
-  }, []);
-
-  useEffect(() => {
-    if (isLoading) return;
-
-    const inAuthGroup = segments[0] === '(auth)';
-    
-    if (!user && !inAuthGroup) {
-      router.replace('/(auth)/login');
-    } else if (user && inAuthGroup) {
-      if (user.role === 'admin' || user.role === 'super_admin') {
-        router.replace('/(admin)');
-      } else {
-        router.replace('/(customer)');
-      }
-    } else if (user && !inAuthGroup) {
-        const inAdminGroup = segments[0] === '(admin)';
-        if ((user.role === 'admin' || user.role === 'super_admin') && !inAdminGroup) {
-             router.replace('/(admin)');
-        } else if (user.role !== 'admin' && user.role !== 'super_admin' && inAdminGroup) {
-             router.replace('/(customer)');
-        }
+    // Load token from AsyncStorage on app start
+    // If the method is named restoreToken in the old store, use it, otherwise loadFromStorage.
+    // Our new store uses loadFromStorage, but we'll adapt to either.
+    const store = useAuthStore.getState();
+    if ('loadFromStorage' in store) {
+      (store as any).loadFromStorage();
+    } else if ('restoreToken' in store) {
+      (store as any).restoreToken();
     }
-  }, [user, isLoading, segments]);
-
-  if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#0B4A7A" />
-      </View>
-    );
-  }
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Slot />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(customer)" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        {/* Add more stacks here as needed, like checkout.tsx, search.tsx etc */}
+      </Stack>
+      <StatusBar style="auto" />
     </QueryClientProvider>
   );
 }

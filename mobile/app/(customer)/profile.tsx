@@ -38,48 +38,33 @@ export default function ProfileScreen() {
             <Text style={styles.avatarText}>{user?.name?.charAt(0).toUpperCase() || 'U'}</Text>
           </View>
           <View style={styles.userInfo}>
-            <Text style={styles.userName}>{user?.name}</Text>
-            <Text style={styles.userDetail}>{user?.email}</Text>
-            <Text style={styles.userDetail}>{user?.phone}</Text>
+            <Text style={styles.userName}>{user?.name || 'Guest User'}</Text>
+            <Text style={styles.userDetail}>{user?.email || 'No email'}</Text>
+            <Text style={styles.userDetail}>{user?.phone || 'No phone number'}</Text>
           </View>
         </View>
 
-        {/* Order History */}
+        {/* Settings / Links */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>My Orders</Text>
+          <Text style={styles.sectionTitle}>Account Settings</Text>
           
-          {isLoading ? (
-            <ActivityIndicator size="large" color={Colors.primary} style={{ marginTop: 20 }} />
-          ) : orders && orders.length > 0 ? (
-            orders.map((order: any, index: number) => (
-              <View key={index} style={styles.orderCard}>
-                <View style={styles.orderHeader}>
-                  <Text style={styles.orderId}>Order #{order.id.split('-')[0].toUpperCase()}</Text>
-                  <View style={[styles.statusBadge, { backgroundColor: order.status === 'delivered' ? '#D1FAE5' : '#FEF3C7' }]}>
-                    <Text style={[styles.statusText, { color: order.status === 'delivered' ? '#065F46' : '#92400E' }]}>
-                      {order.status.toUpperCase()}
-                    </Text>
-                  </View>
-                </View>
-                
-                <Text style={styles.orderDate}>
-                  {new Date(order.created_at).toLocaleDateString()} at {new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </Text>
+          <TouchableOpacity style={styles.linkBtn} onPress={() => {}}>
+            <Ionicons name="location-outline" size={24} color={Colors.text} />
+            <Text style={styles.linkText}>My Addresses</Text>
+            <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} style={{ marginLeft: 'auto' }} />
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.linkBtn} onPress={() => {}}>
+            <Ionicons name="call-outline" size={24} color={Colors.text} />
+            <Text style={styles.linkText}>Contact Us</Text>
+            <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} style={{ marginLeft: 'auto' }} />
+          </TouchableOpacity>
 
-                <View style={styles.divider} />
-                
-                <View style={styles.orderTotalRow}>
-                  <Text style={styles.orderItems}>{order.items?.length || 0} Items</Text>
-                  <Text style={styles.orderTotal}>₹{order.total}</Text>
-                </View>
-              </View>
-            ))
-          ) : (
-            <View style={styles.emptyOrders}>
-              <Ionicons name="receipt-outline" size={48} color={Colors.border} />
-              <Text style={styles.emptyOrdersText}>No orders placed yet.</Text>
-            </View>
-          )}
+          <TouchableOpacity style={styles.linkBtn} onPress={() => {}}>
+            <Ionicons name="document-text-outline" size={24} color={Colors.text} />
+            <Text style={styles.linkText}>Terms & Conditions</Text>
+            <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} style={{ marginLeft: 'auto' }} />
+          </TouchableOpacity>
         </View>
 
         {/* Actions */}
@@ -165,71 +150,26 @@ const styles = StyleSheet.create({
     color: Colors.text,
     marginBottom: 16,
   },
-  orderCard: {
+  linkBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: Colors.surface,
-    borderRadius: 12,
     padding: 16,
-    marginBottom: 16,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: Colors.border,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
-  orderHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  orderId: {
+  linkText: {
+    marginLeft: 12,
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '500',
     color: Colors.text,
-  },
-  statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  orderDate: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    marginBottom: 12,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: Colors.border,
-    marginBottom: 12,
-  },
-  orderTotalRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  orderItems: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-  },
-  orderTotal: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: Colors.primary,
-  },
-  emptyOrders: {
-    alignItems: 'center',
-    padding: 32,
-    backgroundColor: Colors.surface,
-    borderRadius: 12,
-    borderStyle: 'dashed',
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  emptyOrdersText: {
-    marginTop: 12,
-    fontSize: 16,
-    color: Colors.textSecondary,
   },
   actionBtn: {
     flexDirection: 'row',

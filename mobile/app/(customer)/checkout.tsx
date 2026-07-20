@@ -15,6 +15,8 @@ export default function CheckoutScreen() {
   
   const [address, setAddress] = useState('');
   const [phone, setPhone] = useState(user?.phone || '');
+  const [slot, setSlot] = useState('7-9 AM');
+  const [paymentMethod, setPaymentMethod] = useState('cod');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const subtotal = getCartTotal();
@@ -40,9 +42,16 @@ export default function CheckoutScreen() {
           phone: phone,
           city: 'Salem',
         },
-        slot: 'Anytime',
-        paymentMethod: 'cod'
+        slot: slot,
+        paymentMethod: paymentMethod
       };
+
+      if (paymentMethod === 'razorpay') {
+        Alert.alert('Notice', 'Razorpay requires native modules which cannot run in Expo Go. For this demo, we will process your order as Cash on Delivery.', [
+          { text: 'OK', onPress: () => {} }
+        ]);
+        orderData.paymentMethod = 'cod';
+      }
 
       await apiClient.post('/api/orders', orderData);
       clearCart();
@@ -108,6 +117,22 @@ export default function CheckoutScreen() {
           </View>
         </View>
 
+        {/* Delivery Slot */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Delivery Slot</Text>
+          <View style={styles.slotContainer}>
+            {['7-9 AM', '12-2 PM', '6-8 PM'].map((time) => (
+              <TouchableOpacity 
+                key={time} 
+                style={[styles.slotBtn, slot === time && styles.slotBtnActive]}
+                onPress={() => setSlot(time)}
+              >
+                <Text style={[styles.slotText, slot === time && styles.slotTextActive]}>{time}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
         {/* Order Summary */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Order Summary</Text>
@@ -142,11 +167,24 @@ export default function CheckoutScreen() {
         {/* Payment Method */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Payment Method</Text>
-          <View style={styles.paymentMethodCard}>
-            <Ionicons name="cash-outline" size={24} color={Colors.primary} />
-            <Text style={styles.paymentMethodText}>Cash on Delivery (COD)</Text>
-            <Ionicons name="checkmark-circle" size={24} color={Colors.primary} style={{ marginLeft: 'auto' }} />
-          </View>
+          
+          <TouchableOpacity 
+            style={[styles.paymentMethodCard, paymentMethod === 'cod' && styles.paymentMethodActive]}
+            onPress={() => setPaymentMethod('cod')}
+          >
+            <Ionicons name="cash-outline" size={24} color={paymentMethod === 'cod' ? Colors.primary : Colors.textSecondary} />
+            <Text style={[styles.paymentMethodText, paymentMethod === 'cod' && { color: Colors.primary }]}>Cash on Delivery (COD)</Text>
+            {paymentMethod === 'cod' && <Ionicons name="checkmark-circle" size={24} color={Colors.primary} style={{ marginLeft: 'auto' }} />}
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.paymentMethodCard, paymentMethod === 'razorpay' && styles.paymentMethodActive]}
+            onPress={() => setPaymentMethod('razorpay')}
+          >
+            <Ionicons name="card-outline" size={24} color={paymentMethod === 'razorpay' ? Colors.primary : Colors.textSecondary} />
+            <Text style={[styles.paymentMethodText, paymentMethod === 'razorpay' && { color: Colors.primary }]}>Pay Online (Razorpay)</Text>
+            {paymentMethod === 'razorpay' && <Ionicons name="checkmark-circle" size={24} color={Colors.primary} style={{ marginLeft: 'auto' }} />}
+          </TouchableOpacity>
         </View>
 
         <View style={{ height: 40 }} />
@@ -277,10 +315,44 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: Colors.surface,
     borderWidth: 1,
-    borderColor: Colors.primary,
+    borderColor: Colors.border,
     borderRadius: 12,
     padding: 16,
     gap: 12,
+    marginBottom: 12,
+  },
+  paymentMethodActive: {
+    borderColor: Colors.primary,
+    backgroundColor: '#F0F9FF',
+  },
+  paymentMethodText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.text,
+  },
+  slotContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  slotBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 8,
+    alignItems: 'center',
+    backgroundColor: Colors.surface,
+  },
+  slotBtnActive: {
+    borderColor: Colors.primary,
+    backgroundColor: '#F0F9FF',
+  },
+  slotText: {
+    color: Colors.textSecondary,
+    fontWeight: '600',
+  },
+  slotTextActive: {
+    color: Colors.primary,
   },
   paymentMethodText: {
     fontSize: 16,
