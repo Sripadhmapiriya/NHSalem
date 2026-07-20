@@ -22,7 +22,49 @@ import faqRoutes from './routes/faqs.routes.js'
 import newsletterRoutes from './routes/newsletter.routes.js'
 import addressRoutes from './routes/addresses.routes.js'
 
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
 dotenv.config()
+
+// ── Image Copy Script (Runs on startup) ───────────────────────────────────────
+function setupImages() {
+  const baseDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '../public/images');
+  
+  const crab = 'C:\\Users\\Windows\\.gemini\\antigravity-ide\\brain\\4b67d565-3752-4f97-9a37-d79a561e502c\\crab_image_1784547103819.png';
+  const lobster = 'C:\\Users\\Windows\\.gemini\\antigravity-ide\\brain\\4b67d565-3752-4f97-9a37-d79a561e502c\\lobster_image_1784547121715.png';
+  const dry_fish = 'C:\\Users\\Windows\\.gemini\\antigravity-ide\\brain\\4b67d565-3752-4f97-9a37-d79a561e502c\\dry_fish_image_1784547139856.png';
+
+  const targets = [
+    { src: dry_fish, dest: 'dry-fish/premium-dried-seerfish-heads.png' },
+    { src: dry_fish, dest: 'dry-fish/premium-dried-sardines.jpg' },
+    { src: dry_fish, dest: 'dry-fish/traditional-dried-mackerel.png' },
+    { src: lobster, dest: 'lobster/premium-sand-lobster.png' },
+    { src: lobster, dest: 'lobster/tiger-rock-lobster.png' },
+    { src: lobster, dest: 'lobster/spiny-lobster-tails.png' },
+    { src: lobster, dest: 'lobster/whole-rock-lobster.png' },
+    { src: lobster, dest: 'lobster/bamboo-rock-lobster.png' },
+    { src: crab, dest: 'crabs/red-claw-rock-crab.png' },
+    { src: crab, dest: 'crabs/soft-shell-mangrove-crab.png' },
+    { src: crab, dest: 'crabs/three-spot-crab.png' },
+    { src: crab, dest: 'crabs/blue-swimmer-crab.jpg' },
+    { src: crab, dest: 'crabs/lagoon-mud-crab.png' }
+  ];
+
+  targets.forEach(({ src, dest }) => {
+    try {
+      const fullDest = path.join(baseDir, dest);
+      const destDir = path.dirname(fullDest);
+      if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
+      if (fs.existsSync(src)) fs.copyFileSync(src, fullDest);
+    } catch (e) {
+      console.error('Failed to copy image', dest, e);
+    }
+  });
+  console.log('✅ Generated images configured');
+}
+setupImages();
 
 // ── Email config check (non-blocking) ─────────────────────────────────────────
 function checkEmailConfig() {
@@ -69,6 +111,10 @@ app.use(cors({
 app.use(morgan('dev'))
 app.use(compression())
 app.use(express.json())
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use(express.static(path.join(__dirname, '../public')));
 
 // ── Health check & root — must come BEFORE rate limiter and other routes ───────
 app.get('/', (req, res) => {

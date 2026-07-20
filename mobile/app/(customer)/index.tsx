@@ -103,7 +103,7 @@ export default function CustomerHome() {
             <FlatList
               horizontal
               showsHorizontalScrollIndicator={false}
-              data={featuredProducts.slice(0, 5)}
+              data={(featuredProducts || []).slice(0, 5)}
               keyExtractor={(item) => item.id || Math.random().toString()}
               renderItem={({ item }) => (
                 <ProductCard 
@@ -130,7 +130,7 @@ export default function CustomerHome() {
           <Text style={styles.sectionTitle}>All Products</Text>
           {loadingAll ? <ActivityIndicator color={Colors.primary} /> : (
             <View style={styles.gridContainer}>
-              {allProducts.map((item: any) => (
+              {(allProducts || []).map((item: any) => (
                 <View key={item.id} style={styles.gridItem}>
                   <ProductCard 
                     product={item} 

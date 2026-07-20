@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, TextInput } from 'react-native';
-import { Colors } from '../../src/constants/theme';
+import { Colors, Spacing } from '../../src/constants/theme';
 import { useCartStore } from '../../src/store/cartStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';

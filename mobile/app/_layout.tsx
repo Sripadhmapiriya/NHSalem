@@ -25,7 +25,8 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(customer)" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
+        <Stack.Screen name="search" options={{ headerShown: false }} />
         {/* Add more stacks here as needed, like checkout.tsx, search.tsx etc */}
       </Stack>
       <StatusBar style="auto" />
