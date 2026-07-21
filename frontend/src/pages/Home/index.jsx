@@ -49,11 +49,7 @@ const newsletterSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
 })
 
-const TESTIMONIALS = [
-  { id: 1, name: 'Priya M.', rating: 5, text: 'Absolutely the freshest prawns I have ever bought in Salem. Packaging was top notch!', image: 'https://i.pravatar.cc/150?u=1' },
-  { id: 2, name: 'Senthil K.', rating: 5, text: 'The Vanjaram slices were perfect. Cleaned very well and delivered exactly on time.', image: 'https://i.pravatar.cc/150?u=2' },
-  { id: 3, name: 'Anitha R.', rating: 5, text: 'I love the Weekend BBQ platter! The lobster tails were a huge hit with my family.', image: 'https://i.pravatar.cc/150?u=3' },
-]
+
 
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -78,11 +74,7 @@ export default function Home() {
     }
   }, [user])
 
-  // Stats band
-  const [statsRef, statsInView] = useInView({ once: true })
-  const cities = useCountUp(8, 1800, statsInView)
-  const orders = useCountUp(50000, 2000, statsInView)
-  const partners = useCountUp(120, 1600, statsInView)
+
 
   // Auto-advance carousel
   useEffect(() => {
@@ -163,19 +155,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Search Bar directly below hero ─────────────────────────────── */}
-      <section className="bg-background -mt-6 relative z-30 px-4">
-        <div className="container-max max-w-3xl mx-auto bg-white rounded-2xl shadow-md p-2 border border-outline-variant/30 flex items-center gap-2">
-          <SearchInput
-            id="hero-search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search fish, prawns, crabs..."
-            className="flex-1 border-none shadow-none text-base bg-transparent px-4"
-          />
-          <Button variant="primary" onClick={() => navigate(`/category/fish?search=${searchQuery}`)}>Search</Button>
-        </div>
-      </section>
 
       {/* ── Active Order Persistent Banner ─────────────────────────────── */}
       {activeOrder && (
@@ -200,41 +179,6 @@ export default function Home() {
         </section>
       )}
 
-      {/* ── Trust / Process Strip ──────────────────────────────────────── */}
-      <section className="bg-background pt-16 pb-8" aria-label="Our Process">
-        <div className="container-max max-w-5xl mx-auto text-center">
-          <h2 className="text-headline-sm text-primary font-bold mb-10">Our Freshness Guarantee</h2>
-          <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-12 relative">
-            
-            {/* Connecting line for desktop */}
-            <div className="hidden md:block absolute top-8 left-1/2 -translate-x-1/2 w-[60%] h-0.5 bg-outline-variant/30 z-0"></div>
-
-            <div className="flex flex-col items-center gap-3 z-10 bg-background px-4">
-              <div className="w-16 h-16 bg-blue-50 border border-blue-100 rounded-full flex items-center justify-center text-blue-600 shadow-sm"><span className="material-symbols-outlined text-3xl">sailing</span></div>
-              <div>
-                <p className="font-bold text-on-surface text-label-md">1. Caught Fresh</p>
-                <p className="text-xs text-on-surface-variant max-w-[150px] mt-1">Sourced directly from daily coastal auctions</p>
-              </div>
-            </div>
-            
-            <div className="flex flex-col items-center gap-3 z-10 bg-background px-4 mt-4 md:mt-0">
-              <div className="w-16 h-16 bg-teal-50 border border-teal-100 rounded-full flex items-center justify-center text-teal-600 shadow-sm"><span className="material-symbols-outlined text-3xl">ac_unit</span></div>
-              <div>
-                <p className="font-bold text-on-surface text-label-md">2. Flash Iced</p>
-                <p className="text-xs text-on-surface-variant max-w-[150px] mt-1">0-4°C cold chain maintained instantly</p>
-              </div>
-            </div>
-            
-            <div className="flex flex-col items-center gap-3 z-10 bg-background px-4 mt-4 md:mt-0">
-              <div className="w-16 h-16 bg-green-50 border border-green-100 rounded-full flex items-center justify-center text-green-600 shadow-sm"><span className="material-symbols-outlined text-3xl">local_shipping</span></div>
-              <div>
-                <p className="font-bold text-on-surface text-label-md">3. Delivered</p>
-                <p className="text-xs text-on-surface-variant max-w-[150px] mt-1">To your doorstep in under 24 hours</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ── Today's Best Sellers ───────────────────────────────────────── */}
       <section className="py-16 bg-surface-container-low" aria-labelledby="best-sellers-heading">
@@ -259,57 +203,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Promo Banners ──────────────────────────────────────────────── */}
-      <section className="py-12 bg-background" aria-label="Promotions">
-        <div className="container-max grid md:grid-cols-2 gap-6">
-          <PromoBanner
-            tag="WEEKEND SPECIAL"
-            headline="Weekend BBQ Platter at 30% Off"
-            sub="Jumbo Tiger Prawns + Silver Pomfret + Spiny Lobster Tails"
-            cta="Grab the Deal"
-            to="/category/combos"
-            bg="from-[#0b1e3d] to-primary"
-            accent="text-[#86efac]"
-            showCountdown={true}
-          />
-          <PromoBanner
-            tag="FIRST ORDER"
-            headline="First Order? Get ₹200 Cashback"
-            sub="Use code WELCOME200 at checkout. Valid on orders above ₹499."
-            cta="Shop Now"
-            to="/category/fish?promo=WELCOME200"
-            bg="from-amber-600 to-primary"
-            accent="text-[#fef3c7]"
-          />
-        </div>
-      </section>
-      
-      {/* ── Customer Testimonials ──────────────────────────────────────── */}
-      <section className="py-16 bg-surface-container-low" aria-labelledby="testimonials-heading">
-        <div className="container-max">
-          <div className="text-center mb-10">
-            <h2 id="testimonials-heading" className="text-display-lg-mobile text-on-surface">What Our Customers Say</h2>
-            <p className="text-body-lg text-on-surface-variant mt-2">Join thousands of happy seafood lovers in Salem.</p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {TESTIMONIALS.map(review => (
-              <div key={review.id} className="bg-white p-6 rounded-[24px] shadow-sm border border-outline-variant/30 flex flex-col gap-4">
-                <div className="flex items-center gap-1">
-                  {[...Array(review.rating)].map((_, i) => (
-                    <span key={i} className="material-symbols-outlined text-[#f59e0b] filled text-[20px]">star</span>
-                  ))}
-                </div>
-                <p className="text-body-md text-on-surface flex-1 leading-relaxed">"{review.text}"</p>
-                <div className="flex items-center gap-3 pt-4 border-t border-outline-variant/20">
-                  <img src={review.image} alt={review.name} className="w-10 h-10 rounded-full object-cover border border-outline-variant/30" />
-                  <p className="text-label-md font-bold text-on-surface">{review.name}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+
 
       {/* ── Category Grid ──────────────────────────────────────────────── */}
       <section className="py-16 bg-background" aria-labelledby="categories-heading">

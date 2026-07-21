@@ -198,7 +198,7 @@ export default function About() {
         <div className="container-max">
           <h2 className="text-display-lg-mobile font-bold mb-4">Taste the Ocean — Shop Now</h2>
           <p className="text-body-lg text-white/70 mb-8 max-w-lg mx-auto">
-            Join 50,000+ households who trust NH Salem for their daily seafood needs.
+            Experience the finest seafood delivered straight to your door.
           </p>
           <Link to="/">
             <Button variant="gold" size="lg">Explore Today's Catch</Button>

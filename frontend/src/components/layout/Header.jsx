@@ -107,12 +107,13 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
   return (
     <>
 
+
       <header
-        className="sticky top-[-1.5px] z-50 w-full bg-white shadow-[0_4px_30px_rgba(0,0,0,0.06)] border-b border-outline-variant/15 will-change-transform transform-gpu"
+        className="sticky top-0 z-50 w-full bg-white shadow-[0_4px_30px_rgba(0,0,0,0.06)] border-b border-outline-variant/15 will-change-transform transform-gpu"
         style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
       >
 
-      <div className="max-w-7xl mx-auto px-4 flex items-center justify-between gap-2 xl:gap-4 h-14 md:h-16">
+      <div className="max-w-7xl mx-auto px-4 flex items-center justify-between gap-2 xl:gap-4 h-12 md:h-14">
         {/* Logo */}
         <Link
           to="/"
@@ -122,7 +123,7 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
           <img
             src="/crest.png"
             alt="NH Salem Sea Foods Logo"
-            className="w-12 h-12 md:w-14 md:h-14 object-contain"
+            className="w-10 h-10 md:w-12 md:h-12 object-contain"
             loading="eager"
             fetchpriority="high"
             width={56}
@@ -133,16 +134,6 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
             <p className="text-[10px] font-bold text-on-surface-variant tracking-[0.25em] uppercase leading-none mt-0.5">Sea Foods</p>
           </div>
         </Link>
-
-        {/* Location Selector */}
-        <div className="hidden md:flex items-center gap-1.5 ml-2 lg:ml-4 px-3 py-1.5 bg-surface-container-low border border-outline-variant/40 rounded-full cursor-pointer hover:bg-surface-container transition-colors" title="Change delivery location">
-          <span className="material-symbols-outlined text-primary text-[18px]" aria-hidden="true">location_on</span>
-          <div className="flex flex-col">
-            <span className="text-[10px] font-bold text-on-surface-variant uppercase leading-none">Deliver to</span>
-            <span className="text-xs font-bold text-on-surface leading-tight">Salem (636001)</span>
-          </div>
-          <span className="material-symbols-outlined text-on-surface-variant text-[16px]" aria-hidden="true">expand_more</span>
-        </div>
 
         {/* Desktop Nav */}
         <nav

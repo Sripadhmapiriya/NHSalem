@@ -90,31 +90,6 @@ export default function Layout({ children }) {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      {/* App Download Banner */}
-      <AnimatePresence>
-        {showDownload && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="bg-primary-container text-on-primary-container overflow-hidden"
-          >
-            <div className="px-4 py-2.5 flex items-center justify-between text-sm">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-[18px]">smartphone</span>
-                <span className="font-semibold text-xs sm:text-sm">Get the NH Salem App for exclusive offers!</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <button className="text-xs font-bold bg-primary text-white px-3 py-1 rounded-full shadow-sm">Download</button>
-                <button onClick={() => setShowDownload(false)} aria-label="Close banner">
-                  <span className="material-symbols-outlined text-on-primary-container text-[18px] block">close</span>
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <Header
         onLoginClick={(mode = 'login') => {
           setLoginModalMode(mode)
