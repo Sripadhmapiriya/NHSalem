@@ -19,7 +19,7 @@ const FOOTER_LINKS = {
   ],
   'Support': [
     { label: 'Help Center', to: '/help' },
-    { label: 'Track Order', to: '/orders/NHS-77421' },
+    { label: 'Track Order', to: '/track-order' },
     { label: 'Subscriptions', to: '/subscriptions' },
     { label: 'Contact Us', to: '/help' },
     { label: 'Sitemap', to: '/help' },

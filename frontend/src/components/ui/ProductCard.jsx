@@ -5,6 +5,7 @@ import Badge from './Badge'
 import useCartStore from '@/store/cartStore'
 import useWishlistStore from '@/store/wishlistStore'
 import useAuthStore from '@/store/authStore'
+import useToastStore from '@/store/toastStore'
 
 /**
  * ProductCard — Level 1 card with:
@@ -18,6 +19,7 @@ export default function ProductCard({ product }) {
   const [selectedVariant, setSelectedVariant] = useState(0)
   const { addItem, getItem, updateQuantity, removeItem } = useCartStore()
   const { toggle: toggleWishlist, isWishlisted } = useWishlistStore()
+  const { addToast } = useToastStore()
 
   const {
     id,
@@ -68,6 +70,7 @@ export default function ProductCard({ product }) {
       price: currentVariant.price,
       quantity: 1,
     })
+    addToast({ message: `${name} added to cart!`, type: 'success' })
   }
 
   const handleIncrease = () => updateQuantity(id, currentVariant.label, cartItem.quantity + 1)

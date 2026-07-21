@@ -90,6 +90,7 @@ function RootRoutes() {
 
           {/* Operational */}
           <Route path="/orders/:orderId" element={<OrderTracking />} />
+          <Route path="/track-order" element={<OrderTracking />} />
           <Route path="/track-order/:orderId" element={<OrderTracking />} />
           <Route path="/stores" element={<StoreLocator />} />
           <Route path="/bulk-orders" element={<BulkOrders />} />

@@ -134,6 +134,16 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
           </div>
         </Link>
 
+        {/* Location Selector */}
+        <div className="hidden md:flex items-center gap-1.5 ml-2 lg:ml-4 px-3 py-1.5 bg-surface-container-low border border-outline-variant/40 rounded-full cursor-pointer hover:bg-surface-container transition-colors" title="Change delivery location">
+          <span className="material-symbols-outlined text-primary text-[18px]" aria-hidden="true">location_on</span>
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold text-on-surface-variant uppercase leading-none">Deliver to</span>
+            <span className="text-xs font-bold text-on-surface leading-tight">Salem (636001)</span>
+          </div>
+          <span className="material-symbols-outlined text-on-surface-variant text-[16px]" aria-hidden="true">expand_more</span>
+        </div>
+
         {/* Desktop Nav */}
         <nav
           className="hidden xl:flex items-center gap-1 px-2 py-1 bg-surface-container-low/60 border border-outline-variant/40 rounded-full shadow-inner-sm"

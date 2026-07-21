@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
+import useAuthStore from '@/store/authStore'
 import { motion } from 'framer-motion'
 import FreshnessScoreCard from '@/components/ui/FreshnessScoreCard'
 import { SeafoodLoader } from '@/components/ui'
@@ -9,27 +10,69 @@ export default function OrderTracking() {
   const { orderId } = useParams()
   const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [inputOrderId, setInputOrderId] = useState('')
+  const navigate = useNavigate()
+  const user = useAuthStore(state => state.user)
 
   useEffect(() => {
-    setLoading(true)
-    getOrderStatus(orderId).then((data) => {
-      setOrder(data)
+    let idToFetch = orderId
+    if (!idToFetch && user) {
+       idToFetch = 'NHS-77421' // Simulate fetching the latest order for the logged-in user
+    }
+
+    if (idToFetch) {
+      setLoading(true)
+      getOrderStatus(idToFetch).then((data) => {
+        setOrder(data)
+        setLoading(false)
+      }).catch(() => {
+        setOrder(null)
+        setLoading(false)
+      })
+    } else {
       setLoading(false)
-    })
-  }, [orderId])
+    }
+  }, [orderId, user])
 
   if (loading) {
     return <SeafoodLoader text="Retrieving order tracking info…" className="min-h-[60vh]" />
   }
 
   if (!order) {
+    if (!orderId && !user) {
+      return (
+        <div className="bg-surface-container-low min-h-[70vh] flex items-center justify-center px-4">
+          <div className="bg-white p-8 rounded-[24px] shadow-sm border border-outline-variant/30 text-center max-w-md w-full">
+            <span className="material-symbols-outlined text-primary text-5xl mb-4 block">local_shipping</span>
+            <h1 className="font-serif text-headline-sm text-on-surface mb-2">Track Your Order</h1>
+            <p className="text-body-md text-on-surface-variant mb-6">Enter your Order ID to see live delivery updates.</p>
+            <div className="flex flex-col gap-3">
+              <input
+                type="text"
+                placeholder="e.g. NHS-77421"
+                value={inputOrderId}
+                onChange={(e) => setInputOrderId(e.target.value)}
+                className="w-full px-5 py-3 border border-outline-variant rounded-full focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-center font-mono font-semibold"
+              />
+              <button 
+                onClick={() => { if (inputOrderId) navigate(`/track-order/${inputOrderId}`) }}
+                className="w-full px-6 py-3 bg-primary text-white rounded-full font-bold hover:bg-primary/90 transition-colors"
+              >
+                Track Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="container-max py-32 text-center">
         <span className="material-symbols-outlined text-outline text-6xl mb-4 block" aria-hidden="true">
           search_off
         </span>
         <h1 className="font-serif text-display-lg-mobile text-on-surface mb-2">Order Not Found</h1>
-        <p className="text-body-md text-on-surface-variant mb-8">Order ID: <span className="font-mono font-bold text-primary">{orderId}</span></p>
+        <p className="text-body-md text-on-surface-variant mb-8">Order ID: <span className="font-mono font-bold text-primary">{orderId || 'Unknown'}</span></p>
         <Link to="/" className="inline-flex px-6 py-2.5 bg-primary text-white rounded-full text-label-md font-semibold hover:opacity-90 transition-opacity">
           Back to Shore
         </Link>
