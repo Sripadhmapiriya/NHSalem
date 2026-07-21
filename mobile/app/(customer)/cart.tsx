@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, TextInput } from 'react-native';
 import { Colors, Spacing } from '../../src/constants/theme';
 import { useCartStore } from '../../src/store/cartStore';
+import { useAuthStore } from '../../src/store/authStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -8,8 +9,18 @@ import { useRouter } from 'expo-router';
 export default function CartScreen() {
   const router = useRouter();
   const { items, updateQuantity, removeItem, getCartTotal } = useCartStore();
+  const { isLoggedIn, setPendingAction, setAuthGateVisible } = useAuthStore();
 
   const total = getCartTotal();
+
+  const handleCheckout = () => {
+    if (!isLoggedIn) {
+      setPendingAction({ type: 'CHECKOUT' });
+      setAuthGateVisible(true);
+      return;
+    }
+    router.push('/(customer)/checkout');
+  };
 
   if (items.length === 0) {
     return (
@@ -107,7 +118,7 @@ export default function CartScreen() {
 
         <TouchableOpacity 
           style={styles.checkoutBtn} 
-          onPress={() => router.push('/(customer)/checkout')}
+          onPress={handleCheckout}
         >
           <Text style={styles.checkoutBtnText}>Proceed to Checkout</Text>
         </TouchableOpacity>

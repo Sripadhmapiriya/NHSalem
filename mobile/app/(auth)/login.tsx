@@ -1,56 +1,103 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, Alert, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, Alert, TouchableOpacity, ScrollView } from 'react-native';
 import { useAuthStore } from '../../src/store/authStore';
 import { Colors, Spacing, Typography } from '../../src/constants/theme';
 import { Button, Input, Card } from '../../src/components/ui';
 import { authApi } from '../../src/api/auth';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+
+type AuthMode = 'login' | 'register' | 'admin';
 
 export default function LoginScreen() {
   const { login } = useAuthStore();
   const router = useRouter();
+  const params = useLocalSearchParams();
   
-  const [isCustomerMode, setIsCustomerMode] = useState(true);
-  const [identifier, setIdentifier] = useState(isCustomerMode ? 'user@nhsalem.com' : 'admin@nhsalem.com');
-  const [password, setPassword] = useState(isCustomerMode ? 'password123' : 'admin123');
+  const [mode, setMode] = useState<AuthMode>(
+    params.mode === 'register' ? 'register' : 'login'
+  );
+
+  // Login state
+  const [identifier, setIdentifier] = useState('user@nhsalem.com');
+  const [password, setPassword] = useState('password123');
+
+  // Register state
+  const [regName, setRegName] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPhone, setRegPhone] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  const [regConfirmPassword, setRegConfirmPassword] = useState('');
+
   const [isLoading, setIsLoading] = useState(false);
 
-  const toggleMode = () => {
-    setIsCustomerMode(!isCustomerMode);
-    setIdentifier(!isCustomerMode ? 'user@nhsalem.com' : 'admin@nhsalem.com');
-    setPassword(!isCustomerMode ? 'password123' : 'admin123');
-  };
-
-  const handleLogin = async () => {
-    if (!identifier || !password) {
-      Alert.alert('Error', 'Please enter all fields');
-      return;
+  useEffect(() => {
+    if (mode === 'admin') {
+      setIdentifier('admin@nhsalem.com');
+      setPassword('admin123');
+    } else if (mode === 'login') {
+      setIdentifier('user@nhsalem.com');
+      setPassword('password123');
     }
+  }, [mode]);
 
+  const handleAuth = async () => {
     setIsLoading(true);
     try {
-      if (isCustomerMode) {
-        const response = await authApi.loginCustomer(identifier, password);
+      if (mode === 'register') {
+        if (!regName || !regEmail || !regPhone || !regPassword || !regConfirmPassword) {
+          Alert.alert('Error', 'Please fill in all fields');
+          setIsLoading(false);
+          return;
+        }
+        if (regPassword !== regConfirmPassword) {
+          Alert.alert('Error', 'Passwords do not match');
+          setIsLoading(false);
+          return;
+        }
+
+        const response = await authApi.registerCustomer({
+          name: regName,
+          email: regEmail,
+          phone: regPhone,
+          password: regPassword,
+        });
+
         if (response.success) {
-          // The backend returns user without role, but we know it's a customer
           await login(response.token, { ...response.user, role: 'customer' });
           router.replace('/(customer)');
         }
-      } else {
+      } else if (mode === 'login') {
+        if (!identifier || !password) {
+          Alert.alert('Error', 'Please enter all fields');
+          setIsLoading(false);
+          return;
+        }
+
+        const response = await authApi.loginCustomer(identifier, password);
+        if (response.success) {
+          await login(response.token, { ...response.user, role: 'customer' });
+          router.replace('/(customer)');
+        }
+      } else if (mode === 'admin') {
+        if (!identifier || !password) {
+          Alert.alert('Error', 'Please enter all fields');
+          setIsLoading(false);
+          return;
+        }
+
         const response = await authApi.loginAdmin(identifier, password);
         if (response.success) {
-          // Admin response includes role
           await login(response.token, response.admin);
           router.replace('/(admin)');
         }
       }
     } catch (error: any) {
-      console.error('Login failed:', error);
+      console.error('Auth failed:', error);
       Alert.alert(
-        'Login Failed', 
-        error.response?.data?.message || 'Check your credentials and try again'
+        'Authentication Failed', 
+        error.response?.data?.message || 'Check your details and try again'
       );
     } finally {
       setIsLoading(false);
@@ -63,57 +110,109 @@ export default function LoginScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.container}
       >
-        <View style={styles.header}>
-          <Text style={styles.title}>NH Salem</Text>
-          <Text style={styles.subtitle}>
-            {isCustomerMode ? 'Sign in to buy fresh seafood' : 'Admin Portal Access'}
-          </Text>
-        </View>
-
-        <Card style={styles.card}>
-          <View style={styles.toggleContainer}>
-            <TouchableOpacity 
-              style={[styles.toggleTab, isCustomerMode && styles.activeTab]}
-              onPress={() => !isCustomerMode && toggleMode()}
-            >
-              <Ionicons name="person-outline" size={20} color={isCustomerMode ? Colors.white : Colors.textLight} />
-              <Text style={[styles.tabText, isCustomerMode && styles.activeTabText]}>Customer</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={[styles.toggleTab, !isCustomerMode && styles.activeAdminTab]}
-              onPress={() => isCustomerMode && toggleMode()}
-            >
-              <Ionicons name="shield-outline" size={20} color={!isCustomerMode ? Colors.white : Colors.textLight} />
-              <Text style={[styles.tabText, !isCustomerMode && styles.activeTabText]}>Admin</Text>
-            </TouchableOpacity>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          <View style={styles.header}>
+            <Text style={styles.title}>NH Salem</Text>
+            <Text style={styles.subtitle}>
+              {mode === 'admin' ? 'Admin Portal Access' : 'Fresh seafood at your door'}
+            </Text>
           </View>
 
-          <Input
-            label={isCustomerMode ? "Email or Phone Number" : "Admin Email"}
-            placeholder={isCustomerMode ? "e.g., user@nhsalem.com or 9876543210" : "admin@nhsalem.com"}
-            value={identifier}
-            onChangeText={setIdentifier}
-            autoCapitalize="none"
-            keyboardType={isCustomerMode ? "default" : "email-address"}
-          />
-          
-          <Input
-            label="Password"
-            placeholder="••••••••"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
+          <Card style={styles.card}>
+            <View style={styles.toggleContainer}>
+              <TouchableOpacity 
+                style={[styles.toggleTab, mode === 'login' && styles.activeTab]}
+                onPress={() => setMode('login')}
+              >
+                <Ionicons name="person-outline" size={16} color={mode === 'login' ? Colors.white : Colors.textLight} />
+                <Text style={[styles.tabText, mode === 'login' && styles.activeTabText]}>Log In</Text>
+              </TouchableOpacity>
 
-          <Button
-            title={`Login as ${isCustomerMode ? 'Customer' : 'Admin'}`}
-            onPress={handleLogin}
-            loading={isLoading}
-            variant={isCustomerMode ? 'primary' : 'admin'}
-            style={styles.loginButton}
-          />
-        </Card>
+              <TouchableOpacity 
+                style={[styles.toggleTab, mode === 'register' && styles.activeTab]}
+                onPress={() => setMode('register')}
+              >
+                <Ionicons name="person-add-outline" size={16} color={mode === 'register' ? Colors.white : Colors.textLight} />
+                <Text style={[styles.tabText, mode === 'register' && styles.activeTabText]}>Sign Up</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.toggleTab, mode === 'admin' && styles.activeAdminTab]}
+                onPress={() => setMode('admin')}
+              >
+                <Ionicons name="shield-outline" size={16} color={mode === 'admin' ? Colors.white : Colors.textLight} />
+                <Text style={[styles.tabText, mode === 'admin' && styles.activeTabText]}>Admin</Text>
+              </TouchableOpacity>
+            </View>
+
+            {mode === 'register' ? (
+              <View>
+                <Input
+                  label="Full Name"
+                  placeholder="John Doe"
+                  value={regName}
+                  onChangeText={setRegName}
+                />
+                <Input
+                  label="Email Address"
+                  placeholder="name@example.com"
+                  value={regEmail}
+                  onChangeText={setRegEmail}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                />
+                <Input
+                  label="Mobile Number"
+                  placeholder="10-digit mobile number"
+                  value={regPhone}
+                  onChangeText={setRegPhone}
+                  keyboardType="phone-pad"
+                  maxLength={10}
+                />
+                <Input
+                  label="Password"
+                  placeholder="••••••••"
+                  value={regPassword}
+                  onChangeText={setRegPassword}
+                  secureTextEntry
+                />
+                <Input
+                  label="Confirm Password"
+                  placeholder="••••••••"
+                  value={regConfirmPassword}
+                  onChangeText={setRegConfirmPassword}
+                  secureTextEntry
+                />
+              </View>
+            ) : (
+              <View>
+                <Input
+                  label={mode === 'login' ? "Email or Phone Number" : "Admin Email"}
+                  placeholder={mode === 'login' ? "e.g., user@nhsalem.com or 9876543210" : "admin@nhsalem.com"}
+                  value={identifier}
+                  onChangeText={setIdentifier}
+                  autoCapitalize="none"
+                  keyboardType={mode === 'login' ? "default" : "email-address"}
+                />
+                <Input
+                  label="Password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry
+                />
+              </View>
+            )}
+
+            <Button
+              title={mode === 'register' ? 'Create Account' : `Login as ${mode === 'login' ? 'Customer' : 'Admin'}`}
+              onPress={handleAuth}
+              loading={isLoading}
+              variant={mode === 'admin' ? 'admin' : 'primary'}
+              style={styles.loginButton}
+            />
+          </Card>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -126,6 +225,9 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
     padding: Spacing.xl,
     justifyContent: 'center',
   },
@@ -160,7 +262,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: Spacing.sm,
     borderRadius: 6,
-    gap: 8,
+    gap: 4,
   },
   activeTab: {
     backgroundColor: Colors.primary,
@@ -171,7 +273,7 @@ const styles = StyleSheet.create({
   tabText: {
     color: Colors.textLight,
     fontWeight: '600',
-    fontSize: 16,
+    fontSize: 13,
   },
   activeTabText: {
     color: Colors.white,

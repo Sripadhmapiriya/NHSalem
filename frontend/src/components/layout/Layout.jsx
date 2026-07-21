@@ -27,6 +27,7 @@ const pageVariants = {
  */
 export default function Layout({ children }) {
   const [loginModalOpen, setLoginModalOpen] = useState(false)
+  const [loginModalMode, setLoginModalMode] = useState('login')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { user, cartLoginPopupOpen, setCartLoginPopupOpen, pendingAction, setPendingAction } = useAuthStore()
   const { addItem } = useCartStore()
@@ -115,7 +116,10 @@ export default function Layout({ children }) {
       </AnimatePresence>
 
       <Header
-        onLoginClick={() => setLoginModalOpen(true)}
+        onLoginClick={(mode = 'login') => {
+          setLoginModalMode(mode)
+          setLoginModalOpen(true)
+        }}
         mobileMenuOpen={mobileMenuOpen}
         setMobileMenuOpen={setMobileMenuOpen}
       />
@@ -183,7 +187,9 @@ export default function Layout({ children }) {
         noScroll
       >
         <LoginPage
+          key={loginModalOpen ? loginModalMode : 'closed'}
           isModal
+          initialMode={loginModalMode}
           onSuccess={() => setLoginModalOpen(false)}
         />
       </Modal>
@@ -209,20 +215,31 @@ export default function Layout({ children }) {
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
             <button
               onClick={() => {
+                setLoginModalMode('login')
                 setCartLoginPopupOpen(false)
                 setLoginModalOpen(true)
               }}
-              className="px-6 py-3 rounded-full bg-primary hover:bg-primary/95 text-white font-bold text-sm tracking-wide shadow-sm hover:shadow transition-all duration-150 cursor-pointer text-center"
+              className="px-6 py-3 rounded-full bg-primary hover:bg-primary/95 text-white font-bold text-sm tracking-wide shadow-sm hover:shadow transition-all duration-150 cursor-pointer text-center flex-1"
             >
               Sign In
             </button>
             <button
-              onClick={() => setCartLoginPopupOpen(false)}
-              className="px-6 py-3 rounded-full border border-outline-variant hover:bg-surface-container-low text-on-surface font-semibold text-sm transition-all duration-150 cursor-pointer text-center"
+              onClick={() => {
+                setLoginModalMode('register')
+                setCartLoginPopupOpen(false)
+                setLoginModalOpen(true)
+              }}
+              className="px-6 py-3 rounded-full border border-primary text-primary hover:bg-primary/5 font-bold text-sm transition-all duration-150 cursor-pointer text-center flex-1"
             >
-              Continue Browsing
+              Sign Up
             </button>
           </div>
+          <button
+            onClick={() => setCartLoginPopupOpen(false)}
+            className="w-full text-center text-sm font-semibold text-on-surface-variant hover:text-primary mt-2 transition-colors cursor-pointer block"
+          >
+            Continue Browsing
+          </button>
         </div>
       </Modal>
 

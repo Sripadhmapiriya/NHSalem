@@ -12,15 +12,24 @@ interface User {
   role?: UserRole;
 }
 
+export type PendingAction = {
+  type: 'ADD_TO_CART' | 'TOGGLE_WISHLIST' | 'CHECKOUT' | 'SUBSCRIBE';
+  payload?: any;
+};
+
 interface AuthState {
   user: User | null;
   token: string | null;
   isLoading: boolean;
   isLoggedIn: boolean;
+  pendingAction: PendingAction | null;
+  authGateVisible: boolean;
   login: (token: string, user: User) => Promise<void>;
   logout: () => Promise<void>;
   restoreToken: () => Promise<void>;
   loadFromStorage: () => Promise<void>;
+  setPendingAction: (action: PendingAction | null) => void;
+  setAuthGateVisible: (visible: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -28,6 +37,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   token: null,
   isLoading: true,
   isLoggedIn: false,
+  pendingAction: null,
+  authGateVisible: false,
   login: async (token, user) => {
     await Storage.setItemAsync('auth_token', token);
     await Storage.setItemAsync('user_data', JSON.stringify(user));
@@ -55,4 +66,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   loadFromStorage: async () => {
     await get().restoreToken();
   },
+  setPendingAction: (action) => set({ pendingAction: action }),
+  setAuthGateVisible: (visible) => set({ authGateVisible: visible }),
 }));

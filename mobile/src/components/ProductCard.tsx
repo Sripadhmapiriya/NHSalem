@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, StyleProp, ViewStyle }
 import { Colors, shadows } from '../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useCartStore } from '../store/cartStore';
+import { useAuthStore } from '../store/authStore';
 
 interface ProductProps {
   product: {
@@ -25,6 +26,10 @@ interface ProductProps {
 
 export default function ProductCard({ product, onPress, style }: ProductProps) {
   const { addItem } = useCartStore();
+  const { isLoggedIn, setPendingAction, setAuthGateVisible } = useAuthStore();
+  
+  // Minimal placeholder for wishlist state if store doesn't exist on mobile yet
+  const [isWishlisted, setIsWishlisted] = React.useState(false);
 
   const getImageUrl = () => {
     const img = product.image_url || product.image || product.images?.[0];
@@ -46,7 +51,7 @@ export default function ProductCard({ product, onPress, style }: ProductProps) {
       }
     } catch (e) {}
 
-    addItem({
+    const itemPayload = {
       productId: product.id,
       name: product.name,
       price: Number(defaultVariant.price) || product.base_price,
@@ -54,7 +59,26 @@ export default function ProductCard({ product, onPress, style }: ProductProps) {
       variant: defaultVariant.label,
       image: getImageUrl(),
       weightLabel: defaultVariant.label,
-    });
+    };
+
+    if (!isLoggedIn) {
+      setPendingAction({ type: 'ADD_TO_CART', payload: itemPayload });
+      setAuthGateVisible(true);
+      return;
+    }
+
+    addItem(itemPayload);
+  };
+
+  const handleToggleWishlist = (e: any) => {
+    e.stopPropagation();
+    if (!isLoggedIn) {
+      setPendingAction({ type: 'TOGGLE_WISHLIST', payload: { id: product.id, name: product.name } });
+      setAuthGateVisible(true);
+      return;
+    }
+    // Toggle logic here
+    setIsWishlisted(!isWishlisted);
   };
 
   return (
@@ -80,6 +104,13 @@ export default function ProductCard({ product, onPress, style }: ProductProps) {
             <Text style={styles.premiumBadgeText}>👑</Text>
           </View>
         )}
+        <TouchableOpacity style={styles.wishlistBtn} onPress={handleToggleWishlist}>
+          <Ionicons 
+            name={isWishlisted ? "heart" : "heart-outline"} 
+            size={20} 
+            color={isWishlisted ? "#FB7185" : "#fff"} 
+          />
+        </TouchableOpacity>
       </View>
 
       {/* Content */}
@@ -162,6 +193,19 @@ const styles = StyleSheet.create({
   },
   premiumBadgeText: {
     fontSize: 12,
+  },
+  wishlistBtn: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(11, 30, 61, 0.35)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.25)',
   },
   content: {
     padding: 10,

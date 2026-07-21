@@ -584,10 +584,10 @@ function RegisterForm({ onSuccess }) {
  *   isModal  — if true, renders compact layout without outer padding (for use in login modal)
  *   onSuccess — callback when auth succeeds (closes modal)
  */
-export default function LoginPage({ isModal = false, onSuccess }) {
+export default function LoginPage({ isModal = false, initialMode = 'login', onSuccess }) {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('email') // 'email' | 'phone'
-  const [mode, setMode] = useState('login') // 'login' | 'register'
+  const [mode, setMode] = useState(initialMode) // 'login' | 'register'
 
   const handleSuccess = () => {
     if (onSuccess) {

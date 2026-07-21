@@ -13,6 +13,11 @@ export const authApi = {
     return data;
   },
 
+  registerCustomer: async (payload: any) => {
+    const { data } = await apiClient.post('/api/auth/register', payload);
+    return data;
+  },
+
   loginAdmin: async (email: string, password: string) => {
     const { data } = await apiClient.post('/api/admin/auth/login', { email, password });
     return data;
