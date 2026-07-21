@@ -132,6 +132,19 @@ export default function AdminProducts() {
                   >
                     Edit
                   </AdminBtn>
+                  <AdminBtn
+                    size="sm"
+                    variant="danger"
+                    icon="delete"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (window.confirm('Are you sure you want to delete this product?')) {
+                        useProductStore.getState().deleteProduct(p.id)
+                      }
+                    }}
+                  >
+                    Delete
+                  </AdminBtn>
                 </div>
               </Td>
             </Tr>

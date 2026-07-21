@@ -5,6 +5,10 @@ import pool from '../db/pool.js'
 import { generateAdminToken } from '../utils/jwt.js'
 import { requireAdmin } from '../middleware/adminAuth.js'
 import asyncHandler from '../utils/asyncHandler.js'
+import multer from 'multer'
+import cloudinary from '../utils/cloudinary.js'
+
+const upload = multer({ dest: 'uploads/' })
 
 const router = express.Router()
 
@@ -49,6 +53,23 @@ router.get('/auth/me', requireAdmin, asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: 'Admin not found' })
   }
   res.json({ success: true, admin })
+}))
+
+// Upload Image
+router.post('/upload', requireAdmin, upload.single('image'), asyncHandler(async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ success: false, message: 'No file provided' })
+  }
+  
+  try {
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: 'nhsalem/products'
+    })
+    res.json({ success: true, url: result.secure_url })
+  } catch (error) {
+    console.error('Cloudinary upload error:', error)
+    res.status(500).json({ success: false, message: 'Upload failed' })
+  }
 }))
 
 // Dashboard stats

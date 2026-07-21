@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import useProductStore from '@/store/productStore'
 import useToastStore from '@/store/toastStore'
 import { AdminPage, AdminCard, AdminBtn } from '@/admin/AdminUI'
+import { uploadAdminImage } from '@/services/adminApi'
 
 const CATEGORIES = ['fish', 'prawns-shrimp', 'crabs', 'lobster', 'dried-fish', 'combos']
 
@@ -44,6 +45,8 @@ export default function AdminAddEditProduct() {
     existing?.badges?.map((b) => b.type) || []
   )
   const [saving, setSaving] = useState(false)
+  const [imageUploadMode, setImageUploadMode] = useState('url')
+  const [uploadingImage, setUploadingImage] = useState(false)
 
   // Variants state management
   const [variants, setVariants] = useState(existing?.variants || existing?.weights || [])
@@ -87,11 +90,14 @@ export default function AdminAddEditProduct() {
   const {
     register,
     handleSubmit,
+    setValue,
+    control,
     formState: { isDirty, errors },
   } = useForm({
     defaultValues: existing
       ? {
           name:           existing.name,
+          localName:      existing.localName,
           tagline:        existing.tagline,
           description:    existing.description,
           category:       existing.category,
@@ -100,9 +106,12 @@ export default function AdminAddEditProduct() {
           catchTime:      existing.catchTime,
           howToCook:      existing.howToCook,
           image:          existing.image,
+          stockStatus:    existing.stockStatus || 'in_stock',
         }
-      : { category: 'fish', freshnessScore: 90 },
+      : { category: 'fish', freshnessScore: 90, stockStatus: 'in_stock' },
   })
+
+  const currentImage = useWatch({ control, name: 'image' })
 
   // Re-run setSelectedBadges when existing changes/loads
   useEffect(() => {
@@ -205,6 +214,33 @@ export default function AdminAddEditProduct() {
                       className={`w-full px-3 py-2.5 rounded-[10px] border bg-admin-seafoam text-[13px] text-admin-text focus:outline-none focus:ring-2 focus:ring-admin-navy/10 ${errors.name ? 'border-admin-coral' : 'border-admin-border focus:border-admin-navy'}`}
                     />
                     {errors.name && <p className="text-[11px] text-admin-coral mt-1">{errors.name.message}</p>}
+                  </div>
+
+                  {/* Local/Regional Name */}
+                  <div className="col-span-2 md:col-span-1">
+                    <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">
+                      Local/Regional Name
+                    </label>
+                    <input
+                      {...register('localName')}
+                      placeholder="e.g. Vanjaram"
+                      className="w-full px-3 py-2.5 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] text-admin-text focus:outline-none focus:border-admin-navy"
+                    />
+                  </div>
+
+                  {/* Stock Status */}
+                  <div className="col-span-2 md:col-span-1">
+                    <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">
+                      Stock Status <span className="text-admin-coral">*</span>
+                    </label>
+                    <select
+                      {...register('stockStatus', { required: true })}
+                      className="w-full px-3 py-2.5 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] text-admin-text focus:outline-none focus:border-admin-navy"
+                    >
+                      <option value="in_stock">In Stock</option>
+                      <option value="low_stock">Low Stock</option>
+                      <option value="out_of_stock">Out of Stock</option>
+                    </select>
                   </div>
 
                   {/* Tagline */}
@@ -405,15 +441,73 @@ export default function AdminAddEditProduct() {
             {/* Image */}
             <AdminCard title="Image">
               <div className="p-4">
-                {existing?.image && (
-                  <img src={existing.image} alt="" className="w-full h-36 object-cover rounded-[10px] border border-admin-border mb-3" />
+                <div className="mb-4">
+                  {currentImage ? (
+                    <img src={currentImage} alt="Preview" className="w-full h-40 object-cover rounded-[10px] border border-admin-border" />
+                  ) : (
+                    <div className="w-full h-40 bg-admin-seafoam border border-admin-border border-dashed rounded-[10px] flex items-center justify-center text-admin-text-sub">
+                      <span className="material-symbols-outlined" style={{ fontSize: '32px' }}>image</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex gap-2 mb-4 bg-admin-seafoam/50 p-1 rounded-full border border-admin-border/50">
+                  <button
+                    type="button"
+                    onClick={() => setImageUploadMode('url')}
+                    className={`flex-1 text-[11px] font-bold uppercase tracking-wider py-1.5 rounded-full transition-all select-none ${imageUploadMode === 'url' ? 'bg-admin-navy text-white shadow-sm' : 'text-admin-text hover:bg-black/5'}`}
+                  >
+                    URL
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setImageUploadMode('upload')}
+                    className={`flex-1 text-[11px] font-bold uppercase tracking-wider py-1.5 rounded-full transition-all select-none ${imageUploadMode === 'upload' ? 'bg-admin-navy text-white shadow-sm' : 'text-admin-text hover:bg-black/5'}`}
+                  >
+                    Upload
+                  </button>
+                </div>
+
+                {imageUploadMode === 'url' ? (
+                  <div>
+                    <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">Image URL</label>
+                    <input
+                      {...register('image')}
+                      placeholder="https://…"
+                      className="w-full px-3 py-2.5 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] focus:outline-none focus:border-admin-navy"
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">Choose File</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0]
+                        if (!file) return
+                        
+                        setUploadingImage(true)
+                        try {
+                          const res = await uploadAdminImage(file)
+                          if (res.success) {
+                            setValue('image', res.url, { shouldDirty: true })
+                            addToast({ message: 'Image uploaded successfully!', type: 'success' })
+                          } else {
+                            addToast({ message: 'Failed to upload image', type: 'error' })
+                          }
+                        } catch (err) {
+                          addToast({ message: err.message, type: 'error' })
+                        } finally {
+                          setUploadingImage(false)
+                        }
+                      }}
+                      className="w-full text-[13px] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[11px] file:font-bold file:uppercase file:tracking-wider file:bg-admin-navy file:text-white hover:file:bg-admin-navy/90 focus:outline-none cursor-pointer"
+                    />
+                    {uploadingImage && <p className="text-[11px] text-admin-gold mt-2 font-bold animate-pulse">Uploading...</p>}
+                    <input type="hidden" {...register('image')} />
+                  </div>
                 )}
-                <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">Image URL</label>
-                <input
-                  {...register('image')}
-                  placeholder="https://…"
-                  className="w-full px-3 py-2.5 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] focus:outline-none focus:border-admin-navy"
-                />
               </div>
             </AdminCard>
 

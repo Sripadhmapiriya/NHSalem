@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS products (
 
   category VARCHAR(100) NOT NULL REFERENCES categories(id) ON DELETE RESTRICT,
   name VARCHAR(255) NOT NULL,
+  local_name VARCHAR(255),
   tagline VARCHAR(255),
   description TEXT,
   how_to_cook TEXT,
@@ -52,6 +53,7 @@ CREATE TABLE IF NOT EXISTS products (
   nutrition JSONB DEFAULT '{}',
   unit VARCHAR(50),
   stock_qty INT NOT NULL DEFAULT 100,
+  stock_status VARCHAR(50) NOT NULL DEFAULT 'in_stock',
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()

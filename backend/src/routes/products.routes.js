@@ -11,6 +11,7 @@ const router = express.Router()
 const productSchema = z.object({
   category: z.string(),
   name: z.string().min(2),
+  localName: z.string().optional().nullable(),
   tagline: z.string().optional().nullable(),
   description: z.string().optional().nullable(),
   how_to_cook: z.string().optional().nullable(),
@@ -33,6 +34,7 @@ const productSchema = z.object({
   nutrition: z.any().optional().default({}),
   unit: z.string().optional().nullable(),
   stock_qty: z.number().optional().default(100),
+  stockStatus: z.string().optional().default('in_stock'),
   is_active: z.boolean().optional().default(true)
 })
 
@@ -51,6 +53,7 @@ function formatProduct(p) {
     slug: p.slug,
     category: p.category,
     name: p.name,
+    localName: p.local_name,
     tagline: p.tagline,
     description: p.description,
     howToCook: p.how_to_cook,
@@ -68,6 +71,7 @@ function formatProduct(p) {
     nutritionPer100g: typeof p.nutrition === 'string' ? JSON.parse(p.nutrition) : p.nutrition,
     unit: p.unit,
     stock_qty: p.stock_qty,
+    stockStatus: p.stock_status,
     is_active: p.is_active
   }
 }
@@ -230,13 +234,14 @@ router.post('/admin/products', requireAdmin, asyncHandler(async (req, res) => {
 
   const result = await pool.query(
     `INSERT INTO products (
-      slug, category, name, tagline, description, how_to_cook, image, images, badges, weights, base_price, freshness_score, nutrition, unit, stock_qty, is_active, variants
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+      slug, category, name, local_name, tagline, description, how_to_cook, image, images, badges, weights, base_price, freshness_score, nutrition, unit, stock_qty, stock_status, is_active, variants
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
      RETURNING *`,
     [
       slug,
       p.category,
       p.name,
+      p.localName,
       p.tagline,
       p.description,
       p.how_to_cook,
@@ -249,6 +254,7 @@ router.post('/admin/products', requireAdmin, asyncHandler(async (req, res) => {
       JSON.stringify(p.nutrition),
       p.unit,
       p.stock_qty,
+      p.stockStatus,
       p.is_active,
       JSON.stringify(p.variants || p.weights || [])
     ]
@@ -284,13 +290,14 @@ router.put('/admin/products/:id', requireAdmin, asyncHandler(async (req, res) =>
 
   const result = await pool.query(
     `UPDATE products SET
-      slug = $1, category = $2, name = $3, tagline = $4, description = $5, how_to_cook = $6, image = $7, images = $8, badges = $9, weights = $10, base_price = $11, freshness_score = $12, nutrition = $13, unit = $14, stock_qty = $15, is_active = $16, variants = $17, updated_at = NOW()
-     WHERE id = $18
+      slug = $1, category = $2, name = $3, local_name = $4, tagline = $5, description = $6, how_to_cook = $7, image = $8, images = $9, badges = $10, weights = $11, base_price = $12, freshness_score = $13, nutrition = $14, unit = $15, stock_qty = $16, stock_status = $17, is_active = $18, variants = $19, updated_at = NOW()
+     WHERE id = $20
      RETURNING *`,
     [
       newSlug,
       p.category,
       p.name,
+      p.localName,
       p.tagline,
       p.description,
       p.how_to_cook,
@@ -303,6 +310,7 @@ router.put('/admin/products/:id', requireAdmin, asyncHandler(async (req, res) =>
       JSON.stringify(p.nutrition),
       p.unit,
       p.stock_qty,
+      p.stockStatus,
       p.is_active,
       JSON.stringify(p.variants || p.weights || []),
       id

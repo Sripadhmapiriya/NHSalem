@@ -59,6 +59,21 @@ export async function verifyAdminSession(token) {
 
 // ── Admin Dashboard Statistics ────────────────────────────────────────────────
 
+export async function uploadAdminImage(file) {
+  const formData = new FormData()
+  formData.append('image', file)
+
+  const headers = getHeaders(true)
+  delete headers['Content-Type'] // Let the browser set the boundary for multipart/form-data
+
+  const response = await fetch(`${API_URL}/api/admin/upload`, {
+    method: 'POST',
+    headers,
+    body: formData
+  })
+  return handleResponse(response)
+}
+
 export async function getDashboardStats() {
   const response = await fetch(`${API_URL}/api/admin/dashboard/stats`, {
     headers: getHeaders(true)
