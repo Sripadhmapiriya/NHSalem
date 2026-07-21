@@ -1,408 +1,636 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, FlatList, TouchableOpacity, TextInput, Dimensions } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  View, Text, TouchableOpacity, ScrollView, Image, FlatList,
+  RefreshControl, TextInput, ActivityIndicator
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '../../src/api/client';
-import { Colors, Spacing, typography, shadows } from '../../src/constants/theme';
-import ProductCard from '../../src/components/ProductCard';
-import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
+import { API_URL } from '../../src/api/client';
+import { useCartStore } from '../../src/store/cartStore';
+import { useAuthStore } from '../../src/store/authStore';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+import {
+  COLORS, SPACING, RADIUS, SHADOWS, globalStyles,
+  SCREEN_WIDTH
+} from '../../src/styles/global';
 
-const categories = [
-  { id: 'all', label: 'All', emoji: '🌊' },
-  { id: 'fish', label: 'Fish', emoji: '🐟' },
-  { id: 'prawns-shrimp', label: 'Prawns', emoji: '🦐' },
-  { id: 'crabs', label: 'Crabs', emoji: '🦀' },
-  { id: 'lobster', label: 'Lobster', emoji: '🦞' },
-  { id: 'dried-fish', label: 'Dried Fish', emoji: '🐠' },
-  { id: 'combos', label: 'Combos', emoji: '🎁' },
-];
-
-export default function CustomerHome() {
-  const router = useRouter();
-  const allProductsRef = useRef<ScrollView>(null);
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [email, setEmail] = useState('');
-
-  const { data: promotions = [], isLoading: loadingPromotions } = useQuery({
-    queryKey: ['promotions', 'active'],
-    queryFn: async () => {
-      try {
-        const response = await apiClient.get('/api/promotions/active');
-        const data = response.data?.data || response.data;
-        return Array.isArray(data) ? data : [];
-      } catch (e) { return []; }
-    }
-  });
-
-  const { data: allProducts = [], isLoading: loadingAll } = useQuery({
-    queryKey: ['products', 'all'],
-    queryFn: async () => {
-      try {
-        const response = await apiClient.get('/api/products');
-        const data = response.data?.data || response.data;
-        return Array.isArray(data) ? data : [];
-      } catch (e) { return []; }
-    }
-  });
-
-  const freshToday = useMemo(() => allProducts.filter((p: any) => p.is_fresh_today), [allProducts]);
-  const premiumPicks = useMemo(() => allProducts.filter((p: any) => p.is_premium), [allProducts]);
-  const popularProducts = useMemo(() => [...allProducts].sort((a: any, b: any) => (b.rating || 0) - (a.rating || 0)), [allProducts]);
-  
-  const filteredProducts = useMemo(() => {
-    if (selectedCategory === 'all') return allProducts;
-    return allProducts.filter((p: any) => p.category === selectedCategory);
-  }, [allProducts, selectedCategory]);
-
-  const handleNewsletterSubscribe = () => {
-    // Basic newsletter subscribe logic
-    setEmail('');
-  };
-
-  const renderHeader = () => (
-    <View style={styles.header}>
-      {/* Logo + Brand */}
-      <View style={styles.headerTop}>
-        <View style={styles.logoContainer}>
-          <Text style={styles.logoText}>NH</Text>
-        </View>
-        <View style={{ marginLeft: 10, flex: 1 }}>
-          <Text style={styles.brandName}>NH Salem Sea Foods</Text>
-          <Text style={styles.brandTagline}>Fresh from the Sea</Text>
-        </View>
-        <TouchableOpacity style={styles.notifBtn}>
-          <Ionicons name="notifications-outline" size={24} color="#fff" />
-        </TouchableOpacity>
+// ==========================================
+// 1. HEADER COMPONENT
+// ==========================================
+const Header = ({ router }: any) => (
+  <View style={{
+    backgroundColor: COLORS.navy,
+    paddingTop: SPACING.md,
+    paddingBottom: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
+  }}>
+    {/* Row 1: Logo + Brand + Notification */}
+    <View style={{
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: SPACING.md,
+    }}>
+      <View style={{
+        width: 44, height: 44,
+        borderRadius: RADIUS.full,
+        backgroundColor: COLORS.primary,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 10,
+      }}>
+        <Text style={{ color: COLORS.surface, fontWeight: '900', fontSize: 16 }}>NH</Text>
       </View>
 
-      {/* Location bar */}
-      <TouchableOpacity style={styles.locationBar}>
-        <Ionicons name="location-outline" size={16} color="#86efac" />
-        <Text style={styles.locationText}>
-          Delivering to Salem, Tamil Nadu
-        </Text>
-        <Ionicons name="chevron-down" size={14} color="#86efac" />
-      </TouchableOpacity>
+      <View style={{ flex: 1 }}>
+        <Text style={{
+          color: COLORS.surface, fontWeight: '800', fontSize: 18,
+          letterSpacing: 0.3,
+        }}>NH Salem Sea Foods</Text>
+        <Text style={{
+          color: COLORS.primaryLight, fontSize: 11, marginTop: 1,
+        }}>Fresh from the Sea 🐟</Text>
+      </View>
 
-      {/* Search bar */}
-      <TouchableOpacity 
-        style={styles.searchBar}
-        onPress={() => router.push('/search')}
-      >
-        <Ionicons name="search-outline" size={18} color="#94a3b8" />
-        <Text style={styles.searchPlaceholder}>
-          Search for seafood...
-        </Text>
+      <TouchableOpacity style={{
+        width: 38, height: 38,
+        borderRadius: RADIUS.full,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
+        <Ionicons name="notifications-outline" size={20} color={COLORS.surface} />
       </TouchableOpacity>
     </View>
-  );
+
+    {/* Row 2: Location */}
+    <TouchableOpacity style={{
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: SPACING.md,
+    }}>
+      <Ionicons name="location-outline" size={14} color={COLORS.primaryLight} />
+      <Text style={{
+        color: COLORS.border, fontSize: 12, marginLeft: SPACING.xs,
+      }}>Delivering to Salem, Tamil Nadu</Text>
+      <Ionicons name="chevron-down-outline" size={12} 
+                color={COLORS.primaryLight} style={{ marginLeft: SPACING.xs }} />
+    </TouchableOpacity>
+
+    {/* Row 3: Search bar */}
+    <TouchableOpacity
+      onPress={() => router.push('/search')}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: COLORS.surface,
+        borderRadius: RADIUS.md,
+        paddingHorizontal: 14,
+        paddingVertical: 11,
+        gap: SPACING.sm,
+      }}
+    >
+      <Ionicons name="search-outline" size={18} color={COLORS.textLight} />
+      <Text style={{ color: COLORS.textLight, fontSize: 14, flex: 1 }}>
+        Search for seafood...
+      </Text>
+      <View style={{
+        backgroundColor: COLORS.background,
+        borderRadius: RADIUS.sm,
+        paddingHorizontal: SPACING.sm,
+        paddingVertical: 3,
+      }}>
+        <Text style={{ fontSize: 10, color: COLORS.textSecondary }}>Search</Text>
+      </View>
+    </TouchableOpacity>
+  </View>
+);
+
+// ==========================================
+// 2. PROMO BANNER COMPONENT
+// ==========================================
+const promoBanners = [
+  { id: '1', tag: 'WELCOME OFFER', title: '₹200 off your first order', subtitle: 'Use code at checkout', code: 'WELCOME200', bg: COLORS.primary, tagColor: COLORS.primaryLight },
+  { id: '2', tag: 'FLASH SALE', title: '20% off all Fish today', subtitle: 'Limited time offer', code: 'FISH20', bg: '#1e3a5f', tagColor: '#93c5fd' },
+  { id: '3', tag: 'FREE DELIVERY', title: 'Free delivery above ₹499', subtitle: 'On all orders today', code: 'FREEFISH', bg: '#7c3aed', tagColor: '#c4b5fd' },
+];
+
+const PromoBanner = () => {
+  const bannerRef = useRef<FlatList>(null);
+  const [activeBanner, setActiveBanner] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const next = (activeBanner + 1) % promoBanners.length;
+      setActiveBanner(next);
+      bannerRef.current?.scrollToIndex({ index: next, animated: true });
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [activeBanner]);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView 
-        ref={allProductsRef}
-        showsVerticalScrollIndicator={false} 
-        contentContainerStyle={{ paddingBottom: 100 }}
-      >
-        {renderHeader()}
-        
-        {/* 2B. Promo Banner */}
-        <View style={styles.promoSection}>
-          {!loadingPromotions && promotions.length > 0 ? (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} pagingEnabled>
-              {promotions.map((promo: any, index: number) => (
-                <View key={index} style={styles.promoCard}>
-                  <Text style={styles.promoOfferLabel}>LIMITED OFFER</Text>
-                  <Text style={styles.promoTitle}>{promo.title || promo.code}</Text>
-                  <Text style={styles.promoDesc}>{promo.description}</Text>
-                  <View style={styles.promoCodeBadge}>
-                    <Text style={styles.promoCode}>{promo.code}</Text>
-                  </View>
-                </View>
-              ))}
-            </ScrollView>
-          ) : (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} pagingEnabled>
-              <View style={styles.promoCard}>
-                <Text style={styles.promoOfferLabel}>LIMITED OFFER</Text>
-                <Text style={styles.promoTitle}>🎉 Use WELCOME200 — ₹200 off first order</Text>
-                <Text style={styles.promoDesc}>Claim your welcome bonus now!</Text>
-                <View style={styles.promoCodeBadge}>
-                  <Text style={styles.promoCode}>WELCOME200</Text>
-                </View>
+    <View style={{ marginHorizontal: SPACING.lg, marginVertical: SPACING.md }}>
+      <FlatList
+        ref={bannerRef}
+        data={promoBanners}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={item => item.id}
+        onMomentumScrollEnd={(e) => {
+          const index = Math.round(e.nativeEvent.contentOffset.x / (SCREEN_WIDTH - 32));
+          setActiveBanner(index);
+        }}
+        renderItem={({ item: banner }) => (
+          <View style={{
+            width: SCREEN_WIDTH - 32,
+            backgroundColor: banner.bg,
+            borderRadius: RADIUS.lg,
+            padding: SPACING.lg,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            minHeight: 90,
+            maxHeight: 110,
+          }}>
+            <View style={{ flex: 1 }}>
+              <View style={{
+                backgroundColor: 'rgba(255,255,255,0.15)',
+                borderRadius: RADIUS.sm,
+                paddingHorizontal: SPACING.sm,
+                paddingVertical: 3,
+                alignSelf: 'flex-start',
+                marginBottom: 6,
+              }}>
+                <Text style={{
+                  color: banner.tagColor, fontSize: 9, fontWeight: '700', letterSpacing: 1,
+                }}>{banner.tag}</Text>
               </View>
-            </ScrollView>
-          )}
-        </View>
-
-        {/* 2C. Category Chips */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesContainer}>
-          {categories.map(cat => (
-            <TouchableOpacity
-              key={cat.id}
-              onPress={() => setSelectedCategory(cat.id)}
-              style={[
-                styles.categoryChip,
-                selectedCategory === cat.id && styles.categoryChipActive
-              ]}
-            >
-              <Text style={styles.categoryEmoji}>{cat.emoji}</Text>
-              <Text style={[
-                styles.categoryLabel,
-                selectedCategory === cat.id && styles.categoryLabelActive
-              ]}>
-                {cat.label}
+              <Text style={{
+                color: COLORS.surface, fontSize: 16, fontWeight: '800', lineHeight: 20, marginBottom: 4,
+              }}>{banner.title}</Text>
+              <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>
+                {banner.subtitle}
               </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        {/* 2D & 2E. Fresh Today */}
-        {freshToday.length > 0 && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Fresh Today 🐟</Text>
-              <TouchableOpacity><Text style={styles.seeAll}>See All →</Text></TouchableOpacity>
             </View>
-            <FlatList
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              data={freshToday.slice(0, 5)}
-              keyExtractor={(item: any) => item.id.toString()}
-              renderItem={({ item }) => (
-                <ProductCard product={item} onPress={() => router.push(`/(customer)/product/${item.slug || item.id}`)} />
-              )}
-              contentContainerStyle={{ paddingLeft: Spacing.md }}
-            />
+            <View style={{
+              backgroundColor: 'rgba(255,255,255,0.2)',
+              borderRadius: RADIUS.sm,
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              marginLeft: SPACING.md,
+              borderWidth: 1,
+              borderColor: 'rgba(255,255,255,0.3)',
+              borderStyle: 'dashed',
+            }}>
+              <Text style={{ color: COLORS.surface, fontSize: 11, fontWeight: '700', letterSpacing: 1 }}>
+                {banner.code}
+              </Text>
+            </View>
           </View>
         )}
+      />
+      <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: SPACING.sm, gap: 4 }}>
+        {promoBanners.map((_, i) => (
+          <View key={i} style={{
+            width: activeBanner === i ? 20 : 6,
+            height: 6,
+            borderRadius: RADIUS.sm,
+            backgroundColor: activeBanner === i ? COLORS.primary : COLORS.border,
+          }} />
+        ))}
+      </View>
+    </View>
+  );
+};
 
-        {/* 2F. Subscribe & Save Banner */}
-        <TouchableOpacity 
-          style={styles.subscribeBanner}
-          onPress={() => router.push('/(customer)/subscription')}
-        >
-          <View style={{ flex: 1 }}>
-            <Text style={styles.subscribeBadge}>🌟 SUBSCRIPTION</Text>
-            <Text style={styles.subscribeTitle}>Subscribe & Save</Text>
-            <Text style={styles.subscribeSubtitle}>
-              Get fresh seafood delivered weekly on your schedule. Save up to 20%!
-            </Text>
-            <View style={styles.subscribeBtn}>
-              <Text style={styles.subscribeBtnText}>View Plans →</Text>
-            </View>
-          </View>
-          <Text style={{ fontSize: 60 }}>🐠</Text>
+// ==========================================
+// 3. CATEGORY CHIPS
+// ==========================================
+const categoriesData = [
+  { id: 'all',          label: 'All',      emoji: '🌊', color: COLORS.navy },
+  { id: 'fish',         label: 'Fish',     emoji: '🐟', color: '#1e40af' },
+  { id: 'prawns-shrimp',label: 'Prawns',   emoji: '🦐', color: COLORS.primary },
+  { id: 'crabs',        label: 'Crabs',    emoji: '🦀', color: '#9f1239' },
+  { id: 'lobster',      label: 'Lobster',  emoji: '🦞', color: '#92400e' },
+  { id: 'dry-fish',     label: 'Dried',    emoji: '🐠', color: '#7c3aed' },
+  { id: 'combos',       label: 'Combos',   emoji: '🎁', color: '#0e7490' },
+];
+
+const CategoryChips = ({ selected, onSelect }: any) => (
+  <FlatList
+    horizontal
+    showsHorizontalScrollIndicator={false}
+    data={categoriesData}
+    keyExtractor={item => item.id}
+    contentContainerStyle={{ paddingHorizontal: SPACING.lg, paddingVertical: SPACING.md, gap: SPACING.sm }}
+    renderItem={({ item: cat }) => (
+      <TouchableOpacity
+        onPress={() => onSelect(cat.id)}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: selected === cat.id ? cat.color : COLORS.background,
+          borderRadius: RADIUS.xl,
+          paddingHorizontal: 14,
+          paddingVertical: SPACING.sm,
+          gap: 6,
+          borderWidth: 1.5,
+          borderColor: selected === cat.id ? cat.color : COLORS.border,
+        }}
+      >
+        <Text style={{ fontSize: 16 }}>{cat.emoji}</Text>
+        <Text style={{
+          fontSize: 13,
+          fontWeight: '600',
+          color: selected === cat.id ? COLORS.surface : COLORS.text,
+        }}>{cat.label}</Text>
+      </TouchableOpacity>
+    )}
+  />
+);
+
+// ==========================================
+// 4. PRODUCT CARDS
+// ==========================================
+const HorizontalProductCard = ({ product, onPress, onAdd }: any) => (
+  <TouchableOpacity onPress={onPress} activeOpacity={0.9} style={{
+    width: 160,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.lg,
+    marginRight: SPACING.md,
+    overflow: 'hidden',
+    ...SHADOWS.md,
+    elevation: 3,
+  }}>
+    <View style={{ position: 'relative' }}>
+      <Image
+        source={{ uri: product.image_url || product.image || 'https://placehold.co/300x300/e2e8f0/94a3b8?text=NH+Salem' }}
+        style={{ width: 160, height: 130, resizeMode: 'cover' }}
+      />
+      {product.is_fresh_today && (
+        <View style={{ position: 'absolute', top: SPACING.sm, left: SPACING.sm, backgroundColor: COLORS.primary, borderRadius: RADIUS.sm, paddingHorizontal: 6, paddingVertical: 3 }}>
+          <Text style={{ color: COLORS.surface, fontSize: 9, fontWeight: '700' }}>🌿 FRESH</Text>
+        </View>
+      )}
+      {product.is_premium && (
+        <View style={{ position: 'absolute', top: SPACING.sm, right: SPACING.sm, backgroundColor: '#7c3aed', borderRadius: RADIUS.sm, paddingHorizontal: 6, paddingVertical: 3 }}>
+          <Text style={{ color: COLORS.surface, fontSize: 9, fontWeight: '700' }}>👑 PREMIUM</Text>
+        </View>
+      )}
+    </View>
+    <View style={{ padding: 10 }}>
+      <Text style={{ fontSize: 10, fontWeight: '600', color: COLORS.primary, letterSpacing: 0.5, marginBottom: 3 }} numberOfLines={1}>
+        {product.category?.replace('-', ' ').toUpperCase()}
+      </Text>
+      <Text style={{ fontSize: 13, fontWeight: '700', color: COLORS.text, lineHeight: 17, marginBottom: 6 }} numberOfLines={2}>
+        {product.name}
+      </Text>
+      {product.rating > 0 && (
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: SPACING.sm }}>
+          <Ionicons name="star" size={11} color={COLORS.warning} />
+          <Text style={{ fontSize: 11, fontWeight: '600', color: '#92400e', marginLeft: 3 }}>{product.rating}</Text>
+          <Text style={{ fontSize: 11, color: COLORS.textLight, marginLeft: 2 }}>({product.review_count || product.reviewCount})</Text>
+        </View>
+      )}
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 16, fontWeight: '900', color: COLORS.primary }}>₹{product.base_price || product.basePrice}</Text>
+        <TouchableOpacity style={{ backgroundColor: COLORS.primary, borderRadius: RADIUS.sm, width: 28, height: 28, alignItems: 'center', justifyContent: 'center' }} onPress={() => onAdd(product)}>
+          <Ionicons name="add" size={18} color={COLORS.surface} />
         </TouchableOpacity>
+      </View>
+    </View>
+  </TouchableOpacity>
+);
 
-        {/* 2G. Popular Products */}
+const GridProductCard = ({ product, onPress, onAdd }: any) => (
+  <TouchableOpacity onPress={onPress} activeOpacity={0.9} style={{
+    flex: 1,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.lg,
+    margin: 6,
+    overflow: 'hidden',
+    ...SHADOWS.sm,
+    elevation: 2,
+  }}>
+    <View style={{ position: 'relative', width: '100%', aspectRatio: 1 }}>
+      <Image
+        source={{ uri: product.image_url || product.image || 'https://placehold.co/300x300/e2e8f0/94a3b8?text=NH+Salem' }}
+        style={{ width: '100%', height: '100%', resizeMode: 'cover' }}
+      />
+      {product.is_fresh_today && (
+        <View style={{ position: 'absolute', top: SPACING.sm, left: SPACING.sm, backgroundColor: COLORS.primary, borderRadius: RADIUS.sm, paddingHorizontal: 6, paddingVertical: 3 }}>
+          <Text style={{ color: COLORS.surface, fontSize: 9, fontWeight: '700' }}>🌿 FRESH</Text>
+        </View>
+      )}
+    </View>
+    <View style={{ padding: 10 }}>
+      <Text style={{ fontSize: 10, color: COLORS.primary, fontWeight: '600', letterSpacing: 0.5, marginBottom: 2 }} numberOfLines={1}>
+        {product.category?.replace('-', ' ').toUpperCase()}
+      </Text>
+      <Text style={{ fontSize: 13, fontWeight: '700', color: COLORS.text, lineHeight: 17, marginBottom: 4 }} numberOfLines={2}>
+        {product.name}
+      </Text>
+      {product.rating > 0 && (
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+          <Ionicons name="star" size={11} color={COLORS.warning} />
+          <Text style={{ fontSize: 11, fontWeight: '600', color: '#92400e', marginLeft: 2 }}>{product.rating}</Text>
+        </View>
+      )}
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+        <Text style={{ fontSize: 15, fontWeight: '900', color: COLORS.primary }}>₹{product.base_price || product.basePrice}</Text>
+        <TouchableOpacity style={{ backgroundColor: COLORS.primary, borderRadius: RADIUS.sm, width: 30, height: 30, alignItems: 'center', justifyContent: 'center' }} onPress={(e) => { e.stopPropagation(); onAdd(product); }}>
+          <Ionicons name="add" size={18} color={COLORS.surface} />
+        </TouchableOpacity>
+      </View>
+    </View>
+  </TouchableOpacity>
+);
+
+// ==========================================
+// 5. SECTIONS & EXTRA COMPONENTS
+// ==========================================
+const SectionHeader = ({ title, onSeeAll }: any) => (
+  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: SPACING.lg, marginBottom: SPACING.md }}>
+    <Text style={{ fontSize: 18, fontWeight: '800', color: COLORS.text }}>{title}</Text>
+    {onSeeAll && (
+      <TouchableOpacity onPress={onSeeAll}>
+        <Text style={{ fontSize: 13, fontWeight: '600', color: COLORS.primary }}>See All →</Text>
+      </TouchableOpacity>
+    )}
+  </View>
+);
+
+const SubscribeBanner = ({ router }: any) => (
+  <TouchableOpacity onPress={() => router.push('/(customer)/subscription')} activeOpacity={0.9} style={{
+    marginHorizontal: SPACING.lg, marginVertical: SPACING.md, backgroundColor: '#eff6ff',
+    borderRadius: RADIUS.xl, borderWidth: 1, borderColor: '#bfdbfe', padding: SPACING.xl,
+    flexDirection: 'row', alignItems: 'center',
+  }}>
+    <View style={{ flex: 1 }}>
+      <View style={{ backgroundColor: '#dbeafe', borderRadius: RADIUS.sm, paddingHorizontal: SPACING.sm, paddingVertical: 3, alignSelf: 'flex-start', marginBottom: SPACING.sm }}>
+        <Text style={{ fontSize: 9, fontWeight: '700', color: '#1e40af', letterSpacing: 1 }}>🌟 SUBSCRIPTION</Text>
+      </View>
+      <Text style={{ fontSize: 20, fontWeight: '800', color: '#1e3a8a', marginBottom: 6 }}>Subscribe & Save</Text>
+      <Text style={{ fontSize: 13, color: '#3b82f6', lineHeight: 18, marginBottom: 14 }}>Get fresh seafood delivered weekly.{'\n'}Save up to 20%!</Text>
+      <View style={{ backgroundColor: '#1d4ed8', borderRadius: RADIUS.sm, paddingHorizontal: SPACING.lg, paddingVertical: 10, alignSelf: 'flex-start' }}>
+        <Text style={{ color: COLORS.surface, fontWeight: '700', fontSize: 13 }}>View Plans →</Text>
+      </View>
+    </View>
+    <Text style={{ fontSize: 56, marginLeft: SPACING.md }}>🐠</Text>
+  </TouchableOpacity>
+);
+
+const DeliveryInfoSection = () => (
+  <View style={{
+    marginHorizontal: SPACING.lg, marginVertical: SPACING.md, backgroundColor: '#f0fdf4',
+    borderRadius: RADIUS.xl, borderWidth: 1, borderColor: '#bbf7d0', padding: SPACING.lg,
+  }}>
+    <Text style={{ fontSize: 14, fontWeight: '700', color: COLORS.primary, textAlign: 'center', marginBottom: SPACING.lg }}>🚚 Our Delivery Promise</Text>
+    <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+      {[
+        { value: '2hr', label: 'Express\nDelivery', icon: '⚡' },
+        { value: '95%', label: 'Freshness\nScore',   icon: '🌿' },
+        { value: '500+', label: 'Happy\nCustomers',  icon: '😊' },
+      ].map((stat) => (
+        <View key={stat.value} style={{ alignItems: 'center' }}>
+          <Text style={{ fontSize: 24, marginBottom: 4 }}>{stat.icon}</Text>
+          <Text style={{ fontSize: 22, fontWeight: '900', color: COLORS.primary }}>{stat.value}</Text>
+          <Text style={{ fontSize: 11, color: '#4ade80', textAlign: 'center', lineHeight: 15 }}>{stat.label}</Text>
+        </View>
+      ))}
+    </View>
+  </View>
+);
+
+const NewsletterSection = () => {
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubscribe = async () => {
+    if (!email || !email.includes('@')) return;
+    setLoading(true);
+    try {
+      await fetch(`${API_URL}/api/newsletter/subscribe`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }),
+      });
+      setEmail('');
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <View style={{
+      marginHorizontal: SPACING.lg, marginVertical: SPACING.md, backgroundColor: COLORS.navy,
+      borderRadius: RADIUS.xl, padding: SPACING.xl,
+    }}>
+      <Text style={{ fontSize: 18, fontWeight: '800', color: COLORS.surface, textAlign: 'center', marginBottom: 6 }}>📧 Stay in the Loop</Text>
+      <Text style={{ fontSize: 13, color: COLORS.textLight, textAlign: 'center', marginBottom: SPACING.lg, lineHeight: 18 }}>Get flash sales and seasonal catches straight to your inbox</Text>
+      <View style={{ flexDirection: 'row', gap: SPACING.sm }}>
+        <TextInput
+          value={email} onChangeText={setEmail} placeholder="your@email.com" placeholderTextColor="#475569"
+          keyboardType="email-address" autoCapitalize="none"
+          style={{ flex: 1, backgroundColor: '#1e293b', borderRadius: RADIUS.sm, paddingHorizontal: 14, paddingVertical: 12, color: COLORS.surface, fontSize: 13, borderWidth: 1, borderColor: '#334155' }}
+        />
+        <TouchableOpacity onPress={handleSubscribe} disabled={loading} style={{ backgroundColor: COLORS.primary, borderRadius: RADIUS.sm, paddingHorizontal: SPACING.lg, paddingVertical: 12, justifyContent: 'center' }}>
+          {loading ? <ActivityIndicator size="small" color={COLORS.surface} /> : <Text style={{ color: COLORS.surface, fontWeight: '700', fontSize: 13 }}>Subscribe</Text>}
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
+
+const ProductGridSkeleton = () => (
+  <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 10 }}>
+    {[1,2,3,4,5,6].map(i => (
+      <View key={i} style={{ width: '50%', padding: 6 }}>
+        <View style={{ backgroundColor: COLORS.background, borderRadius: RADIUS.lg, overflow: 'hidden' }}>
+          <View style={{ width: '100%', aspectRatio: 1, backgroundColor: COLORS.border }} />
+          <View style={{ padding: 10, gap: 6 }}>
+            <View style={{ height: 10, backgroundColor: COLORS.border, borderRadius: 5, width: '60%' }} />
+            <View style={{ height: 13, backgroundColor: COLORS.border, borderRadius: 5, width: '90%' }} />
+            <View style={{ height: 13, backgroundColor: COLORS.border, borderRadius: 5, width: '70%' }} />
+            <View style={{ height: 16, backgroundColor: COLORS.border, borderRadius: 5, width: '40%' }} />
+          </View>
+        </View>
+      </View>
+    ))}
+  </View>
+);
+
+const EmptyState = ({ emoji, title, subtitle, action, onAction }: any) => (
+  <View style={{ alignItems: 'center', paddingVertical: 48, paddingHorizontal: 32 }}>
+    <Text style={{ fontSize: 56, marginBottom: SPACING.lg }}>{emoji}</Text>
+    <Text style={{ fontSize: 18, fontWeight: '700', color: COLORS.text, marginBottom: SPACING.sm, textAlign: 'center' }}>{title}</Text>
+    <Text style={{ fontSize: 14, color: COLORS.textSecondary, textAlign: 'center', lineHeight: 20 }}>{subtitle}</Text>
+    {action && onAction && (
+      <TouchableOpacity onPress={onAction} style={{ backgroundColor: COLORS.primary, borderRadius: RADIUS.md, paddingHorizontal: 24, paddingVertical: 12, marginTop: SPACING.lg }}>
+        <Text style={{ color: COLORS.surface, fontWeight: '700' }}>{action}</Text>
+      </TouchableOpacity>
+    )}
+  </View>
+);
+
+// ==========================================
+// MAIN SCREEN
+// ==========================================
+export default function HomeScreen() {
+  const router = useRouter();
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [allProducts, setAllProducts] = useState<any[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
+  const [freshProducts, setFreshProducts] = useState<any[]>([]);
+  const [popularProducts, setPopularProducts] = useState<any[]>([]);
+  const [premiumProducts, setPremiumProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const addItem = useCartStore((state) => state.addItem);
+
+  const fetchAllData = async () => {
+    try {
+      const [allRes, popularRes] = await Promise.all([
+        fetch(`${API_URL}/api/products`),
+        fetch(`${API_URL}/api/products?sort=rating`),
+      ]);
+      const [all, popular] = await Promise.all([
+        allRes.json(),
+        popularRes.json(),
+      ]);
+      
+      const parsedAll = Array.isArray(all) ? all : [];
+      const parsedPop = Array.isArray(popular) ? popular : [];
+
+      setAllProducts(parsedAll);
+      setFilteredProducts(parsedAll);
+      setFreshProducts(parsedAll.filter(p => p.is_fresh_today || p.badges?.some((b:any)=>b.type==='fresh')).slice(0, 10));
+      setPopularProducts(parsedPop.slice(0, 10));
+      setPremiumProducts(parsedAll.filter(p => p.is_premium || p.badges?.some((b:any)=>b.type==='premium')).slice(0, 10));
+    } catch (err) {
+      console.error('Failed to fetch products:', err);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => { fetchAllData(); }, []);
+
+  const handleCategoryFilter = (categoryId: string) => {
+    setSelectedCategory(categoryId);
+    if (categoryId === 'all') {
+      setFilteredProducts(allProducts);
+    } else {
+      setFilteredProducts(allProducts.filter(p => p.category === categoryId || p.category?.includes(categoryId)));
+    }
+  };
+
+  const handleAddToCart = (product: any) => {
+    const { user } = useAuthStore.getState();
+    if (!user) {
+      router.push('/(auth)/login');
+      return;
+    }
+    const variant = (product.variants && product.variants[0]) || { label: 'Standard', price: product.base_price || product.basePrice };
+    addItem({
+      productId: product.id,
+      name: product.name,
+      image: product.image_url || product.image,
+      price: variant.price,
+      quantity: 1,
+      variant: variant.label,
+      weightLabel: variant.label
+    });
+  };
+
+  return (
+    <SafeAreaView style={globalStyles.screen} edges={['top']}>
+      <Header router={router} />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchAllData(); }} colors={[COLORS.primary]} />}
+      >
+        <PromoBanner />
+        <CategoryChips selected={selectedCategory} onSelect={handleCategoryFilter} />
+
+        {freshProducts.length > 0 && (
+          <View style={globalStyles.section}>
+            <SectionHeader title="Fresh Today 🐟" onSeeAll={() => handleCategoryFilter('all')} />
+            <FlatList
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              data={freshProducts}
+              keyExtractor={item => item.id}
+              contentContainerStyle={{ paddingHorizontal: SPACING.lg, paddingBottom: 4 }}
+              renderItem={({ item }) => (
+                <HorizontalProductCard product={item} onPress={() => router.push(`/(customer)/product/${item.slug || item.id}`)} onAdd={handleAddToCart} />
+              )}
+            />
+          </View>
+        )}
+
+        <SubscribeBanner router={router} />
+
         {popularProducts.length > 0 && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>⭐ Most Popular</Text>
-              <TouchableOpacity><Text style={styles.seeAll}>See All →</Text></TouchableOpacity>
-            </View>
+          <View style={globalStyles.section}>
+            <SectionHeader title="⭐ Most Popular" onSeeAll={() => handleCategoryFilter('all')} />
             <FlatList
               horizontal
               showsHorizontalScrollIndicator={false}
-              data={popularProducts.slice(0, 5)}
-              keyExtractor={(item: any) => item.id.toString()}
+              data={popularProducts}
+              keyExtractor={item => item.id}
+              contentContainerStyle={{ paddingHorizontal: SPACING.lg, paddingBottom: 4 }}
               renderItem={({ item }) => (
-                <ProductCard product={item} onPress={() => router.push(`/(customer)/product/${item.slug || item.id}`)} />
+                <HorizontalProductCard product={item} onPress={() => router.push(`/(customer)/product/${item.slug || item.id}`)} onAdd={handleAddToCart} />
               )}
-              contentContainerStyle={{ paddingLeft: Spacing.md }}
             />
           </View>
         )}
 
-        {/* 2H. Premium Picks */}
-        {premiumPicks.length > 0 && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>👑 Premium Selection</Text>
-              <TouchableOpacity><Text style={styles.seeAll}>See All →</Text></TouchableOpacity>
-            </View>
+        {premiumProducts.length > 0 && (
+          <View style={globalStyles.section}>
+            <SectionHeader title="👑 Premium Picks" onSeeAll={() => handleCategoryFilter('all')} />
             <FlatList
               horizontal
               showsHorizontalScrollIndicator={false}
-              data={premiumPicks.slice(0, 5)}
-              keyExtractor={(item: any) => item.id.toString()}
+              data={premiumProducts}
+              keyExtractor={item => item.id}
+              contentContainerStyle={{ paddingHorizontal: SPACING.lg, paddingBottom: 4 }}
               renderItem={({ item }) => (
-                <ProductCard product={item} onPress={() => router.push(`/(customer)/product/${item.slug || item.id}`)} />
+                <HorizontalProductCard product={item} onPress={() => router.push(`/(customer)/product/${item.slug || item.id}`)} onAdd={handleAddToCart} />
               )}
-              contentContainerStyle={{ paddingLeft: Spacing.md }}
             />
           </View>
         )}
 
-        {/* 2I. All Products Grid */}
-        <View style={[styles.section, { paddingHorizontal: Spacing.md }]}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>
-              {selectedCategory === 'all' ? 'All Products' : categories.find(c => c.id === selectedCategory)?.label}
-            </Text>
-            <Text style={styles.productCount}>{filteredProducts.length} products</Text>
-          </View>
+        <DeliveryInfoSection />
+
+        <View style={globalStyles.section}>
+          <SectionHeader title={selectedCategory === 'all' ? `All Products (${filteredProducts.length})` : `${selectedCategory} (${filteredProducts.length})`} />
           
-          {loadingAll ? (
-            <ActivityIndicator color={Colors.primary} />
+          {loading ? (
+            <ProductGridSkeleton />
+          ) : filteredProducts.length === 0 ? (
+            <EmptyState emoji="🐟" title="No products found" subtitle="Try a different category" action="Clear Filters" onAction={() => handleCategoryFilter('all')} />
           ) : (
-            <View style={styles.gridContainer}>
-              {filteredProducts.map((item: any) => (
-                <View key={item.id} style={styles.gridItem}>
-                  <ProductCard 
-                    product={item} 
-                    onPress={() => router.push(`/(customer)/product/${item.slug || item.id}`)} 
-                  />
-                </View>
-              ))}
-            </View>
+            <FlatList
+              data={filteredProducts}
+              keyExtractor={item => item.id}
+              numColumns={2}
+              scrollEnabled={false} // Since it's inside a ScrollView
+              contentContainerStyle={{ paddingHorizontal: 10 }}
+              renderItem={({ item }) => (
+                <GridProductCard product={item} onPress={() => router.push(`/(customer)/product/${item.slug || item.id}`)} onAdd={handleAddToCart} />
+              )}
+            />
           )}
         </View>
 
-        {/* 2J. Delivery Info */}
-        <View style={styles.deliveryInfo}>
-          <Text style={styles.deliveryTitle}>🚚 Fast Delivery Promise</Text>
-          <View style={styles.deliveryStats}>
-            <View style={styles.deliveryStat}>
-              <Text style={styles.deliveryStatNum}>2h</Text>
-              <Text style={styles.deliveryStatLabel}>Express Delivery</Text>
-            </View>
-            <View style={styles.deliveryStat}>
-              <Text style={styles.deliveryStatNum}>95%</Text>
-              <Text style={styles.deliveryStatLabel}>Freshness Score</Text>
-            </View>
-            <View style={styles.deliveryStat}>
-              <Text style={styles.deliveryStatNum}>500+</Text>
-              <Text style={styles.deliveryStatLabel}>Happy Customers</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* 2K. Newsletter */}
-        <View style={styles.newsletter}>
-          <Text style={styles.newsletterTitle}>📧 Stay in the Loop</Text>
-          <Text style={styles.newsletterSubtitle}>
-            Get flash sales and seasonal catches to your inbox
-          </Text>
-          <View style={styles.newsletterInput}>
-            <TextInput 
-              placeholder="your@email.com" 
-              style={styles.emailInput} 
-              value={email}
-              onChangeText={setEmail}
-            />
-            <TouchableOpacity style={styles.subscribeEmailBtn} onPress={handleNewsletterSubscribe}>
-              <Text style={{ color: '#fff', fontWeight: '600' }}>Subscribe</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
+        <NewsletterSection />
+        <View style={{ height: 80 }} />
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background },
-  header: {
-    padding: Spacing.md,
-    backgroundColor: '#0f172a',
-  },
-  headerTop: { flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.sm },
-  logoContainer: {
-    width: 40, height: 40, borderRadius: 20, backgroundColor: Colors.primary,
-    alignItems: 'center', justifyContent: 'center'
-  },
-  logoText: { color: Colors.surface, fontWeight: 'bold', fontSize: 16 },
-  brandName: { color: Colors.surface, fontSize: 18, fontWeight: '800' },
-  brandTagline: { color: '#94a3b8', fontSize: 12 },
-  notifBtn: { padding: 4 },
-  locationBar: { flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.md },
-  locationText: { color: '#86efac', marginLeft: 6, marginRight: 4, fontSize: 14 },
-  searchBar: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: '#1e293b',
-    padding: 12, borderRadius: 8, gap: 8
-  },
-  searchPlaceholder: { color: '#94a3b8', fontSize: 16 },
-  
-  promoSection: { marginVertical: Spacing.md },
-  promoCard: {
-    backgroundColor: '#166534', borderRadius: 16, padding: 16,
-    marginHorizontal: Spacing.md, width: SCREEN_WIDTH - 32,
-  },
-  promoOfferLabel: { color: '#86efac', fontSize: 12, fontWeight: '700', marginBottom: 4 },
-  promoTitle: { color: '#fff', fontSize: 18, fontWeight: '700' },
-  promoDesc: { color: '#bbf7d0', fontSize: 13, marginTop: 4 },
-  promoCodeBadge: { 
-    backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 10, paddingVertical: 4, 
-    borderRadius: 8, alignSelf: 'flex-start', marginTop: 12 
-  },
-  promoCode: { color: '#fff', fontWeight: 'bold', fontSize: 12 },
-
-  categoriesContainer: { paddingHorizontal: Spacing.md, marginBottom: Spacing.lg },
-  categoryChip: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: Colors.surface, paddingHorizontal: 16, paddingVertical: 8,
-    borderRadius: 20, marginRight: 8, borderWidth: 1, borderColor: Colors.border
-  },
-  categoryChipActive: { backgroundColor: '#dcfce7', borderColor: '#86efac' },
-  categoryEmoji: { marginRight: 6, fontSize: 16 },
-  categoryLabel: { color: Colors.text, fontWeight: '600' },
-  categoryLabelActive: { color: '#166534' },
-
-  section: { marginBottom: Spacing.xxl },
-  sectionHeader: { 
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: Spacing.md, marginBottom: Spacing.sm 
-  },
-  sectionTitle: { fontSize: 22, fontWeight: '700', color: '#0f172a' },
-  seeAll: { color: '#166534', fontWeight: '600' },
-  productCount: { color: '#64748b', fontSize: 14 },
-  
-  gridContainer: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -6 },
-  gridItem: { width: '50%', padding: 0 },
-  
-  subscribeBanner: {
-    flexDirection: 'row', backgroundColor: '#eff6ff', margin: Spacing.md, padding: 20, 
-    borderRadius: 16, borderWidth: 1, borderColor: '#bfdbfe', alignItems: 'center'
-  },
-  subscribeBadge: { color: '#1d4ed8', fontSize: 12, fontWeight: '700', marginBottom: 4 },
-  subscribeTitle: { fontSize: 20, fontWeight: '800', color: '#1e3a8a', marginBottom: 4 },
-  subscribeSubtitle: { fontSize: 14, color: '#3b82f6', marginBottom: 12, lineHeight: 20 },
-  subscribeBtn: {
-    backgroundColor: '#1d4ed8', paddingVertical: 10, paddingHorizontal: 16,
-    borderRadius: 8, alignSelf: 'flex-start'
-  },
-  subscribeBtnText: { color: Colors.white, fontWeight: 'bold' },
-
-  deliveryInfo: {
-    backgroundColor: '#fff', margin: Spacing.md, padding: Spacing.lg,
-    borderRadius: 16, ...shadows.sm
-  },
-  deliveryTitle: { fontSize: 18, fontWeight: '700', color: '#0f172a', marginBottom: 16, textAlign: 'center' },
-  deliveryStats: { flexDirection: 'row', justifyContent: 'space-between' },
-  deliveryStat: { alignItems: 'center', flex: 1 },
-  deliveryStatNum: { fontSize: 24, fontWeight: '800', color: '#166534', marginBottom: 4 },
-  deliveryStatLabel: { fontSize: 12, color: '#64748b', textAlign: 'center' },
-
-  newsletter: {
-    backgroundColor: '#0f172a', margin: Spacing.md, padding: Spacing.lg,
-    borderRadius: 16, alignItems: 'center'
-  },
-  newsletterTitle: { fontSize: 18, fontWeight: '700', color: '#fff', marginBottom: 8 },
-  newsletterSubtitle: { fontSize: 14, color: '#94a3b8', textAlign: 'center', marginBottom: 16 },
-  newsletterInput: { flexDirection: 'row', width: '100%', gap: 8 },
-  emailInput: { 
-    flex: 1, backgroundColor: '#1e293b', borderRadius: 8, paddingHorizontal: 16, 
-    height: 48, color: '#fff' 
-  },
-  subscribeEmailBtn: { 
-    backgroundColor: '#166534', justifyContent: 'center', alignItems: 'center',
-    paddingHorizontal: 16, borderRadius: 8, height: 48 
-  }
-});

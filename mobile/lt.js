@@ -3,7 +3,8 @@ const fs = require('fs');
 const path = require('path');
 
 (async () => {
-  const tunnel = await localtunnel({ port: 4000, local_host: '127.0.0.1' });
+  const randomId = Math.floor(Math.random() * 100000);
+  const tunnel = await localtunnel({ port: 4000, local_host: '127.0.0.1', subdomain: `nhsalem-dev-${randomId}` });
   
   console.log(`Tunnel created at: ${tunnel.url}`);
   
