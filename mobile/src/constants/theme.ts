@@ -10,6 +10,10 @@ export const Colors = {
   border: '#E5E7EB',
   error: '#EF4444',
   success: '#10B981',
+  white: '#FFFFFF',
+  textLight: '#9CA3AF',
+  surfaceDark: '#1E293B',
+  adminPrimary: '#1E3A8A',
   admin: {
     primary: '#1E3A8A', // Dark Navy
     surface: '#F1F5F9', // Light Slate

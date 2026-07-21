@@ -39,12 +39,13 @@ export default function MyOrdersScreen() {
     if (order.items && order.items.length > 0) {
       order.items.forEach((item: any) => {
         addItem({
-          id: Math.random().toString(), // Cart needs unique ID for line item
           productId: item.productId,
           name: item.name || 'Seafood Item',
           price: item.price,
           quantity: item.quantity,
-          variant: item.weight || 'Standard'
+          variant: item.weight || 'Standard',
+          image: item.image || '',
+          weightLabel: item.weight || 'Standard'
         });
       });
       router.push('/(customer)/cart');

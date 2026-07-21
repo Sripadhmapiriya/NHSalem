@@ -354,11 +354,6 @@ const styles = StyleSheet.create({
   slotTextActive: {
     color: Colors.primary,
   },
-  paymentMethodText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.text,
-  },
   footer: {
     backgroundColor: Colors.surface,
     padding: 20,
