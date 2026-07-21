@@ -16,14 +16,6 @@ export default function MyOrdersScreen() {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useFocusEffect(
-    useCallback(() => {
-      if (isLoggedIn) {
-        fetchOrders();
-      }
-    }, [isLoggedIn])
-  );
-
   const fetchOrders = async () => {
     setIsLoading(true);
     try {
@@ -35,6 +27,14 @@ export default function MyOrdersScreen() {
       setIsLoading(false);
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      if (isLoggedIn) {
+        fetchOrders();
+      }
+    }, [isLoggedIn])
+  );
 
   const handleReorder = (order: any) => {
     // Add all items to cart
