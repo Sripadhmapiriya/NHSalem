@@ -27,16 +27,22 @@ export default function CustomerHome() {
   const { data: featuredProducts, isLoading: loadingFeatured } = useQuery({
     queryKey: ['products', 'featured'],
     queryFn: async () => {
-      const response = await apiClient.get('/api/products?sort=az');
-      return response.data?.data || response.data || [];
+      try {
+        const response = await apiClient.get('/api/products?sort=az');
+        const data = response.data?.data || response.data;
+        return Array.isArray(data) ? data : [];
+      } catch (e) { return []; }
     }
   });
 
   const { data: allProducts, isLoading: loadingAll } = useQuery({
     queryKey: ['products', 'all'],
     queryFn: async () => {
-      const response = await apiClient.get('/api/products');
-      return response.data?.data || response.data || [];
+      try {
+        const response = await apiClient.get('/api/products');
+        const data = response.data?.data || response.data;
+        return Array.isArray(data) ? data : [];
+      } catch (e) { return []; }
     }
   });
 
@@ -72,7 +78,7 @@ export default function CustomerHome() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         
         {/* Announcement Banner */}
-        {!loadingPromotions && promotions?.length > 0 && (
+        {!loadingPromotions && Array.isArray(promotions) && promotions.length > 0 && (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.bannerContainer}>
             {promotions.map((promo: any, index: number) => (
               <View key={index} style={styles.promoCard}>
@@ -103,7 +109,7 @@ export default function CustomerHome() {
             <FlatList
               horizontal
               showsHorizontalScrollIndicator={false}
-              data={(featuredProducts || []).slice(0, 5)}
+              data={(Array.isArray(featuredProducts) ? featuredProducts : []).slice(0, 5)}
               keyExtractor={(item) => item.id || Math.random().toString()}
               renderItem={({ item }) => (
                 <ProductCard 
@@ -130,7 +136,7 @@ export default function CustomerHome() {
           <Text style={styles.sectionTitle}>All Products</Text>
           {loadingAll ? <ActivityIndicator color={Colors.primary} /> : (
             <View style={styles.gridContainer}>
-              {(allProducts || []).map((item: any) => (
+              {(Array.isArray(allProducts) ? allProducts : []).map((item: any) => (
                 <View key={item.id} style={styles.gridItem}>
                   <ProductCard 
                     product={item} 
