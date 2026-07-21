@@ -1,16 +1,16 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors, Spacing } from '../../src/constants/theme';
+import { Colors, Spacing, shadows, typography } from '../../src/constants/theme';
 import { useRouter } from 'expo-router';
 
-const CATEGORIES = [
-  { id: 'fish', name: 'Fish', emoji: '🐟', count: 12 },
-  { id: 'prawns', name: 'Prawns', emoji: '🦐', count: 8 },
-  { id: 'crabs', name: 'Crabs', emoji: '🦀', count: 5 },
-  { id: 'lobster', name: 'Lobster', emoji: '🦞', count: 2 },
-  { id: 'dried-fish', name: 'Dried Fish', emoji: '🐠', count: 6 },
-  { id: 'combos', name: 'Combos', emoji: '🎁', count: 3 },
+const categories = [
+  { id: 'fish', name: 'Fish', emoji: '🐟', color: '#dbeafe' },
+  { id: 'prawns-shrimp', name: 'Prawns & Shrimp', emoji: '🦐', color: '#dcfce7' },
+  { id: 'crabs', name: 'Crabs', emoji: '🦀', color: '#fee2e2' },
+  { id: 'lobster', name: 'Lobster', emoji: '🦞', color: '#fef3c7' },
+  { id: 'dried-fish', name: 'Dried Fish', emoji: '🐠', color: '#f3e8ff' },
+  { id: 'combos', name: 'Combos', emoji: '🎁', color: '#fce7f3' },
 ];
 
 export default function CategoriesScreen() {
@@ -19,20 +19,22 @@ export default function CategoriesScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.title}>Categories</Text>
+        <Text style={styles.title}>Explore Categories</Text>
       </View>
       
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.grid}>
-          {CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <TouchableOpacity 
               key={cat.id} 
-              style={styles.card}
-              onPress={() => router.push({ pathname: '/(customer)/category-products', params: { category: cat.id, name: cat.name } })}
+              style={[styles.card, { backgroundColor: cat.color }]}
+              onPress={() => router.push({ 
+                pathname: '/(customer)/categoryProducts', 
+                params: { category: cat.id, categoryName: cat.name, emoji: cat.emoji } 
+              })}
             >
               <Text style={styles.emoji}>{cat.emoji}</Text>
               <Text style={styles.name}>{cat.name}</Text>
-              <Text style={styles.count}>{cat.count} Products</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -53,9 +55,8 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.border,
   },
   title: {
+    ...typography.h1,
     fontSize: 24,
-    fontWeight: 'bold',
-    color: Colors.text,
   },
   scrollContent: {
     padding: Spacing.md,
@@ -67,31 +68,18 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '48%',
-    backgroundColor: Colors.surface,
     borderRadius: 16,
     padding: Spacing.xl,
     alignItems: 'center',
     marginBottom: Spacing.md,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    ...shadows.sm,
   },
   emoji: {
     fontSize: 48,
     marginBottom: Spacing.sm,
   },
   name: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: Colors.text,
-    marginBottom: 4,
-  },
-  count: {
-    fontSize: 12,
-    color: Colors.textSecondary,
+    ...typography.h3,
+    textAlign: 'center',
   },
 });

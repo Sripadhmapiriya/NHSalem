@@ -103,6 +103,15 @@ router.get('/me', requireUser, asyncHandler(async (req, res) => {
   res.json({ user })
 }))
 
+router.get('/me/stats', requireUser, asyncHandler(async (req, res) => {
+  const stats = await pool.query(`
+    SELECT COUNT(*) as order_count,
+           COALESCE(SUM(total), 0) as total_spent
+    FROM orders WHERE user_id = $1
+  `, [req.user.id])
+  res.json(stats.rows[0])
+}))
+
 // OTP Login Stubs
 router.post('/send-otp', asyncHandler(async (req, res) => {
   const { phone } = req.body

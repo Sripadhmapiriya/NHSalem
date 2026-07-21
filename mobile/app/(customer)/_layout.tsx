@@ -8,14 +8,15 @@ export default function CustomerLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: Colors.primary,
-        tabBarInactiveTintColor: Colors.textSecondary,
+        tabBarActiveTintColor: '#166534',
+        tabBarInactiveTintColor: '#94a3b8',
         tabBarStyle: {
+          backgroundColor: '#ffffff',
           borderTopWidth: 1,
-          borderTopColor: Colors.border,
+          borderTopColor: '#f1f5f9',
           height: 60,
           paddingBottom: 8,
-          paddingTop: 8,
+          paddingTop: 4,
         },
       }}
     >
@@ -64,6 +65,21 @@ export default function CustomerLayout() {
           ),
         }}
       />
+
+      {/* Hidden Screens (accessible via navigation but not on Tab bar) */}
+      <Tabs.Screen name="checkout" options={{ href: null }} />
+      <Tabs.Screen name="product/[id]" options={{ href: null }} />
+      <Tabs.Screen name="categoryProducts" options={{ href: null }} />
+      
+      {/* Profile Sub-screens */}
+      <Tabs.Screen name="addresses" options={{ href: null }} />
+      <Tabs.Screen name="contact" options={{ href: null }} />
+      <Tabs.Screen name="faq" options={{ href: null }} />
+      <Tabs.Screen name="terms" options={{ href: null }} />
+      <Tabs.Screen name="privacy" options={{ href: null }} />
+      <Tabs.Screen name="subscription" options={{ href: null }} />
+      <Tabs.Screen name="editProfile" options={{ href: null }} />
+      <Tabs.Screen name="wishlist" options={{ href: null }} />
     </Tabs>
   );
 }

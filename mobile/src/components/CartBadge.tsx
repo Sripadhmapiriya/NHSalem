@@ -1,10 +1,14 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useCartStore } from '../store/cartStore';
-import { Colors } from '../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
+import { useCartStore } from '../store/cartStore';
 
-export default function CartBadge({ color, size }: { color: string, size: number }) {
+interface CartBadgeProps {
+  color: string;
+  size: number;
+}
+
+export default function CartBadge({ color, size }: CartBadgeProps) {
   const { items } = useCartStore();
   const itemCount = items.reduce((total, item) => total + item.quantity, 0);
 
@@ -13,7 +17,9 @@ export default function CartBadge({ color, size }: { color: string, size: number
       <Ionicons name="cart-outline" size={size} color={color} />
       {itemCount > 0 && (
         <View style={styles.badge}>
-          <Text style={styles.badgeText}>{itemCount > 99 ? '99+' : itemCount}</Text>
+          <Text style={styles.badgeText}>
+            {itemCount > 99 ? '99+' : itemCount}
+          </Text>
         </View>
       )}
     </View>
@@ -22,25 +28,28 @@ export default function CartBadge({ color, size }: { color: string, size: number
 
 const styles = StyleSheet.create({
   container: {
-    position: 'relative',
+    width: 24,
+    height: 24,
     justifyContent: 'center',
     alignItems: 'center',
   },
   badge: {
     position: 'absolute',
-    top: -4,
-    right: -8,
-    backgroundColor: Colors.error || '#EF4444',
+    top: -6,
+    right: -10,
+    backgroundColor: '#ef4444',
     borderRadius: 10,
     minWidth: 18,
     height: 18,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 4,
+    borderWidth: 1.5,
+    borderColor: '#ffffff',
   },
   badgeText: {
-    color: 'white',
+    color: '#ffffff',
     fontSize: 10,
-    fontWeight: 'bold',
-  },
+    fontWeight: '700',
+  }
 });
