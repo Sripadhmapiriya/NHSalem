@@ -45,6 +45,19 @@ export default function ProductCard({ product }) {
   const cartItem = getItem(id, currentVariant.label)
   const wishlisted = isWishlisted(id)
 
+  const handleWishlistToggle = () => {
+    const { user, setCartLoginPopupOpen, setPendingAction } = useAuthStore.getState()
+    if (!user) {
+      setPendingAction({
+        type: 'TOGGLE_WISHLIST',
+        payload: { id, name }
+      })
+      setCartLoginPopupOpen(true)
+      return
+    }
+    toggleWishlist(id)
+  }
+
   const handleAdd = () => {
     const { user, setCartLoginPopupOpen, setPendingAction } = useAuthStore.getState()
     if (!user) {
@@ -111,7 +124,7 @@ export default function ProductCard({ product }) {
         {/* Wishlist */}
         <motion.button
           whileTap={{ scale: 0.85 }}
-          onClick={() => toggleWishlist(id)}
+          onClick={handleWishlistToggle}
           aria-label={wishlisted ? `Remove ${name} from wishlist` : `Add ${name} to wishlist`}
           className="absolute top-3 right-3 w-9 h-9 bg-[#0b1e3d]/35 backdrop-blur-md border border-white/25 rounded-full flex items-center justify-center shadow-sm hover:bg-[#0b1e3d]/50 transition-colors"
         >

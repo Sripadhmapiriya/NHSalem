@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useLocation, NavLink } from 'react-router-dom'
+import { useLocation, NavLink, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import Header from './Header'
 import Footer from './Footer'
@@ -10,6 +10,7 @@ import useAuthStore from '@/store/authStore'
 import useCartStore from '@/store/cartStore'
 import useSubscriptionStore from '@/store/subscriptionStore'
 import useToastStore from '@/store/toastStore'
+import useWishlistStore from '@/store/wishlistStore'
 import { createSubscription, getSubscriptionPlans } from '@/services/api'
 import { MOCK_SUBSCRIPTION } from '@/mock/subscriptions'
 import { FloatingCartBar } from '@/components/ui'
@@ -31,6 +32,8 @@ export default function Layout({ children }) {
   const { addItem } = useCartStore()
   const { setSubscription } = useSubscriptionStore()
   const { addToast } = useToastStore()
+  const { toggle: toggleWishlist } = useWishlistStore()
+  const navigate = useNavigate()
   const [plans, setPlans] = useState([])
   const [showDownload, setShowDownload] = useState(true)
 
@@ -68,11 +71,16 @@ export default function Layout({ children }) {
           } catch (e) {
             addToast({ message: 'Failed to create subscription. Please try again.', type: 'error' })
           }
+        } else if (action.type === 'TOGGLE_WISHLIST') {
+          toggleWishlist(action.payload.id)
+          addToast({ message: `${action.payload.name} added to wishlist!`, type: 'success' })
+        } else if (action.type === 'CHECKOUT') {
+          navigate('/checkout')
         }
       }
       executeAction()
     }
-  }, [user, pendingAction, addItem, setSubscription, addToast, plans, setPendingAction])
+  }, [user, pendingAction, addItem, setSubscription, addToast, plans, setPendingAction, toggleWishlist, navigate])
 
   const { items = [], totalItems = 0 } = useCartStore()
   const location = useLocation()

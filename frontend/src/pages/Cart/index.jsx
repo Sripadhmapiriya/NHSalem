@@ -5,6 +5,7 @@ import Button from '@/components/ui/Button'
 import { QuantityStepper } from '@/components/ui/Stepper'
 import useCart, { useCartStore } from '@/store/cartStore'
 import useToastStore from '@/store/toastStore'
+import useAuthStore from '@/store/authStore'
 import { validateCoupon } from '@/services/api'
 
 export default function Cart() {
@@ -57,6 +58,16 @@ export default function Cart() {
       setCouponError(result.message)
     }
     setCouponLoading(false)
+  }
+
+  const handleCheckout = () => {
+    const { user, setCartLoginPopupOpen, setPendingAction } = useAuthStore.getState()
+    if (!user) {
+      setPendingAction({ type: 'CHECKOUT' })
+      setCartLoginPopupOpen(true)
+      return
+    }
+    navigate('/checkout')
   }
 
   if (items.length === 0) {
@@ -231,7 +242,7 @@ export default function Cart() {
                 variant="primary"
                 size="lg"
                 className="w-full mt-5"
-                onClick={() => navigate('/checkout')}
+                onClick={handleCheckout}
               >
                 Proceed to Checkout
               </Button>
