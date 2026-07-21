@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing } from '../../src/constants/theme';
@@ -6,7 +6,7 @@ import { useAuthStore } from '../../src/store/authStore';
 import { useCartStore } from '../../src/store/cartStore';
 import { apiClient } from '../../src/api/client';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 
 export default function MyOrdersScreen() {
   const { isLoggedIn } = useAuthStore();
@@ -16,11 +16,13 @@ export default function MyOrdersScreen() {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (isLoggedIn) {
-      fetchOrders();
-    }
-  }, [isLoggedIn]);
+  useFocusEffect(
+    useCallback(() => {
+      if (isLoggedIn) {
+        fetchOrders();
+      }
+    }, [isLoggedIn])
+  );
 
   const fetchOrders = async () => {
     setIsLoading(true);
@@ -99,7 +101,7 @@ export default function MyOrdersScreen() {
         renderItem={({ item }) => (
           <View style={styles.orderCard}>
             <View style={styles.orderHeader}>
-              <Text style={styles.orderId}>Order #{item.id?.substring(0, 8) || item._id?.substring(0, 8)}</Text>
+              <Text style={styles.orderId}>Order #{item.id || item._id}</Text>
               <View style={[styles.statusBadge, { backgroundColor: item.status === 'delivered' ? '#dcfce7' : '#fef9c3' }]}>
                 <Text style={[styles.statusText, { color: item.status === 'delivered' ? '#166534' : '#854d0e' }]}>
                   {item.status?.toUpperCase() || 'PENDING'}
@@ -109,9 +111,9 @@ export default function MyOrdersScreen() {
 
             <View style={styles.orderBody}>
               <Text style={styles.dateText}>
-                {new Date(item.createdAt).toLocaleDateString()}
+                {item.placedAt ? new Date(item.placedAt).toLocaleDateString() : 'N/A'}
               </Text>
-              <Text style={styles.totalText}>Total: ₹{item.totalAmount}</Text>
+              <Text style={styles.totalText}>Total: ₹{item.total || 0}</Text>
             </View>
 
             <View style={styles.itemsPreview}>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, typography, shadows } from '../../src/constants/theme';
 import { useAuthStore } from '../../src/store/authStore';
@@ -12,7 +12,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { user, logout } = useAuthStore();
 
-  const { data: stats } = useQuery({
+  const { data: stats, refetch } = useQuery({
     queryKey: ['user', 'stats'],
     queryFn: async () => {
       try {
@@ -23,6 +23,14 @@ export default function ProfileScreen() {
       }
     }
   });
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (user) {
+        refetch();
+      }
+    }, [user])
+  );
 
   const menuItems = [
     {

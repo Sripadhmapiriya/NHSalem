@@ -103,6 +103,19 @@ router.get('/me', requireUser, asyncHandler(async (req, res) => {
   res.json({ user })
 }))
 
+router.put('/me', requireUser, asyncHandler(async (req, res) => {
+  const { name, email, phone } = req.body
+  const result = await pool.query(
+    'UPDATE users SET name = COALESCE($1, name), email = COALESCE($2, email), phone = COALESCE($3, phone) WHERE id = $4 RETURNING id, name, email, phone',
+    [name, email, phone, req.user.id]
+  )
+  const user = result.rows[0]
+  if (!user) {
+    return res.status(404).json({ success: false, message: 'User not found' })
+  }
+  res.json({ success: true, user })
+}))
+
 router.get('/me/stats', requireUser, asyncHandler(async (req, res) => {
   const stats = await pool.query(`
     SELECT COUNT(*) as order_count,

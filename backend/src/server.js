@@ -135,6 +135,7 @@ app.get('/api/health', (req, res) => {
 })
 
 // Rate limiting
+app.set('trust proxy', 1) // Required for express-rate-limit behind localtunnel/proxies
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 1000,

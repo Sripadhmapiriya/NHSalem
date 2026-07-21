@@ -21,5 +21,10 @@ export const authApi = {
   loginAdmin: async (email: string, password: string) => {
     const { data } = await apiClient.post('/api/admin/auth/login', { email, password });
     return data;
+  },
+
+  updateProfile: async (payload: { name?: string; email?: string; phone?: string }) => {
+    const { data } = await apiClient.put('/api/auth/me', payload);
+    return data;
   }
 };
