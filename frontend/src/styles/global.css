@@ -13,10 +13,10 @@ header, nav {
 
 /* ─── Custom Properties ───────────────────────────────────────────────── */
 :root {
-  --color-primary: #000516;
-  --color-secondary-container: #fed255;
-  --color-tertiary-accent: #e15b42;
-  --color-success: #2E7D32;
+  --color-primary: #000516; /* Deep Navy Brand Primary */
+  --color-secondary-container: #fed255; /* Gold Brand Secondary */
+  --color-tertiary-accent: #fed255;
+  --color-success: #16a34a; /* Quality/Trust Green Accent */
   --radius-card: 28px;
   --radius-pill: 9999px;
   --shadow-card: 0 4px 20px rgba(0, 5, 22, 0.15);
