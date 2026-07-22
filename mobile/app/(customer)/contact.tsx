@@ -26,35 +26,35 @@ export default function ContactScreen() {
           Get in touch with us! Our customer service team is ready to help you with any questions.
         </Text>
 
-        <TouchableOpacity style={styles.contactCard} onPress={() => handleOpenUrl('tel:+919000000000')}>
+        <TouchableOpacity style={styles.contactCard} onPress={() => handleOpenUrl('tel:+919500829167')}>
           <View style={styles.iconContainer}><Ionicons name="call" size={24} color="#166534" /></View>
           <View>
             <Text style={styles.cardTitle}>Call Us</Text>
-            <Text style={styles.cardDesc}>+91 9000000000</Text>
+            <Text style={styles.cardDesc}>+91 9500829167</Text>
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.contactCard} onPress={() => handleOpenUrl('mailto:support@nhsalem.com')}>
+        <TouchableOpacity style={styles.contactCard} onPress={() => handleOpenUrl('mailto:carenhsalem@gmail.com')}>
           <View style={styles.iconContainer}><Ionicons name="mail" size={24} color="#166534" /></View>
           <View>
             <Text style={styles.cardTitle}>Email Us</Text>
-            <Text style={styles.cardDesc}>support@nhsalem.com</Text>
+            <Text style={styles.cardDesc}>carenhsalem@gmail.com</Text>
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.contactCard} onPress={() => handleOpenUrl('https://wa.me/919000000000')}>
+        <TouchableOpacity style={styles.contactCard} onPress={() => handleOpenUrl('https://wa.me/919500829167')}>
           <View style={styles.iconContainer}><Ionicons name="logo-whatsapp" size={24} color="#166534" /></View>
           <View>
             <Text style={styles.cardTitle}>WhatsApp</Text>
-            <Text style={styles.cardDesc}>+91 9000000000</Text>
+            <Text style={styles.cardDesc}>+91 9500829167</Text>
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.contactCard} onPress={() => handleOpenUrl('https://nh-salem.vercel.app')}>
+        <TouchableOpacity style={styles.contactCard} onPress={() => handleOpenUrl('https://www.nhsalem.com')}>
           <View style={styles.iconContainer}><Ionicons name="globe-outline" size={24} color="#166534" /></View>
           <View>
             <Text style={styles.cardTitle}>Visit Website</Text>
-            <Text style={styles.cardDesc}>https://nh-salem.vercel.app</Text>
+            <Text style={styles.cardDesc}>www.nhsalem.com</Text>
           </View>
         </TouchableOpacity>
       </ScrollView>

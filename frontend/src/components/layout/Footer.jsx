@@ -55,31 +55,40 @@ export default function Footer() {
             </p>
 
             {/* Real contact details */}
-            <div className="space-y-2 mb-6 text-label-sm text-white/70">
-              <p className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-secondary-container" style={{ fontSize: '16px' }} aria-hidden="true">call</span>
-                <a href="tel:+919500829167" className="hover:underline hover:text-white transition-colors">+91 95008 29167</a>
+            <div className="space-y-3 mb-6 text-label-sm text-white/70">
+              <p className="flex items-start gap-2">
+                <span className="material-symbols-outlined text-secondary-container mt-0.5" style={{ fontSize: '16px' }} aria-hidden="true">call</span>
+                <a href="tel:+919500829167" className="hover:underline hover:text-white transition-colors">+91 9500829167</a>
               </p>
-              <p className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-secondary-container" style={{ fontSize: '16px' }} aria-hidden="true">mail</span>
+              <p className="flex items-start gap-2">
+                <span className="material-symbols-outlined text-secondary-container mt-0.5" style={{ fontSize: '16px' }} aria-hidden="true">mail</span>
                 <a href="mailto:carenhsalem@gmail.com" className="hover:underline hover:text-white transition-colors">carenhsalem@gmail.com</a>
               </p>
-              <p className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-secondary-container" style={{ fontSize: '16px' }} aria-hidden="true">verified</span>
-                <span>FSSAI Lic: <span className="font-mono">22426188000206</span></span>
+              <p className="flex items-start gap-2">
+                <span className="material-symbols-outlined text-secondary-container mt-0.5" style={{ fontSize: '16px' }} aria-hidden="true">location_on</span>
+                <span className="leading-tight">
+                  <strong className="text-white block mb-0.5">Registered Office:</strong>
+                  No: 4/174/F, Cheran Nagar/Kavery Nagar, Kondappanaickenpatti,<br/>
+                  Salem – 636008, Tamil Nadu
+                </span>
+              </p>
+              <p className="flex items-start gap-2">
+                <span className="material-symbols-outlined text-secondary-container mt-0.5" style={{ fontSize: '16px' }} aria-hidden="true">factory</span>
+                <span className="leading-tight">
+                  <strong className="text-white block mb-0.5">Processed & Packed by:</strong>
+                  Mahiban Foods and Sea Foods, No:11/514, Sahaya Matha Pattanam,<br/>
+                  2nd Street, Thoothukudi – 628002
+                </span>
               </p>
             </div>
 
-            {/* Certifications row */}
-            <div className="flex flex-wrap gap-2">
-              {['FSSAI Certified', 'Fair Trade', 'MSC Sustainable'].map((cert) => (
-                <span
-                  key={cert}
-                  className="px-3 py-1 bg-white/10 rounded-full text-label-sm text-white/70 border border-white/15"
-                >
-                  {cert}
-                </span>
-              ))}
+            {/* FSSAI Badge */}
+            <div className="inline-flex items-center gap-2 bg-white/10 px-3 py-2 rounded-lg border border-white/20 mt-2">
+              <span className="material-symbols-outlined text-green-400" style={{ fontSize: '24px' }}>verified</span>
+              <div>
+                <p className="text-[10px] font-bold text-white/80 uppercase tracking-widest leading-none mb-1">FSSAI Registered</p>
+                <p className="text-sm font-mono font-bold text-white leading-none">License No. 22426188000206</p>
+              </div>
             </div>
           </div>
 

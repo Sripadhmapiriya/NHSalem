@@ -3,38 +3,24 @@ import { Link } from 'react-router-dom'
 import Button from '@/components/ui/Button'
 import useInView, { useCountUp } from '@/hooks/useInView'
 
-const TEAM = [
-  {
-    name: 'Salem Rahman',
-    role: 'Co-Founder & CEO',
-    bio: 'A third-generation fisherman who grew up on the Tamil Nadu coast. Salem founded NH Salem Sea Foods with a singular mission: to bring the freshest coastal catches to urban dinner tables, with no compromise on sustainability or quality.',
-    avatar: 'https://i.pravatar.cc/200?img=70',
-  },
-  {
-    name: 'Ananya Nair',
-    role: 'Chief Sourcing Officer',
-    bio: 'Marine biologist turned supply chain expert. Ananya oversees all 120+ coastal fishing partnerships and quality certifications, ensuring every fish that leaves a dock meets NH Salem\'s Maritime Grade standards.',
-    avatar: 'https://i.pravatar.cc/200?img=47',
-  },
-  {
-    name: 'Dr. K. Venkatesh',
-    role: 'Head of Food Safety & Logistics',
-    bio: 'PhD in Food Science from IIT Madras. Dr. Venkatesh designed the proprietary cold-chain protocol that maintains 0–4°C from boat to doorstep — the backbone of the Freshness Score system.',
-    avatar: 'https://i.pravatar.cc/200?img=59',
-  },
+const WHY_CHOOSE_US = [
+  { icon: 'phishing', title: 'Premium Fresh Catch', desc: 'Sourced from clean & rich ocean waters' },
+  { icon: 'ac_unit', title: 'Blast Frozen', desc: 'Quick freezing locks in freshness & nutrients' },
+  { icon: 'inventory_2', title: 'Cold Chain Maintained', desc: 'Proper storage & transport ensures premium quality' },
+  { icon: 'sanitizer', title: 'Hygienically Packed', desc: 'Packed under strict hygiene standards for your safety' },
+  { icon: 'storefront', title: 'Retail Supply', desc: 'Perfect for homes, retailers, restaurants & businesses' },
+  { icon: 'verified', title: 'Quality Checked', desc: 'Every product goes through multiple quality checks' },
 ]
 
-const PROCESS_STEPS = [
-  { icon: 'anchor', title: 'Sourced at the Coast', desc: 'Our network of 120+ fishing partners haul in the catch at dawn. We have first pick — before wholesale markets open.' },
-  { icon: 'ac_unit', title: 'Iced & Inspected', desc: 'Within 30 minutes of landing, each batch is packed with food-grade ice and inspected by our quality team for size, texture, and aroma.' },
-  { icon: 'inventory_2', title: 'Cold-Chain Packed', desc: 'Cleaned to order, vacuum-packed in biodegradable bags, and loaded into our refrigerated vehicles at 2–4°C.' },
-  { icon: 'home', title: 'Delivered Fresh', desc: 'Our delivery partners complete the last mile in insulated thermacol boxes. Average coast-to-door time: 18 hours.' },
+const COMMITMENT = [
+  { title: 'Freshness', desc: 'We ensure the freshest seafood for you & your family.' },
+  { title: 'Quality', desc: 'Only the best seafood that meets international quality standards.' },
+  { title: 'Hygiene', desc: 'Maintaining high hygiene at every step of handling.' },
+  { title: 'Customer Satisfaction', desc: 'Your trust and satisfaction are our top priorities.' },
 ]
 
 const CERTIFICATIONS = [
-  { name: 'FSSAI Certified', number: 'Lic. No. 22426188000206', icon: 'verified' },
-  { name: 'Fair Trade Certified', number: 'FT-2024-IN-0892', icon: 'handshake' },
-  { name: 'MSC Sustainable', number: 'MSC-C-56781', icon: 'eco' },
+  { name: 'FSSAI Registered', number: 'License No. 22426188000206', icon: 'verified' },
 ]
 
 export default function About() {
@@ -57,68 +43,60 @@ export default function About() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <p className="text-label-md text-secondary-container font-semibold tracking-widest uppercase mb-3">Our Story</p>
+            <p className="text-label-md text-secondary-container font-semibold tracking-widest uppercase mb-3">About Us</p>
             <h1 id="about-heading" className="text-display-lg-mobile md:text-display-lg text-white mb-6">
-              Our Maritime Legacy
+              NH Salem Sea Foods
             </h1>
-            <p className="text-body-lg text-white/70 max-w-2xl mx-auto">
-              NH Salem Sea Foods was born on the Tamil Nadu coast in 2019, with a simple conviction: that India's freshest seafood deserved a better path to the plate — one that honoured the fishermen who caught it, the fish that gave it, and the families who ate it.
+            <p className="text-body-lg text-white/70 max-w-3xl mx-auto leading-relaxed">
+              NH Salem Sea Foods is committed to delivering premium quality frozen seafood that preserves natural freshness, authentic taste, and nutritional value. Every product is carefully selected from trusted sources, hygienically processed, and maintained under strict cold-chain conditions from the ocean to your table. We proudly serve homes, restaurants, hotels, caterers, and retailers with reliable seafood products and customer-focused service.
             </p>
           </motion.div>
         </div>
       </section>
 
-      {/* Stats Band */}
+      {/* Our Commitment */}
       <section
         ref={statsRef}
         className="py-16 bg-secondary-container"
-        aria-label="NH Salem by the numbers"
+        aria-label="Our Commitment"
       >
-        <div className="container-max grid grid-cols-3 gap-8 text-center">
-          {[
-            { value: `${cities}+`, label: 'Cities Served' },
-            { value: `${orders.toLocaleString()}+`, label: 'Daily Orders' },
-            { value: `${partners}+`, label: 'Fishing Partners' },
-          ].map((stat, i) => (
+        <div className="container-max grid sm:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+          {COMMITMENT.map((item, i) => (
             <motion.div
-              key={stat.label}
+              key={item.title}
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: i * 0.1 }}
             >
-              <p className="text-4xl md:text-5xl font-black text-on-secondary-container mb-1">{stat.value}</p>
-              <p className="text-label-md text-on-secondary-container/70">{stat.label}</p>
+              <h3 className="text-2xl font-black text-on-secondary-container mb-2">{item.title}</h3>
+              <p className="text-body-md text-on-secondary-container/80">{item.desc}</p>
             </motion.div>
           ))}
         </div>
       </section>
 
-      {/* Our Process */}
-      <section className="py-16 bg-background" aria-labelledby="process-heading">
+      {/* Why Choose Us */}
+      <section className="py-16 bg-background" aria-labelledby="why-choose-us-heading">
         <div className="container-max">
           <div className="text-center mb-12">
-            <p className="text-label-md text-secondary font-semibold tracking-widest uppercase mb-2">How It Works</p>
-            <h2 id="process-heading" className="text-display-lg-mobile text-on-surface">Our Process</h2>
+            <h2 id="why-choose-us-heading" className="text-display-lg-mobile text-on-surface">Why Choose Us</h2>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {PROCESS_STEPS.map((step, i) => (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {WHY_CHOOSE_US.map((step, i) => (
               <motion.div
                 key={step.title}
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.45, delay: i * 0.12 }}
-                className="flex flex-col items-center text-center"
+                className="flex flex-col items-center text-center p-6 bg-surface-container-low rounded-[24px] shadow-sm"
               >
                 <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mb-4 shadow-card">
                   <span className="material-symbols-outlined text-secondary-container" style={{ fontSize: '28px' }} aria-hidden="true">
                     {step.icon}
                   </span>
                 </div>
-                <p className="text-label-sm text-on-surface-variant font-semibold tracking-widest uppercase mb-1">
-                  Step {i + 1}
-                </p>
                 <h3 className="text-headline-sm text-on-surface mb-2">{step.title}</h3>
                 <p className="text-body-md text-on-surface-variant">{step.desc}</p>
               </motion.div>
@@ -127,33 +105,18 @@ export default function About() {
         </div>
       </section>
 
-      {/* The Visionaries */}
-      <section className="py-16 bg-surface-container-low" aria-labelledby="team-heading">
-        <div className="container-max">
-          <div className="text-center mb-12">
-            <p className="text-label-md text-secondary font-semibold tracking-widest uppercase mb-2">The Team</p>
-            <h2 id="team-heading" className="text-display-lg-mobile text-on-surface">The Visionaries</h2>
-          </div>
-          <div className="grid sm:grid-cols-3 gap-8">
-            {TEAM.map((member, i) => (
-              <motion.div
-                key={member.name}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: i * 0.1 }}
-                className="bg-white rounded-[28px] shadow-card p-6 text-center"
-              >
-                <img
-                  src={member.avatar}
-                  alt={member.name}
-                  className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4 border-surface-container-high"
-                />
-                <h3 className="text-headline-sm text-on-surface mb-0.5">{member.name}</h3>
-                <p className="text-label-md text-secondary font-semibold mb-3">{member.role}</p>
-                <p className="text-body-md text-on-surface-variant leading-relaxed">{member.bio}</p>
-              </motion.div>
-            ))}
+      {/* Delivery/Process Highlight Strip */}
+      <section className="py-12 bg-primary/10" aria-label="Highlight Strip">
+        <div className="container-max text-center">
+          <h2 className="text-headline-md text-primary font-bold mb-4">Fresh From The Ocean, Frozen For Freshness</h2>
+          <div className="flex flex-wrap justify-center gap-4 text-on-surface font-medium">
+            <span className="flex items-center gap-2"><span className="material-symbols-outlined text-secondary" style={{ fontSize: '20px' }}>ac_unit</span> Stored at -18°C</span>
+            <span className="hidden sm:block text-primary/30">•</span>
+            <span className="flex items-center gap-2"><span className="material-symbols-outlined text-secondary" style={{ fontSize: '20px' }}>star</span> Premium Frozen</span>
+            <span className="hidden sm:block text-primary/30">•</span>
+            <span className="flex items-center gap-2"><span className="material-symbols-outlined text-secondary" style={{ fontSize: '20px' }}>health_and_safety</span> Hygienic & Safe</span>
+            <span className="hidden sm:block text-primary/30">•</span>
+            <span className="flex items-center gap-2"><span className="material-symbols-outlined text-secondary" style={{ fontSize: '20px' }}>inventory_2</span> Cold Chain Maintained</span>
           </div>
         </div>
       </section>
@@ -172,10 +135,6 @@ export default function About() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.35, delay: i * 0.1 }}
-                className={`flex items-center gap-4 bg-white rounded-[20px] shadow-card px-6 py-4 min-w-[220px] ${
-                  cert.name.includes('FSSAI') ? 'cursor-pointer hover:border-primary/30 border border-transparent transition-all' : ''
-                }`}
-                title={cert.name.includes('FSSAI') ? 'Click to view FSSAI License Number' : undefined}
                 onClick={cert.name.includes('FSSAI') ? () => alert(`FSSAI License Number: 22426188000206`) : undefined}
               >
                 <div className="w-12 h-12 bg-success/10 rounded-full flex items-center justify-center flex-shrink-0">
@@ -184,8 +143,8 @@ export default function About() {
                   </span>
                 </div>
                 <div>
-                  <p className="text-label-md font-bold text-on-surface">{cert.name}</p>
-                  <p className="text-label-sm text-on-surface-variant font-mono">{cert.number}</p>
+                  <p className="text-label-lg font-bold text-on-surface mb-1">{cert.name}</p>
+                  <p className="text-label-md text-on-surface-variant font-mono font-bold bg-surface-container-low px-2 py-1 rounded inline-block">{cert.number}</p>
                 </div>
               </motion.div>
             ))}
