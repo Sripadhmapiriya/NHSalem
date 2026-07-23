@@ -101,7 +101,7 @@ export default function ProductCard({ product }) {
       className="bg-white rounded-2xl shadow-card overflow-hidden group flex flex-col"
     >
       {/* Image */}
-      <div className="relative overflow-hidden aspect-[4/3] w-full">
+      <div className="relative overflow-hidden aspect-[5/4] w-full">
         <Link to={`/product/${id}`} aria-label={`View ${name}`}>
           <img
             src={image}
@@ -139,16 +139,16 @@ export default function ProductCard({ product }) {
       </div>
 
       {/* Content */}
-      <div className="p-3.5 sm:p-4 flex flex-col gap-2 flex-1">
+      <div className="p-2.5 flex flex-col gap-1.5 flex-1">
         {/* Name + tagline */}
         <div>
           <Link to={`/product/${id}`}>
-            <h3 className="text-headline-sm text-on-surface font-semibold line-clamp-2 hover:text-primary transition-colors text-sm md:text-base">
+            <h3 className="text-on-surface font-semibold line-clamp-2 hover:text-primary transition-colors text-sm leading-snug">
               {name}
             </h3>
           </Link>
           {tagline && (
-            <p className="text-label-sm text-on-surface-variant mt-0.5 line-clamp-1 text-xs">{tagline}</p>
+            <p className="text-on-surface-variant mt-0.5 line-clamp-1 text-[11px]">{tagline}</p>
           )}
         </div>
 
@@ -161,7 +161,7 @@ export default function ProductCard({ product }) {
                 <span
                   key={star}
                   className={`material-symbols-outlined ${isFilled ? 'filled' : ''} text-secondary-container`}
-                  style={{ fontSize: '14px' }}
+                  style={{ fontSize: '12px' }}
                   aria-hidden="true"
                 >
                   star
@@ -170,7 +170,7 @@ export default function ProductCard({ product }) {
             })}
           </div>
           {rating > 0 ? (
-            <span className="text-label-sm text-on-surface-variant">
+            <span className="text-[11px] text-on-surface-variant">
               {rating} ({reviewCount?.toLocaleString()})
             </span>
           ) : (
@@ -188,7 +188,7 @@ export default function ProductCard({ product }) {
                 key={v.label}
                 onClick={() => setSelectedVariant(i)}
                 aria-pressed={selectedVariant === i}
-                className={`px-3 py-1 rounded-full text-label-sm border transition-all flex-shrink-0 ${
+                className={`px-2.5 py-0.5 rounded-full text-[11px] border transition-all flex-shrink-0 ${
                   selectedVariant === i
                     ? 'bg-secondary-container text-on-secondary-container border-secondary-container font-semibold'
                     : 'bg-surface-container-low text-on-surface-variant border-outline-variant hover:border-primary'
@@ -201,9 +201,9 @@ export default function ProductCard({ product }) {
         )}
 
         {/* Price + CTA */}
-        <div className="flex items-center justify-between mt-auto pt-2">
+        <div className="flex items-center justify-between mt-auto pt-1">
           <div>
-            <p className="text-headline-sm font-bold text-on-surface">
+            <p className="text-sm font-bold text-on-surface">
               ₹{currentVariant.price.toLocaleString()}
             </p>
             {currentVariant.originalPrice && (
@@ -222,10 +222,10 @@ export default function ProductCard({ product }) {
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.15 }}
                 onClick={handleAdd}
-                className="flex items-center gap-1.5 bg-primary text-on-primary px-4 py-2.5 rounded-full text-label-md font-semibold hover:bg-primary-container transition-colors"
+                className="flex items-center gap-1 bg-primary text-on-primary px-3 py-1.5 rounded-full text-[12px] font-semibold hover:bg-primary-container transition-colors"
                 aria-label={`Add ${name} to cart`}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: '18px' }} aria-hidden="true">
+                <span className="material-symbols-outlined" style={{ fontSize: '15px' }} aria-hidden="true">
                   add_shopping_cart
                 </span>
                 Add
@@ -242,21 +242,21 @@ export default function ProductCard({ product }) {
                 <button
                   onClick={handleDecrease}
                   aria-label="Decrease quantity"
-                  className="w-9 h-9 flex items-center justify-center text-on-primary hover:bg-primary-container transition-colors"
+                  className="w-8 h-8 flex items-center justify-center text-on-primary hover:bg-primary-container transition-colors"
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }} aria-hidden="true">
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }} aria-hidden="true">
                     remove
                   </span>
                 </button>
-                <span className="px-2 min-w-[2rem] text-center text-on-primary text-label-md font-bold">
+                <span className="px-1.5 min-w-[1.5rem] text-center text-on-primary text-[12px] font-bold">
                   {cartItem.quantity}
                 </span>
                 <button
                   onClick={handleIncrease}
                   aria-label="Increase quantity"
-                  className="w-9 h-9 flex items-center justify-center text-on-primary hover:bg-primary-container transition-colors"
+                  className="w-8 h-8 flex items-center justify-center text-on-primary hover:bg-primary-container transition-colors"
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }} aria-hidden="true">
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }} aria-hidden="true">
                     add
                   </span>
                 </button>

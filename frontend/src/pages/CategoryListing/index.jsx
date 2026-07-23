@@ -733,7 +733,7 @@ export default function CategoryListing() {
 
             {/* Active filters strip */}
             {hasActiveFilters && (
-              <div className="flex flex-wrap gap-2 mb-5">
+              <div className="flex flex-wrap items-center gap-1.5 mb-4">
                 {selectedCategories.map((c) => (
                   <Chip key={c} selected removable onRemove={() => toggleCategory(c)}>
                     {CATEGORIES.find((cat) => cat.id === c)?.label || c}
@@ -757,7 +757,7 @@ export default function CategoryListing() {
                 <button
                   type="button"
                   onClick={handleClearAll}
-                  className="text-xs font-bold text-primary hover:underline px-2.5 py-1 flex items-center min-h-[36px]"
+                  className="text-[13px] font-semibold text-primary hover:underline px-1 py-1.5 flex items-center leading-none"
                 >
                   Clear All
                 </button>

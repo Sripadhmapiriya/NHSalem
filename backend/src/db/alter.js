@@ -18,7 +18,9 @@ async function alter() {
     await client.connect()
     await client.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS local_name VARCHAR(255);`)
     await client.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS stock_status VARCHAR(50) DEFAULT 'in_stock';`)
-    console.log('Altered table successfully')
+    // Fix: Add missing status column to users table (was causing admin Customers page to crash)
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS status VARCHAR(50) NOT NULL DEFAULT 'active';`)
+    console.log('Altered tables successfully')
   } catch (err) {
     console.error(err)
   } finally {

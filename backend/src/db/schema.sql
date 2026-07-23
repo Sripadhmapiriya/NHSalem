@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
   email VARCHAR(255) UNIQUE NOT NULL,
   phone VARCHAR(50) UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
+  status VARCHAR(50) NOT NULL DEFAULT 'active', -- 'active' | 'suspended'
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

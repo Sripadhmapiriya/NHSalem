@@ -227,74 +227,89 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
         </nav>
 
         {/* Right icons / control deck */}
-        <div className="flex items-center gap-2 ml-auto md:ml-0">
-          <div className="h-9 flex items-center gap-1 px-2 bg-surface-container-low/70 border border-outline-variant/30 rounded-full shadow-inner-sm">
-            {/* Search */}
-            <div ref={searchRef} className="relative">
-              {searchOpen ? (
-                <div className="flex items-center gap-2">
-                  <div className="relative">
-                    <SearchInput
-                      id="header-search"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search seafood…"
-                      className="w-44 sm:w-60 text-[13px] py-1 h-7"
-                    />
-                    {/* Dropdown results */}
-                    <AnimatePresence>
-                      {searchResults.length > 0 && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -8 }}
-                          transition={{ duration: 0.15 }}
-                          className="absolute top-full left-0 right-0 mt-2 bg-white rounded-[16px] shadow-stat border border-outline-variant/30 overflow-hidden z-50"
-                        >
-                          {searchResults.map((p) => (
-                            <button
-                              key={p.id}
-                              onClick={() => {
-                                navigate(`/product/${p.id}`)
-                                setSearchOpen(false)
-                                setSearchQuery('')
-                                setSearchResults([])
-                              }}
-                              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-surface-container-low transition-colors text-left"
-                            >
-                              <img
-                                src={p.image}
-                                alt=""
-                                className="w-10 h-10 rounded-[8px] object-cover flex-shrink-0"
-                              />
-                              <div className="min-w-0">
-                                <p className="text-label-md text-on-surface font-semibold truncate">{p.name}</p>
-                                <p className="text-label-sm text-on-surface-variant">
-                                  ₹{p.basePrice?.toLocaleString()}
-                                </p>
-                              </div>
-                            </button>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                  <IconButton
-                    size="sm"
-                    icon="close"
-                    aria-label="Close search"
-                    onClick={() => { setSearchOpen(false); setSearchQuery(''); setSearchResults([]) }}
+        <div ref={searchRef} className="flex items-center gap-2 ml-auto md:ml-0">
+
+          {/* Unified pill — expands when search is open, highlights border on focus */}
+          <div className={`h-9 flex items-center gap-1 px-2 bg-surface-container-low/70 border rounded-full shadow-inner-sm transition-all duration-200 ${searchOpen ? 'border-primary/40 ring-2 ring-primary/10' : 'border-outline-variant/30'}`}>
+
+            {/* Search icon OR expanded search input + close */}
+            {searchOpen ? (
+              <>
+                <div className="relative flex items-center gap-1 pl-1">
+                  <span
+                    className="material-symbols-outlined text-outline flex-shrink-0"
+                    style={{ fontSize: '17px' }}
+                    aria-hidden="true"
+                  >
+                    search
+                  </span>
+                  <input
+                    id="header-search"
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search seafood…"
+                    aria-label="Search seafood"
+                    autoFocus
+                    className="w-36 sm:w-52 text-[13px] text-on-surface placeholder:text-outline bg-transparent border-none border-0 outline-none ring-0 shadow-none focus:outline-none focus:ring-0 focus:border-none focus:shadow-none h-full leading-none appearance-none"
+                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', boxShadow: 'none' }}
                   />
+                  {/* Dropdown results */}
+                  <AnimatePresence>
+                    {searchResults.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute top-[calc(100%+12px)] left-0 bg-white rounded-[16px] shadow-stat border border-outline-variant/30 overflow-hidden z-50 min-w-[260px]"
+                      >
+                        {searchResults.map((p) => (
+                          <button
+                            key={p.id}
+                            onClick={() => {
+                              navigate(`/product/${p.id}`)
+                              setSearchOpen(false)
+                              setSearchQuery('')
+                              setSearchResults([])
+                            }}
+                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-surface-container-low transition-colors text-left"
+                          >
+                            <img
+                              src={p.image}
+                              alt=""
+                              className="w-10 h-10 rounded-[8px] object-cover flex-shrink-0"
+                            />
+                            <div className="min-w-0">
+                              <p className="text-label-md text-on-surface font-semibold truncate">{p.name}</p>
+                              <p className="text-label-sm text-on-surface-variant">
+                                ₹{p.basePrice?.toLocaleString()}
+                              </p>
+                            </div>
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
-              ) : (
                 <IconButton
                   size="sm"
-                  icon="search"
-                  aria-label="Open search"
-                  onClick={() => setSearchOpen(true)}
+                  icon="close"
+                  aria-label="Close search"
+                  onClick={() => { setSearchOpen(false); setSearchQuery(''); setSearchResults([]) }}
                 />
-              )}
-            </div>
+              </>
+            ) : (
+              <IconButton
+                size="sm"
+                icon="search"
+                aria-label="Open search"
+                onClick={() => setSearchOpen(true)}
+              />
+            )}
+
+            {/* Divider */}
+            <span className="w-px h-4 bg-outline-variant/40 mx-0.5 flex-shrink-0" />
 
             {/* Wishlist */}
             <Link to="/cart" aria-label={`Wishlist, ${wishlistCount} items`}>

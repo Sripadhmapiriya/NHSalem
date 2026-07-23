@@ -178,7 +178,7 @@ router.get('/customers', requireAdmin, asyncHandler(async (req, res) => {
        COUNT(o.id) as orders,
        COALESCE(SUM(o.total), 0) as "totalSpent",
        TO_CHAR(u.created_at, 'YYYY-MM-DD') as "joinedAt",
-       u.status as status,
+       COALESCE(u.status, 'active') as status,
        TO_CHAR(MAX(o.placed_at), 'YYYY-MM-DD') as "lastOrder",
        u.created_at as raw_joined
      FROM users u
@@ -345,7 +345,7 @@ router.get('/customers/:id/orders', requireAdmin, asyncHandler(async (req, res) 
     }
 
     const customerRes = await pool.query(
-      `SELECT u.id::text, u.name, u.email, COALESCE(u.phone, '') as phone, u.status,
+      `SELECT u.id::text, u.name, u.email, COALESCE(u.phone, '') as phone, COALESCE(u.status, 'active') as status,
               TO_CHAR(u.created_at, 'YYYY-MM-DD') as "joinedAt",
               sp.name AS subscription_plan,
               s.status AS subscription_status

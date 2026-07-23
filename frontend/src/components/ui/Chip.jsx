@@ -16,8 +16,10 @@ export default function Chip({
   className = '',
   ...props
 }) {
+  // Before: px-2.5 py-1 rounded-[8px]   → ~23px tall, 8px radius
+  // After:  px-2.5 py-[3px] rounded-full → ~21px tall, full pill
   const base =
-    'inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-label-md transition-all duration-150 cursor-pointer select-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50'
+    'inline-flex items-center gap-1 px-2.5 py-[3px] rounded-full text-[13px] font-semibold leading-none transition-all duration-150 cursor-pointer select-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50'
 
   const variants = {
     filter: selected
@@ -44,7 +46,7 @@ export default function Chip({
       {...props}
     >
       {icon && (
-        <span className="material-symbols-outlined" style={{ fontSize: '16px' }} aria-hidden="true">
+        <span className="material-symbols-outlined" style={{ fontSize: '13px' }} aria-hidden="true">
           {icon}
         </span>
       )}
@@ -53,10 +55,10 @@ export default function Chip({
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); onRemove?.() }}
-          className="w-4 h-4 rounded-full flex items-center justify-center hover:bg-black/10 -mr-1"
+          className="w-3 h-3 rounded-full flex items-center justify-center hover:bg-black/15 ml-0.5 flex-shrink-0"
           aria-label="Remove filter"
         >
-          <span className="material-symbols-outlined" style={{ fontSize: '12px' }} aria-hidden="true">
+          <span className="material-symbols-outlined" style={{ fontSize: '10px' }} aria-hidden="true">
             close
           </span>
         </button>
