@@ -42,8 +42,10 @@ export default function Button({
       'bg-secondary-container text-on-secondary-container hover:bg-secondary-fixed-dim active:scale-[0.97]',
   }
 
-  // Primary always gets circular arrow icon
-  const showArrowIcon = variant === 'primary' && !icon
+  // Primary always gets circular arrow icon unless custom icon passed or variant custom
+  const showArrowIcon = variant === 'primary' && !icon && !className.includes('bg-white')
+
+  const variantClass = className.includes('bg-') ? '' : (variants[variant] || variants.primary)
 
   return (
     <motion.button
@@ -52,7 +54,7 @@ export default function Button({
       onClick={onClick}
       whileTap={{ scale: 0.97 }}
       whileHover={{ filter: variant === 'primary' ? 'brightness(1.15)' : undefined }}
-      className={`${base} ${sizes[size] || sizes.md} ${variants[variant] || variants.primary} ${className}`}
+      className={`${base} ${sizes[size] || sizes.md} ${variantClass} ${className}`}
       {...props}
     >
       {loading ? (

@@ -99,7 +99,7 @@ export default function Layout({ children }) {
         setMobileMenuOpen={setMobileMenuOpen}
       />
 
-      <main className={`flex-1 ${isCartBarVisible ? 'pb-20' : ''}`} id="main-content" tabIndex={-1}>
+      <main className={`flex-1 w-full ${isCartBarVisible ? 'pb-20' : ''}`} id="main-content" tabIndex={-1}>
         <motion.div
           key={typeof window !== 'undefined' ? window.location.pathname : 'page'}
           variants={pageVariants}
@@ -107,6 +107,7 @@ export default function Layout({ children }) {
           animate="animate"
           exit="exit"
           transition={{ duration: 0.2, ease: 'easeOut' }}
+          className="w-full flex flex-col"
         >
           {children}
         </motion.div>

@@ -113,7 +113,7 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
         style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
       >
 
-      <div className="max-w-7xl mx-auto px-4 flex items-center justify-between gap-2 xl:gap-4 h-12 md:h-14">
+      <div className="container-max flex items-center justify-between gap-2 xl:gap-4 h-12 md:h-14">
         {/* Logo */}
         <Link
           to="/"

@@ -256,7 +256,25 @@ export async function registerUser({ name, email, phone, password }) {
   }
 }
 
-// ── Reviews (for Products Detail Page) ──────────────────────────────────────────
+// ── Reviews ───────────────────────────────────────────────────────────────────
+
+export async function getApprovedSiteReviews() {
+  try {
+    const response = await fetch(`${API_URL}/api/reviews`)
+    return await handleResponse(response)
+  } catch (e) {
+    return { success: false, reviews: [] }
+  }
+}
+
+export async function submitSiteReview(reviewData) {
+  const response = await fetch(`${API_URL}/api/reviews`, {
+    method: 'POST',
+    headers: getHeaders(false),
+    body: JSON.stringify(reviewData)
+  })
+  return handleResponse(response)
+}
 
 export async function getReviewsForProduct(productId) {
   const response = await fetch(`${API_URL}/api/products/${productId}/reviews`)

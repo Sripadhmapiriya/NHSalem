@@ -183,6 +183,40 @@ router.get('/products/:idOrSlug', asyncHandler(async (req, res) => {
   res.json(formatProduct(result.rows[0]))
 }))
 
+// ── GET /api/reviews (Public approved site/homepage reviews) ─────────────────────
+router.get('/reviews', asyncHandler(async (req, res) => {
+  const result = await pool.query(
+    "SELECT id, user_name as author, title as role, rating, comment as quote, created_at as date FROM reviews WHERE status = 'approved' ORDER BY created_at DESC LIMIT 10"
+  )
+  res.json({ success: true, reviews: result.rows })
+}))
+
+// ── POST /api/reviews (Submit site review - default status 'pending') ───────────
+router.post('/reviews', asyncHandler(async (req, res) => {
+  const { author, role, rating, comment, productId } = req.body
+
+  if (!author || !rating || !comment) {
+    return res.status(400).json({ success: false, message: 'Author name, rating, and review text are required.' })
+  }
+
+  // Use product_id if provided, or default to first product in DB
+  let pId = productId
+  if (!pId) {
+    const firstProd = await pool.query('SELECT id FROM products LIMIT 1')
+    if (firstProd.rows.length > 0) pId = firstProd.rows[0].id
+  }
+
+  await pool.query(
+    'INSERT INTO reviews (product_id, user_name, rating, title, comment, status) VALUES ($1, $2, $3, $4, $5, $6)',
+    [pId, author, Number(rating), role || 'Verified Customer', comment, 'pending']
+  )
+
+  res.status(201).json({
+    success: true,
+    message: 'Thanks! Your review is being reviewed and will appear once approved.'
+  })
+}))
+
 // ── GET /api/products/:id/reviews ─────────────────────────────────────────────
 router.get('/products/:id/reviews', asyncHandler(async (req, res) => {
   const { id } = req.params
@@ -206,23 +240,11 @@ router.post('/products/:id/reviews', requireUser, asyncHandler(async (req, res) 
   }
 
   await pool.query(
-    'INSERT INTO reviews (product_id, user_id, user_name, rating, title, comment) VALUES ($1, $2, $3, $4, $5, $6)',
-    [id, req.user.id, req.user.name, rating, title, comment]
+    'INSERT INTO reviews (product_id, user_id, user_name, rating, title, comment, status) VALUES ($1, $2, $3, $4, $5, $6)',
+    [id, req.user.id, req.user.name, rating, title, comment, 'pending']
   )
 
-  const statsRes = await pool.query(
-    "SELECT AVG(rating) as rating, COUNT(*) as count FROM reviews WHERE product_id = $1 AND status = 'approved'",
-    [id]
-  )
-  const avgRating = Number(Number(statsRes.rows[0].rating || 0).toFixed(1))
-  const reviewCount = Number(statsRes.rows[0].count)
-
-  await pool.query(
-    'UPDATE products SET rating = $1, review_count = $2 WHERE id = $3',
-    [avgRating, reviewCount, id]
-  )
-
-  res.status(201).json({ success: true, message: 'Review added successfully' })
+  res.status(201).json({ success: true, message: 'Thanks! Your review is being reviewed and will appear once approved.' })
 }))
 
 // ── Admin Endpoints ──
