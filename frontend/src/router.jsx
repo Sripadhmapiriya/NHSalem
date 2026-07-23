@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import Layout from '@/components/layout/Layout'
 import { SeafoodLoader } from '@/components/ui'
@@ -11,7 +11,6 @@ const ProductDetail = lazy(() => import('@/pages/ProductDetail'))
 const Cart         = lazy(() => import('@/pages/Cart'))
 const Checkout     = lazy(() => import('@/pages/Checkout'))
 const Login        = lazy(() => import('@/pages/Login'))
-const About        = lazy(() => import('@/pages/About'))
 const OrderTracking = lazy(() => import('@/pages/OrderTracking'))
 const Quality      = lazy(() => import('@/pages/Quality'))
 const StoreLocator = lazy(() => import('@/pages/StoreLocator'))
@@ -70,7 +69,9 @@ function RootRoutes() {
         <Routes>
           {/* Core */}
           <Route path="/" element={<Home />} />
+          <Route path="/category" element={<CategoryListing />} />
           <Route path="/category/:categorySlug" element={<CategoryListing />} />
+          <Route path="/shop" element={<CategoryListing />} />
           <Route path="/product/:productId" element={<ProductDetail />} />
 
           {/* Cart & Checkout */}
@@ -83,7 +84,6 @@ function RootRoutes() {
           <Route path="/my-orders/:orderRef" element={<ProtectedRoute><OrderDetail /></ProtectedRoute>} />
 
           {/* Content pages */}
-          <Route path="/about" element={<About />} />
           <Route path="/quality" element={<Quality />} />
 
           {/* Operational */}
@@ -102,9 +102,26 @@ function RootRoutes() {
   )
 }
 
+/**
+ * ScrollToTop - Resets scroll position to (0,0) on route/pathname change
+ * Ignores same-page hash navigation (e.g. #about, #contact)
+ */
+function ScrollToTop() {
+  const { pathname, hash } = useLocation()
+
+  useEffect(() => {
+    if (!hash) {
+      window.scrollTo(0, 0)
+    }
+  }, [pathname, hash])
+
+  return null
+}
+
 export default function AppRouter() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <RootRoutes />
     </BrowserRouter>
   )

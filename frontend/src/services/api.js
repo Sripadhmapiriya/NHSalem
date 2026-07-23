@@ -214,6 +214,15 @@ export async function loginWithPhone(phone, password) {
   }
 }
 
+export async function subscribeNewsletter(email) {
+  const response = await fetch(`${API_URL}/api/newsletter/subscribe`, {
+    method: 'POST',
+    headers: getHeaders(false),
+    body: JSON.stringify({ email })
+  })
+  return handleResponse(response)
+}
+
 export async function registerUser({ name, email, phone, password }) {
   try {
     const response = await fetch(`${API_URL}/api/auth/register`, {

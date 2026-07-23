@@ -9,12 +9,10 @@ import useDebounce from '@/hooks/useDebounce'
 import { getProducts } from '@/services/api'
 
 const NAV_LINKS = [
-  { label: 'Fish', slug: 'fish', emoji: '🐟' },
-  { label: 'Prawns', slug: 'prawns-shrimp', emoji: '🍤' },
-  { label: 'Crabs', slug: 'crabs', emoji: '🦀' },
-  { label: 'Lobster', slug: 'lobster', emoji: '🦞' },
-  { label: 'Dried Fish', slug: 'dried-fish', emoji: '🧂' },
-  { label: 'Combos', slug: 'combos', emoji: '🍱' },
+  { label: 'Home', sectionId: 'hero', path: '/' },
+  { label: 'Category', path: '/category' },
+  { label: 'About', sectionId: 'about', path: '/#about' },
+  { label: 'Contact', sectionId: 'contact', path: '/#contact' },
 ]
 
 /**
@@ -39,6 +37,34 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
   // Profile dropdown state
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
   const profileDropdownRef = useRef(null)
+
+  const handleNavClick = (e, link) => {
+    if (link.sectionId) {
+      e.preventDefault()
+      if (window.location.pathname === '/') {
+        if (link.sectionId === 'hero') {
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+        } else {
+          const el = document.getElementById(link.sectionId)
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth' })
+          }
+        }
+      } else {
+        navigate('/')
+        setTimeout(() => {
+          if (link.sectionId === 'hero') {
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+          } else {
+            const el = document.getElementById(link.sectionId)
+            if (el) {
+              el.scrollIntoView({ behavior: 'smooth' })
+            }
+          }
+        }, 150)
+      }
+    }
+  }
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -113,10 +139,11 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
         style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
       >
 
-      <div className="container-max flex items-center justify-between gap-2 xl:gap-4 h-12 md:h-14">
+      <div className="container-max flex items-center justify-between gap-2 xl:gap-6 h-14 md:h-16">
         {/* Logo */}
         <Link
           to="/"
+          onClick={(e) => handleNavClick(e, { sectionId: 'hero' })}
           className="flex items-center gap-3 flex-shrink-0 select-none hover:opacity-95 transition-opacity"
           aria-label="NH Salem Sea Foods — Home"
         >
@@ -137,23 +164,24 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
 
         {/* Desktop Nav */}
         <nav
-          className="hidden xl:flex items-center gap-1 px-2 py-1 bg-surface-container-low/60 border border-outline-variant/40 rounded-full shadow-inner-sm"
-          aria-label="Product categories"
+          className="hidden xl:flex items-center gap-6 px-4 py-1.5"
+          aria-label="Main navigation"
         >
           {NAV_LINKS.map((link) => (
             <NavLink
-              key={link.slug}
-              to={`/category/${link.slug}`}
+              key={link.label}
+              to={link.path}
+              onClick={(e) => handleNavClick(e, link)}
+              end={link.path === '/'}
               className={({ isActive }) =>
-                `px-1.5 xl:px-2.5 py-1 rounded-full text-xs xl:text-sm font-bold transition-all duration-250 flex items-center gap-1 flex-shrink-0 whitespace-nowrap ${
-                  isActive
-                    ? 'bg-gradient-to-r from-primary to-blue-700 text-white shadow-sm shadow-primary/25 scale-[1.02]'
-                    : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-low'
+                `text-sm font-medium tracking-wide transition-all duration-200 relative py-1 flex items-center ${
+                  isActive && !link.sectionId
+                    ? 'text-primary font-semibold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-primary after:rounded-full'
+                    : 'text-on-surface-variant hover:text-primary hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:right-0 hover:after:h-[2px] hover:after:bg-primary/40 hover:after:rounded-full'
                 }`
               }
             >
-              <span className="text-[12px] xl:text-[14px] leading-none flex-shrink-0 hidden xl:inline">{link.emoji}</span>
-              <span>{link.label}</span>
+              {link.label}
             </NavLink>
           ))}
         </nav>
@@ -393,17 +421,21 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
               <nav className="flex-1 overflow-y-auto p-4 flex flex-col gap-1" aria-label="Mobile navigation">
                 {NAV_LINKS.map((link) => (
                   <NavLink
-                    key={link.slug}
-                    to={`/category/${link.slug}`}
-                    onClick={() => setMobileMenuOpen(false)}
+                    key={link.label}
+                    to={link.path}
+                    end={link.path === '/'}
+                    onClick={(e) => {
+                      setMobileMenuOpen(false)
+                      handleNavClick(e, link)
+                    }}
                     className={({ isActive }) =>
-                      `px-4 py-3 rounded-[12px] text-body-md font-semibold transition-colors flex items-center gap-2 ${
-                        isActive ? 'bg-primary text-on-primary' : 'text-on-surface hover:bg-surface-container'
+                      `px-4 py-3 rounded-[12px] text-body-md font-semibold transition-colors flex items-center justify-between min-h-[44px] ${
+                        isActive && !link.sectionId ? 'bg-primary text-on-primary' : 'text-on-surface hover:bg-surface-container'
                       }`
                     }
                   >
-                    <span className="text-[16px]">{link.emoji}</span>
                     <span>{link.label}</span>
+                    <span className="material-symbols-outlined text-[18px] opacity-60">chevron_right</span>
                   </NavLink>
                 ))}
                 
@@ -413,18 +445,20 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
                       setMobileMenuOpen(false)
                       setTrackModalOpen(true)
                     }}
-                    className="px-4 py-2.5 rounded-[12px] text-label-md text-on-surface-variant hover:bg-surface-container transition-colors flex items-center gap-2.5 text-left w-full cursor-pointer select-none"
+                    className="px-4 py-3 rounded-[12px] text-body-md font-semibold text-on-surface hover:bg-surface-container transition-colors flex items-center justify-between text-left w-full cursor-pointer select-none min-h-[44px]"
                   >
-                    <span className="material-symbols-outlined text-primary font-bold" style={{ fontSize: '18px' }}>
-                      radar
+                    <span className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-primary font-bold" style={{ fontSize: '18px' }}>
+                        radar
+                      </span>
+                      Track Order
                     </span>
-                    Track Order
+                    <span className="material-symbols-outlined text-[18px] opacity-60">chevron_right</span>
                   </button>
-                  <NavLink to="/about" onClick={() => setMobileMenuOpen(false)} className="px-4 py-2.5 rounded-[12px] text-label-md text-on-surface-variant hover:bg-surface-container transition-colors">About Us</NavLink>
-                  <NavLink to="/quality" onClick={() => setMobileMenuOpen(false)} className="px-4 py-2.5 rounded-[12px] text-label-md text-on-surface-variant hover:bg-surface-container transition-colors">Quality Promise</NavLink>
-                  <NavLink to="/stores" onClick={() => setMobileMenuOpen(false)} className="px-4 py-2.5 rounded-[12px] text-label-md text-on-surface-variant hover:bg-surface-container transition-colors">Store Locator</NavLink>
-                  <NavLink to="/bulk-orders" onClick={() => setMobileMenuOpen(false)} className="px-4 py-2.5 rounded-[12px] text-label-md text-on-surface-variant hover:bg-surface-container transition-colors">B2B / Bulk</NavLink>
-                  <NavLink to="/help" onClick={() => setMobileMenuOpen(false)} className="px-4 py-2.5 rounded-[12px] text-label-md text-on-surface-variant hover:bg-surface-container transition-colors">Help Center</NavLink>
+
+                  <NavLink to="/quality" onClick={() => setMobileMenuOpen(false)} className="px-4 py-2.5 rounded-[12px] text-label-md text-on-surface-variant hover:bg-surface-container transition-colors min-h-[44px] flex items-center">Quality Promise</NavLink>
+                  <NavLink to="/stores" onClick={() => setMobileMenuOpen(false)} className="px-4 py-2.5 rounded-[12px] text-label-md text-on-surface-variant hover:bg-surface-container transition-colors min-h-[44px] flex items-center">Store Locator</NavLink>
+                  <NavLink to="/bulk-orders" onClick={() => setMobileMenuOpen(false)} className="px-4 py-2.5 rounded-[12px] text-label-md text-on-surface-variant hover:bg-surface-container transition-colors min-h-[44px] flex items-center">B2B / Bulk</NavLink>
                 </div>
 
                 {/* Login option kept inside the sidebar */}

@@ -252,47 +252,8 @@ async function runSeed() {
       )
     }
 
-    // 10. Seed Reviews
-    console.log('Seeding reviews...')
-    for (const rv of ADMIN_REVIEWS) {
-      // Find matching product UUID
-      // Some mock products might have different names, let's find by name or match slugs
-      // Let's do a basic mapping
-      let productUuid = null
-      if (rv.product === 'Jumbo Tiger Prawns') {
-        productUuid = productMap['jumbo-tiger-prawns']
-      } else if (rv.product === 'Premium Atlantic Salmon') {
-        productUuid = productMap['premium-atlantic-salmon']
-      } else if (rv.product === 'Blue Swimmer Crab') {
-        productUuid = productMap['blue-swimmer-crab']
-      } else if (rv.product === 'Silver Pomfret') {
-        productUuid = productMap['silver-pomfret']
-      } else if (rv.product === 'Premium Seer Fish (Vanjaram)') {
-        productUuid = productMap['seer-fish-vanjaram']
-      } else {
-        // fall back to first product or skip
-        productUuid = Object.values(productMap)[0]
-      }
-
-      const userUuid = userMap[rv.author === 'Anjali Sharma' ? 'anjali@example.com' : rv.author === 'Karthik Rajan' ? 'karthik@example.com' : 'user@nhsalem.com']
-
-      if (productUuid) {
-        await client.query(
-          `INSERT INTO reviews (product_id, user_id, user_name, rating, title, comment, status, created_at)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-          [
-            productUuid,
-            userUuid || null,
-            rv.author,
-            rv.rating,
-            rv.title,
-            rv.body,
-            rv.status === 'published' ? 'approved' : rv.status === 'flagged' ? 'rejected' : 'pending',
-            rv.date ? new Date(rv.date) : new Date()
-          ]
-        )
-      }
-    }
+    // 10. Reviews - Handled purely dynamically via user submissions and admin approval in database
+    console.log('Skipping review seeding (reviews are user-generated and admin-approved).')
 
     // 11. Seed Wholesale Inquiries
     console.log('Seeding wholesale inquiries...')

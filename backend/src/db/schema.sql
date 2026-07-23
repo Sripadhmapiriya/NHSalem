@@ -198,7 +198,14 @@ CREATE TABLE IF NOT EXISTS faqs (
 );
 
 
--- 18. City Launch Notifications Table
+-- 18. Newsletter Subscribers Table
+CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email VARCHAR(255) UNIQUE NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 19. City Launch Notifications Table
 CREATE TABLE IF NOT EXISTS city_notifications (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email VARCHAR(255) NOT NULL,

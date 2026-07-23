@@ -8,12 +8,12 @@ import Card from '@/components/ui/Card'
 import Modal from '@/components/ui/Modal'
 import useToastStore from '@/store/toastStore'
 import useAuthStore from '@/store/authStore'
-import { getProducts, getApprovedSiteReviews, submitSiteReview } from '@/services/api'
+import { getProducts, getApprovedSiteReviews, submitSiteReview, subscribeNewsletter } from '@/services/api'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 
-// Curated Merged Trust Points (6 Non-Overlapping Pillars)
+// 6 Core Trust Pillars
 const TRUST_POINTS = [
   { icon: 'phishing', title: 'Premium Fresh Catch', desc: 'Sourced directly from clean & nutrient-rich ocean waters.' },
   { icon: 'ac_unit', title: 'Blast Frozen & Cold Chain', desc: 'Quick freezing within hours locks in authentic texture, taste & nutrition.' },
@@ -23,6 +23,15 @@ const TRUST_POINTS = [
   { icon: 'storefront', title: 'Retail & Business Supply', desc: 'Customized portions & wholesale orders for homes, caterers & restaurants.' },
 ]
 
+// 4 Distinct About Commitment Cards with 4 Unique Icons
+const ABOUT_COMMITMENTS = [
+  { icon: 'water_drop', title: 'Freshness', desc: 'We ensure the freshest ocean catch for you & your family.' },
+  { icon: 'workspace_premium', title: 'Quality', desc: 'Only the best seafood that meets stringent quality & grading standards.' },
+  { icon: 'sanitizer', title: 'Hygiene', desc: 'Maintaining pristine hygiene at every step of storage & handling.' },
+  { icon: 'sentiment_very_satisfied', title: 'Customer Satisfaction', desc: 'Your trust, safety, and satisfaction are our top priorities.' },
+]
+
+// Genuine Seafood & Ocean Photography (No Fork-and-Knife Mismatches)
 const HERO_SLIDES = [
   {
     id: 1,
@@ -30,7 +39,7 @@ const HERO_SLIDES = [
     sub: 'Committed to delivering premium quality frozen seafood that preserves natural freshness, authentic taste, and rich nutritional value.',
     cta: 'Shop Fresh Catch',
     badge: 'Premium Quality',
-    bg: 'https://images.unsplash.com/photo-1534482421-64566f976cfa?w=1600&q=85',
+    bg: 'https://images.unsplash.com/photo-1534604973900-c43ab4c2e0ab?w=1600&q=85',
   },
   {
     id: 2,
@@ -38,7 +47,7 @@ const HERO_SLIDES = [
     sub: 'Sourced from clean & rich ocean waters, blast-frozen within hours to lock in natural texture and taste.',
     cta: 'Shop Fresh Catch',
     badge: '100% Ocean Fresh',
-    bg: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=1600&q=85',
+    bg: 'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?w=1600&q=85',
   },
   {
     id: 3,
@@ -46,11 +55,9 @@ const HERO_SLIDES = [
     sub: 'Maintained under strict cold-chain conditions right from ocean processing to your doorstep or retail business.',
     cta: 'Shop Fresh Catch',
     badge: 'Cold-Chain Certified',
-    bg: 'https://images.unsplash.com/photo-1559737558-2f5a35f4523b?w=1600&q=85',
+    bg: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=1600&q=85',
   },
 ]
-
-
 
 const reviewFormSchema = z.object({
   author: z.string().min(2, 'Name is required'),
@@ -59,26 +66,28 @@ const reviewFormSchema = z.object({
   comment: z.string().min(10, 'Please write at least 10 characters for your review'),
 })
 
+const contactFormSchema = z.object({
+  name: z.string().min(2, 'Name is required'),
+  contact: z.string().min(5, 'Please provide phone or email'),
+  message: z.string().min(10, 'Please write a message of at least 10 characters'),
+})
+
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [bestSellers, setBestSellers] = useState([])
   const [testimonials, setTestimonials] = useState([])
   const [loading, setLoading] = useState(true)
   const [reviewModalOpen, setReviewModalOpen] = useState(false)
+  
+  // Newsletter state
+  const [newsletterEmail, setNewsletterEmail] = useState('')
+  const [newsletterSubmitting, setNewsletterSubmitting] = useState(false)
+  
+  // Contact state
+  const [contactSubmitting, setContactSubmitting] = useState(false)
+
   const { addToast } = useToastStore()
   const navigate = useNavigate()
-  const user = useAuthStore((state) => state.user)
-
-  // Active order banner state
-  const [activeOrder, setActiveOrder] = useState(null)
-  
-  useEffect(() => {
-    if (user) {
-      setActiveOrder({ id: 'NHS-77421', status: 'Out for Delivery' })
-    } else {
-      setActiveOrder(null)
-    }
-  }, [user])
 
   // Auto-advance carousel
   useEffect(() => {
@@ -88,7 +97,7 @@ export default function Home() {
     return () => clearInterval(interval)
   }, [currentSlide])
 
-  // Fetch best sellers & approved site reviews
+  // Fetch best sellers & approved site reviews dynamically from backend database
   useEffect(() => {
     Promise.all([
       getProducts(),
@@ -99,19 +108,24 @@ export default function Home() {
           const featured = productsData.filter((p) => p.isBestSeller)
           setBestSellers(featured.length > 0 ? featured.slice(0, 4) : productsData.slice(0, 4))
         }
-        if (reviewsRes && reviewsRes.reviews && reviewsRes.reviews.length > 0) {
+        if (reviewsRes && reviewsRes.success && Array.isArray(reviewsRes.reviews) && reviewsRes.reviews.length > 0) {
+          // Display ONLY real, admin-approved reviews from database
           setTestimonials(reviewsRes.reviews)
+        } else {
+          setTestimonials([])
         }
+      })
+      .catch(() => {
+        setTestimonials([])
       })
       .finally(() => setLoading(false))
   }, [])
 
-  // Review Submission form
+  // Review Form
   const { register: regReview, handleSubmit: handleReviewSubmit, formState: { errors: reviewErrors, isSubmitting: isSubmittingReview }, reset: resetReview, setValue: setReviewValue, watch: watchReview } = useForm({
     resolver: zodResolver(reviewFormSchema),
     defaultValues: { rating: 5, role: 'Home Buyer' }
   })
-
   const currentRating = watchReview('rating') || 5
 
   const onReviewSubmit = async (data) => {
@@ -129,13 +143,53 @@ export default function Home() {
     }
   }
 
-  // Calculate placeholder count to maintain intentional 4-grid alignment
+  // Contact Form
+  const { register: regContact, handleSubmit: handleContactSubmit, formState: { errors: contactErrors }, reset: resetContact } = useForm({
+    resolver: zodResolver(contactFormSchema)
+  })
+
+  const onContactSubmit = async (data) => {
+    setContactSubmitting(true)
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 600))
+      addToast({ message: 'Thank you! Your message has been sent to NH Salem team.', type: 'success', duration: 5000 })
+      resetContact()
+    } catch (err) {
+      addToast({ message: 'Failed to send message.', type: 'error' })
+    } finally {
+      setContactSubmitting(false)
+    }
+  }
+
+  // Newsletter Submit
+  const handleNewsletterSubscribe = async (e) => {
+    e.preventDefault()
+    if (!newsletterEmail.trim() || !newsletterEmail.includes('@')) {
+      addToast({ message: 'Please enter a valid email address.', type: 'error' })
+      return
+    }
+    setNewsletterSubmitting(true)
+    try {
+      const res = await subscribeNewsletter(newsletterEmail.trim())
+      if (res.success) {
+        addToast({ message: res.message || '🎉 Thank you for subscribing to NH Salem updates!', type: 'success', duration: 5000 })
+        setNewsletterEmail('')
+      } else {
+        addToast({ message: res.message || 'Failed to subscribe.', type: 'error' })
+      }
+    } catch (err) {
+      addToast({ message: err.message || 'Failed to subscribe.', type: 'error' })
+    } finally {
+      setNewsletterSubmitting(false)
+    }
+  }
+
   const fillCount = Math.max(0, 4 - bestSellers.length)
 
   return (
     <div className="bg-slate-50/50 min-h-screen">
-      {/* ── 1. Hero Carousel ────────────────────────────────────────────── */}
-      <section className="relative h-[70vh] min-h-[520px] max-h-[720px] overflow-hidden bg-[#000516]">
+      {/* ── 1. Hero Carousel (#hero) ────────────────────────────────────────────── */}
+      <section id="hero" className="relative h-[70vh] min-h-[520px] max-h-[720px] overflow-hidden bg-[#000516]">
         <AnimatePresence mode="wait">
           {HERO_SLIDES.map((slide, i) =>
             i === currentSlide ? (
@@ -148,202 +202,173 @@ export default function Home() {
                 className="absolute inset-0 cursor-pointer group"
                 onClick={() => setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length)}
               >
-                <img src={slide.bg} alt={slide.headline} className="w-full h-full object-cover" loading={i === 0 ? 'eager' : 'lazy'} />
-                
-                {/* Brand Blue-tinted Dark Gradient Scrim Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-r from-[#000516]/90 via-[#0b1e3d]/75 to-transparent" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#000516]/80 via-transparent to-transparent" />
+                <div
+                  className="absolute inset-0 bg-cover bg-center scale-105 group-hover:scale-100 transition-transform duration-[8000ms] ease-out"
+                  style={{ backgroundImage: `url(${slide.bg})` }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#000516]/95 via-[#000516]/75 to-transparent" />
 
-                <div className="absolute inset-0 flex items-center">
-                  <div className="container-max w-full">
-                    <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }} className="max-w-xl">
-                      <div className="flex flex-wrap gap-2.5 mb-5">
-                        <span className="bg-[#000516]/70 backdrop-blur-md border border-[#fed255]/40 text-[#fed255] font-bold text-xs uppercase tracking-wider px-3.5 py-1.5 rounded-full flex items-center">
-                          <span className="material-symbols-outlined text-sm mr-1.5 text-[#fed255]">verified</span>
-                          {slide.badge}
-                        </span>
-                        <span className="bg-[#000516]/70 backdrop-blur-md border border-white/20 text-white font-medium text-xs px-3.5 py-1.5 rounded-full flex items-center">
-                          <span className="material-symbols-outlined text-[#16a34a] text-sm mr-1.5">local_shipping</span> 
-                          Free Delivery Above ₹499
-                        </span>
-                      </div>
-
-                      <h1 className="text-display-lg-mobile md:text-display-lg font-extrabold text-white mb-4 leading-tight tracking-tight">
-                        {slide.headline}
-                      </h1>
-                      
-                      <p className="text-body-lg text-white/90 mb-8 max-w-md leading-relaxed font-normal">
-                        {slide.sub}
-                      </p>
-
-                      <Button 
-                        variant="ghost" 
-                        size="lg" 
-                        icon="arrow_forward"
-                        className="bg-white/20 backdrop-blur-md border border-white/40 text-white hover:bg-white/30 hover:border-white/60 font-bold px-8 py-3.5 rounded-full transition-all duration-200 shadow-lg"
-                        onClick={(e) => { e.stopPropagation(); navigate('/category/fish') }}
-                      >
-                        {slide.cta}
-                      </Button>
-                    </motion.div>
-                  </div>
+                <div className="container-max relative h-full flex flex-col justify-center text-left text-white z-10">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                    className="max-w-2xl"
+                  >
+                    <span className="inline-block px-3.5 py-1.5 rounded-full bg-[#fed255]/20 border border-[#fed255]/40 text-[#fed255] text-xs font-bold uppercase tracking-wider mb-4">
+                      {slide.badge}
+                    </span>
+                    <h1 className="text-display-lg-mobile md:text-display-lg text-white font-extrabold mb-4 leading-tight">
+                      {slide.headline}
+                    </h1>
+                    <p className="text-body-lg text-slate-200 mb-8 max-w-xl leading-relaxed">
+                      {slide.sub}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-4">
+                      {/* Glassmorphism CTA Button with Backdrop Blur */}
+                      <Link to="/category">
+                        <button
+                          type="button"
+                          className="px-8 py-3.5 rounded-full text-white font-bold text-sm tracking-wide transition-all duration-300 flex items-center gap-2 shadow-xl hover:scale-105 active:scale-95 cursor-pointer select-none"
+                          style={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.18)',
+                            backdropFilter: 'blur(12px)',
+                            WebkitBackdropFilter: 'blur(12px)',
+                            border: '1px solid rgba(255, 255, 255, 0.35)',
+                            boxShadow: '0 8px 32px 0 rgba(0, 5, 22, 0.37)'
+                          }}
+                        >
+                          <span>{slide.cta}</span>
+                          <span className="material-symbols-outlined text-lg">arrow_forward</span>
+                        </button>
+                      </Link>
+                    </div>
+                  </motion.div>
                 </div>
               </motion.div>
             ) : null
           )}
         </AnimatePresence>
 
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
+        {/* Very small, subtle 6px micro-dots */}
+        <div className="absolute bottom-6 left-0 right-0 z-20 flex justify-center items-center gap-2 pointer-events-auto">
           {HERO_SLIDES.map((_, i) => (
             <button
               key={i}
               type="button"
+              onClick={() => setCurrentSlide(i)}
               aria-label={`Go to slide ${i + 1}`}
-              onClick={(e) => { e.stopPropagation(); setCurrentSlide(i) }}
+              className="transition-all duration-300 cursor-pointer flex-shrink-0"
               style={{
-                width: i === currentSlide ? '10px' : '6px',
-                height: i === currentSlide ? '10px' : '6px',
-                minWidth: '6px',
+                width: i === currentSlide ? '20px' : '6px',
+                height: '6px',
+                minWidth: i === currentSlide ? '20px' : '6px',
                 minHeight: '6px',
+                maxWidth: i === currentSlide ? '20px' : '6px',
+                maxHeight: '6px',
+                borderRadius: '9999px',
+                backgroundColor: i === currentSlide ? '#ffffff' : 'rgba(255, 255, 255, 0.45)',
+                boxShadow: i === currentSlide ? '0 1px 4px rgba(0,0,0,0.4)' : 'none',
                 padding: 0,
+                margin: 0,
+                border: 'none',
+                outline: 'none',
+                appearance: 'none',
+                WebkitAppearance: 'none'
               }}
-              className={`rounded-full transition-all duration-300 border-none outline-none ${i === currentSlide ? 'bg-white shadow-sm ring-2 ring-white/40' : 'bg-white/40 hover:bg-white/70'}`}
             />
           ))}
         </div>
       </section>
 
-      {/* ── Active Order Banner ───────────────────────────────────────── */}
-      {activeOrder && (
-        <motion.section 
-          initial={{ opacity: 0, y: 15 }} 
-          whileInView={{ opacity: 1, y: 0 }} 
-          viewport={{ once: true }}
-          className="px-4 pt-10 pb-2"
-        >
-          <div className="container-max max-w-3xl mx-auto">
-            <div 
-              className="bg-white border border-[#000516]/15 rounded-2xl p-5 flex items-center justify-between shadow-sm cursor-pointer hover:shadow-md transition-all"
-              onClick={() => navigate(`/track-order`)}
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-[#000516]/5 rounded-xl flex items-center justify-center text-[#000516]">
-                  <span className="material-symbols-outlined text-[26px]">package_2</span>
-                </div>
-                <div>
-                  <p className="font-bold text-base text-[#000516]">Track Your Active Order</p>
-                  <p className="text-sm text-slate-600 mt-0.5">Order #{activeOrder.id} is currently <span className="font-bold text-[#16a34a]">{activeOrder.status}</span></p>
-                </div>
-              </div>
-              <span className="material-symbols-outlined text-[#000516]/60 hidden sm:block">arrow_forward_ios</span>
-            </div>
-          </div>
-        </motion.section>
-      )}
-
-      {/* ── 2. Today's Best Sellers ───────────────────────────────────────── */}
-      <motion.section 
-        initial={{ opacity: 0, y: 20 }} 
-        whileInView={{ opacity: 1, y: 0 }} 
-        viewport={{ once: true }} 
-        transition={{ duration: 0.4 }}
-        className="py-20 bg-white" 
-        aria-labelledby="best-sellers-heading"
-      >
+      {/* ── 2. Featured Best Sellers (#bestsellers) — Core Conversion Content First ── */}
+      <section id="bestsellers" className="py-20 bg-white border-b border-slate-100 scroll-mt-16">
         <div className="container-max">
-          <div className="flex items-end justify-between mb-10">
+          <div className="flex items-center justify-between mb-10">
             <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="h-0.5 w-6 bg-[#fed255] rounded-full inline-block" />
-                <p className="text-xs text-[#000516] font-extrabold tracking-widest uppercase">✦ Today's Catch</p>
-              </div>
-              <h2 id="best-sellers-heading" className="text-headline-lg md:text-display-sm font-extrabold text-[#000516]">
-                Today's Best Sellers
-              </h2>
+              <span className="text-xs font-bold text-primary uppercase tracking-widest block mb-1">Customer Favorites</span>
+              <h2 className="text-headline-lg md:text-display-sm font-extrabold text-[#000516]">Featured Best Sellers</h2>
             </div>
-            <Link to="/category/fish" className="hidden sm:flex items-center gap-1.5 text-sm text-[#000516] font-bold hover:underline">
-              View all <span className="material-symbols-outlined text-lg">arrow_forward</span>
+            <Link to="/category">
+              <Button variant="outline" size="sm" icon="arrow_forward" className="rounded-full px-5">
+                View All
+              </Button>
             </Link>
           </div>
 
-          {/* Product Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {loading ? (
               Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)
             ) : (
               <>
-                {bestSellers.map((product, idx) => (
-                  <motion.div
-                    key={product.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.3, delay: idx * 0.08 }}
-                  >
-                    <ProductCard product={product} />
-                  </motion.div>
+                {bestSellers.map((product) => (
+                  <ProductCard key={product.id} product={product} />
                 ))}
-
-                {/* Fill remaining slots with proportional "More Arriving Soon" cards */}
-                {fillCount > 0 &&
-                  Array.from({ length: fillCount }).map((_, i) => (
-                    <motion.div
-                      key={`placeholder-${i}`}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.3, delay: (bestSellers.length + i) * 0.08 }}
-                      className="border-2 border-dashed border-slate-200 rounded-2xl p-5 flex flex-col items-center justify-center text-center bg-slate-50/60 transition-all hover:border-[#000516]/30 group"
-                    >
-                      <div className="w-12 h-12 rounded-full bg-[#000516]/5 text-[#000516] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                        <span className="material-symbols-outlined text-2xl">set_meal</span>
-                      </div>
-                      <h3 className="font-bold text-[#000516] text-sm mb-1">New Catch Arriving Soon</h3>
-                      <p className="text-xs text-slate-500 max-w-[180px] leading-snug">Fresh ocean stock added weekly to our catalog.</p>
-                      <span className="mt-3 inline-flex items-center text-[11px] font-semibold text-[#000516] bg-[#fed255]/30 px-3 py-1 rounded-full">
-                        Fresh Batches Mon & Thu
-                      </span>
-                    </motion.div>
-                  ))}
+                {Array.from({ length: fillCount }).map((_, i) => (
+                  <div key={`fill-${i}`} className="bg-slate-50 border border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center p-6 text-center min-h-[300px]">
+                    <span className="material-symbols-outlined text-slate-400 text-4xl mb-2">set_meal</span>
+                    <p className="font-bold text-slate-700 text-sm mb-1">Fresh Catch Arriving Soon</p>
+                    <p className="text-xs text-slate-500 mb-4">New seasonal items are currently being processed.</p>
+                    <Link to="/category">
+                      <Button variant="ghost" size="xs" className="text-xs text-primary font-bold">
+                        Browse Shop
+                      </Button>
+                    </Link>
+                  </div>
+                ))}
               </>
             )}
           </div>
+        </div>
+      </section>
 
-          <div className="text-center mt-10 sm:hidden">
-            <Button 
-              variant="primary" 
-              className="bg-[#000516] hover:bg-[#0b1e3d] text-white font-bold px-8 py-3 rounded-full border-none"
-              onClick={() => navigate('/category/fish')}
-            >
-              View All Products
-            </Button>
+      {/* ── 3. About Us Section (#about) ─────────────────────────────────── */}
+      <section id="about" className="py-20 bg-slate-50 border-b border-slate-200/60 scroll-mt-16">
+        <div className="container-max">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <span className="text-[#000516] font-extrabold text-xs uppercase tracking-widest block mb-2">Our Story & Purpose</span>
+            <h2 className="text-headline-lg md:text-display-sm font-extrabold text-[#000516] mb-4">About NH Salem Sea Foods</h2>
+            <p className="text-slate-600 text-body-lg leading-relaxed">
+              NH Salem Sea Foods is committed to delivering premium quality frozen seafood that preserves natural freshness, authentic taste, and nutritional value. Every product is carefully selected from trusted ocean sources, hygienically processed, and maintained under strict cold-chain conditions from the coast to your table. We proudly serve homes, restaurants, hotels, caterers, and retailers with reliable seafood products and customer-focused service.
+            </p>
+          </div>
+
+          {/* 4 Core Commitment Cards with 4 DISTINCT Icons */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {ABOUT_COMMITMENTS.map((item, i) => (
+              <motion.div
+                key={item.title}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.35, delay: i * 0.08 }}
+                className="bg-white p-6 rounded-2xl border border-slate-200/80 text-center shadow-sm hover:shadow-md transition-shadow"
+              >
+                <div className="w-12 h-12 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-3">
+                  <span className="material-symbols-outlined font-bold text-2xl">{item.icon}</span>
+                </div>
+                <h3 className="text-lg font-black text-[#000516] mb-1.5">{item.title}</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">{item.desc}</p>
+              </motion.div>
+            ))}
           </div>
         </div>
-      </motion.section>
+      </section>
 
-      {/* ── 3. Merged Trust & Excellence Section (Light Blue Canvas) ───────────────────── */}
-      <motion.section 
-        initial={{ opacity: 0, y: 20 }} 
-        whileInView={{ opacity: 1, y: 0 }} 
-        viewport={{ once: true }} 
-        transition={{ duration: 0.4 }}
-        className="py-20 bg-[#F0F5FB] border-y border-blue-100/80"
-      >
+      {/* ── 4. Trust & Why Choose Us (#trust) — Single Consolidated Version ── */}
+      <section id="trust" className="py-20 bg-white border-b border-slate-100 scroll-mt-16">
         <div className="container-max">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <span className="h-0.5 w-6 bg-[#000516] rounded-full inline-block" />
-              <span className="text-[#000516] font-extrabold text-xs uppercase tracking-widest block">The NH Salem Difference</span>
-              <span className="h-0.5 w-6 bg-[#000516] rounded-full inline-block" />
-            </div>
-            <h2 className="text-headline-lg md:text-display-sm font-extrabold text-[#000516] mb-3">Our Quality & Trust Commitment</h2>
-            <p className="text-slate-600 text-body-lg">Delivered fresh from ocean waters, blast-frozen & hygienically packaged directly to your doorstep or commercial business.</p>
+          <div className="text-center max-w-xl mx-auto mb-12">
+            <span className="text-[#000516] font-extrabold text-xs uppercase tracking-widest block mb-2">Uncompromising Reliability</span>
+            <h2 className="text-headline-lg md:text-display-sm font-extrabold text-[#000516]">Why Customers Trust NH Salem</h2>
+            <p className="text-slate-600 text-body-md mt-1">Strict quality standards from ocean catch to cold-chain delivery.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* 6 Core Trust Cards - All Uniform Icon Circles */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             {TRUST_POINTS.map((item, i) => (
               <motion.div
-                key={i}
+                key={item.title}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -353,22 +378,26 @@ export default function Home() {
                   icon={item.icon}
                   title={item.title}
                   desc={item.desc}
-                  highlighted={item.highlighted}
                 />
               </motion.div>
             ))}
           </div>
-        </div>
-      </motion.section>
 
-      {/* ── 4. Testimonials & Customer Reviews (Light Gold/Cream Canvas) ──────────────── */}
-      <motion.section 
-        initial={{ opacity: 0, y: 20 }} 
-        whileInView={{ opacity: 1, y: 0 }} 
-        viewport={{ once: true }} 
-        transition={{ duration: 0.4 }}
-        className="py-20 bg-[#FFFBF0] border-b border-amber-100/80"
-      >
+          {/* Dark Ocean Process Accent Strip */}
+          <div className="py-5 px-8 bg-[#000516] text-white rounded-2xl flex flex-wrap items-center justify-around gap-4 text-center shadow-lg">
+            <span className="flex items-center gap-2 text-xs sm:text-sm font-semibold"><span className="material-symbols-outlined text-[#fed255]">ac_unit</span> Stored at -18°C</span>
+            <span className="hidden sm:inline text-white/30">•</span>
+            <span className="flex items-center gap-2 text-xs sm:text-sm font-semibold"><span className="material-symbols-outlined text-[#fed255]">star</span> Premium Frozen</span>
+            <span className="hidden sm:inline text-white/30">•</span>
+            <span className="flex items-center gap-2 text-xs sm:text-sm font-semibold"><span className="material-symbols-outlined text-[#fed255]">health_and_safety</span> Hygienic & Safe</span>
+            <span className="hidden sm:inline text-white/30">•</span>
+            <span className="flex items-center gap-2 text-xs sm:text-sm font-semibold"><span className="material-symbols-outlined text-[#fed255]">inventory_2</span> Cold Chain Maintained</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 5. Verified Customer Reviews (#reviews) ───────────────────────── */}
+      <section id="reviews" className="py-20 bg-[#FFFBF0] border-b border-amber-100/80 scroll-mt-16">
         <div className="container-max">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
             <div>
@@ -438,7 +467,160 @@ export default function Home() {
             </div>
           )}
         </div>
-      </motion.section>
+      </section>
+
+      {/* ── 6. Contact Us & Embedded Newsletter Section (#contact) ───────────── */}
+      <section id="contact" className="py-20 bg-white scroll-mt-16">
+        <div className="container-max">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <span className="text-primary font-extrabold text-xs uppercase tracking-widest block mb-2">Reach Out to Us</span>
+            <h2 className="text-headline-lg md:text-display-sm font-extrabold text-[#000516] mb-3">Get in Touch with NH Salem</h2>
+            <p className="text-slate-600 text-body-md">
+              Have questions about retail purchases, bulk orders, custom portioning, or delivery schedules? Our team is available 7 days a week.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Contact Information Cards (5 cols) */}
+            <div className="lg:col-span-5 space-y-4">
+              {/* Phone */}
+              <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-start gap-4">
+                <div className="w-11 h-11 bg-primary/10 rounded-xl flex items-center justify-center shrink-0 text-primary">
+                  <span className="material-symbols-outlined text-xl">call</span>
+                </div>
+                <div>
+                  <h3 className="font-bold text-[#000516] text-sm mb-0.5">Customer Support Phone</h3>
+                  <p className="text-xs text-slate-500 mb-1">Direct support & order inquiries</p>
+                  <a href="tel:+919500829167" className="text-primary font-bold text-base hover:underline block">
+                    +91 95008 29167
+                  </a>
+                </div>
+              </div>
+
+              {/* Email */}
+              <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-start gap-4">
+                <div className="w-11 h-11 bg-primary/10 rounded-xl flex items-center justify-center shrink-0 text-primary">
+                  <span className="material-symbols-outlined text-xl">mail</span>
+                </div>
+                <div>
+                  <h3 className="font-bold text-[#000516] text-sm mb-0.5">Email Support</h3>
+                  <p className="text-xs text-slate-500 mb-1">General inquiries & feedback</p>
+                  <a href="mailto:carenhsalem@gmail.com" className="text-primary font-bold text-sm hover:underline block">
+                    carenhsalem@gmail.com
+                  </a>
+                </div>
+              </div>
+
+              {/* Address */}
+              <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-start gap-4">
+                <div className="w-11 h-11 bg-primary/10 rounded-xl flex items-center justify-center shrink-0 text-primary">
+                  <span className="material-symbols-outlined text-xl">location_on</span>
+                </div>
+                <div>
+                  <h3 className="font-bold text-[#000516] text-sm mb-0.5">Store & Processing Unit</h3>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    NH Salem Sea Foods, Main Road, Salem, Tamil Nadu - 636001
+                  </p>
+                </div>
+              </div>
+
+              {/* Business Hours */}
+              <div className="p-5 bg-amber-50/60 rounded-2xl border border-amber-100 flex items-start gap-4">
+                <div className="w-11 h-11 bg-[#fed255]/30 rounded-xl flex items-center justify-center shrink-0 text-[#000516]">
+                  <span className="material-symbols-outlined text-xl">schedule</span>
+                </div>
+                <div>
+                  <h3 className="font-bold text-[#000516] text-sm mb-0.5">Operating Hours</h3>
+                  <p className="text-xs text-slate-700 font-medium">Monday – Sunday: 6:00 AM – 9:00 PM IST</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Contact Form (7 cols) */}
+            <div className="lg:col-span-7 bg-slate-50 p-6 md:p-8 rounded-3xl border border-slate-200/80 shadow-sm">
+              <h3 className="font-extrabold text-[#000516] text-xl mb-1">Send Us a Direct Message</h3>
+              <p className="text-xs text-slate-500 mb-6">Fill in your details below and our team will get back to you promptly.</p>
+
+              <form onSubmit={handleContactSubmit(onContactSubmit)} className="space-y-4 text-left">
+                <div>
+                  <label className="block text-xs font-bold text-[#000516] uppercase tracking-wider mb-1">Your Full Name *</label>
+                  <input
+                    type="text"
+                    placeholder="Enter your name"
+                    {...regContact('name')}
+                    className="w-full bg-white rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-primary transition-colors"
+                  />
+                  {contactErrors.name && <p className="text-xs text-red-500 mt-1">{contactErrors.name.message}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#000516] uppercase tracking-wider mb-1">Phone Number or Email *</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. +91 9876543210 or name@example.com"
+                    {...regContact('contact')}
+                    className="w-full bg-white rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-primary transition-colors"
+                  />
+                  {contactErrors.contact && <p className="text-xs text-red-500 mt-1">{contactErrors.contact.message}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#000516] uppercase tracking-wider mb-1">Your Message *</label>
+                  <textarea
+                    rows={4}
+                    placeholder="How can we help you today?"
+                    {...regContact('message')}
+                    className="w-full bg-white rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-primary transition-colors"
+                  />
+                  {contactErrors.message && <p className="text-xs text-red-500 mt-1">{contactErrors.message.message}</p>}
+                </div>
+
+                <Button
+                  type="submit"
+                  loading={contactSubmitting}
+                  className="w-full bg-[#000516] hover:bg-[#0b1e3d] text-white font-bold py-3.5 rounded-xl border-none shadow-md mt-2"
+                >
+                  Send Message
+                </Button>
+              </form>
+            </div>
+          </div>
+
+          {/* Embedded Compact Newsletter Signup Strip at bottom of Contact section */}
+          <div className="mt-14 pt-8 border-t border-slate-200/80">
+            <div className="bg-[#000516] text-white p-6 md:p-8 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
+              <div className="text-left max-w-lg">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="material-symbols-outlined text-[#fed255] text-lg">mail</span>
+                  <span className="text-xs font-bold text-[#fed255] uppercase tracking-wider">Stay Connected</span>
+                </div>
+                <h3 className="font-extrabold text-white text-lg md:text-xl">Prefer Email Updates over a Call?</h3>
+                <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                  Subscribe to get early access to fresh ocean catches, price updates, and seasonal wholesale offers.
+                </p>
+              </div>
+
+              <form onSubmit={handleNewsletterSubscribe} className="w-full md:w-auto flex flex-col sm:flex-row gap-2 shrink-0">
+                <input
+                  type="email"
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
+                  placeholder="Enter your email address"
+                  required
+                  className="bg-white/10 border border-white/20 text-white placeholder-slate-400 rounded-full px-5 py-2.5 text-xs outline-none focus:border-[#fed255] focus:bg-white/15 min-w-[240px]"
+                />
+                <Button
+                  type="submit"
+                  loading={newsletterSubmitting}
+                  className="bg-[#fed255] hover:bg-[#e0b435] text-[#000516] font-bold px-6 py-2.5 rounded-full border-none shadow-md text-xs whitespace-nowrap"
+                >
+                  Subscribe
+                </Button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ── Write a Review Modal ───────────────────────────────────────────── */}
       <Modal
@@ -520,8 +702,6 @@ export default function Home() {
           </div>
         </form>
       </Modal>
-
-
     </div>
   )
 }

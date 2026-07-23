@@ -19,6 +19,7 @@ import recipeRoutes from './routes/recipes.routes.js'
 import storeLocatorRoutes from './routes/storeLocator.routes.js'
 import faqRoutes from './routes/faqs.routes.js'
 import addressRoutes from './routes/addresses.routes.js'
+import newsletterRoutes from './routes/newsletter.routes.js'
 
 import fs from 'fs';
 import path from 'path';
@@ -155,6 +156,7 @@ app.use('/api', recipeRoutes)              // handles /recipes and /admin/recipe
 app.use('/api', storeLocatorRoutes)        // handles /cities and /admin/cities
 app.use('/api/faqs', faqRoutes)            // handles /faqs
 app.use('/api/addresses', addressRoutes)   // handles /addresses
+app.use('/api/newsletter', newsletterRoutes) // handles /api/newsletter
 app.use('/api/admin/reviews', productRoutes)
 
 // 3. Centralized error handling
