@@ -305,12 +305,12 @@ export default function Home() {
                   <ProductCard key={product.id} product={product} />
                 ))}
                 {Array.from({ length: fillCount }).map((_, i) => (
-                  <div key={`fill-${i}`} className="bg-slate-50 border border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center p-6 text-center min-h-[300px]">
-                    <span className="material-symbols-outlined text-slate-400 text-4xl mb-2">set_meal</span>
-                    <p className="font-bold text-slate-700 text-sm mb-1">Fresh Catch Arriving Soon</p>
-                    <p className="text-xs text-slate-500 mb-4">New seasonal items are currently being processed.</p>
+                  <div key={`fill-${i}`} className="bg-slate-50/80 border border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center p-5 text-center min-h-[240px]">
+                    <span className="material-symbols-outlined text-slate-400 text-3xl mb-1.5">set_meal</span>
+                    <p className="font-bold text-slate-700 text-xs sm:text-sm mb-1">Fresh Catch Arriving Soon</p>
+                    <p className="text-[11px] text-slate-500 mb-3 max-w-[180px]">New seasonal items are currently being processed.</p>
                     <Link to="/category">
-                      <Button variant="ghost" size="xs" className="text-xs text-primary font-bold">
+                      <Button variant="ghost" size="xs" className="text-xs text-primary font-bold py-1">
                         Browse Shop
                       </Button>
                     </Link>

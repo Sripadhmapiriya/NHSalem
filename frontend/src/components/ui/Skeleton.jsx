@@ -13,9 +13,9 @@ export function Skeleton({ className = '', rounded = 'rounded-lg' }) {
 
 export function ProductCardSkeleton() {
   return (
-    <div className="bg-white rounded-[28px] shadow-card overflow-hidden">
+    <div className="bg-white rounded-2xl shadow-card overflow-hidden">
       <Skeleton className="w-full aspect-[4/3]" rounded="rounded-none" />
-      <div className="p-5 space-y-3">
+      <div className="p-4 space-y-2.5">
         <Skeleton className="h-5 w-3/4" />
         <Skeleton className="h-4 w-1/2" />
         <div className="flex gap-2">

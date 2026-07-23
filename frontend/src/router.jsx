@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from 'react'
+import { lazy, Suspense, useLayoutEffect } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import Layout from '@/components/layout/Layout'
 import { SeafoodLoader } from '@/components/ui'
@@ -103,15 +103,21 @@ function RootRoutes() {
 }
 
 /**
- * ScrollToTop - Resets scroll position to (0,0) on route/pathname change
- * Ignores same-page hash navigation (e.g. #about, #contact)
+ * ScrollToTop - Synchronously resets scroll position to (0,0) BEFORE browser paint on route change.
+ * Ignores same-page hash navigation (e.g. #about, #contact).
  */
 function ScrollToTop() {
   const { pathname, hash } = useLocation()
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    if (typeof window !== 'undefined' && 'scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual'
+    }
+
     if (!hash) {
       window.scrollTo(0, 0)
+      document.body.scrollTop = 0
+      document.documentElement.scrollTop = 0
     }
   }, [pathname, hash])
 

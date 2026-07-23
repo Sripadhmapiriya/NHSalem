@@ -10,7 +10,7 @@ import { getProducts } from '@/services/api'
 
 const NAV_LINKS = [
   { label: 'Home', sectionId: 'hero', path: '/' },
-  { label: 'Category', path: '/category' },
+  { label: 'Products', path: '/category' },
   { label: 'About', sectionId: 'about', path: '/#about' },
   { label: 'Contact', sectionId: 'contact', path: '/#contact' },
 ]
@@ -164,7 +164,7 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
 
         {/* Desktop Nav */}
         <nav
-          className="hidden xl:flex items-center gap-6 px-4 py-1.5"
+          className="hidden lg:flex items-center gap-6 px-4 py-1.5"
           aria-label="Main navigation"
         >
           {NAV_LINKS.map((link) => (
@@ -187,8 +187,8 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
         </nav>
 
         {/* Right icons / control deck */}
-        <div className="flex items-center gap-1.5 xl:gap-2.5 ml-auto md:ml-0">
-          <div className="flex items-center gap-1.5 px-1.5 py-1 bg-surface-container-low/70 border border-outline-variant/30 rounded-full shadow-inner-sm">
+        <div className="flex items-center gap-2 ml-auto md:ml-0">
+          <div className="h-9 flex items-center gap-1 px-2 bg-surface-container-low/70 border border-outline-variant/30 rounded-full shadow-inner-sm">
             {/* Search */}
             <div ref={searchRef} className="relative">
               {searchOpen ? (
@@ -199,7 +199,7 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search seafood…"
-                      className="w-44 sm:w-60 text-[13px]"
+                      className="w-44 sm:w-60 text-[13px] py-1 h-7"
                     />
                     {/* Dropdown results */}
                     <AnimatePresence>
@@ -287,7 +287,7 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
           {/* Track Order */}
           <button
             onClick={() => setTrackModalOpen(true)}
-            className="hidden xl:flex items-center gap-1.5 px-2 py-2 xl:px-3 xl:py-1.5 rounded-full border border-outline-variant/30 bg-surface-container-low hover:bg-surface-container hover:border-primary/40 transition-all cursor-pointer select-none focus:outline-none whitespace-nowrap flex-shrink-0"
+            className="hidden xl:flex h-9 items-center gap-1.5 px-3.5 rounded-full border border-outline-variant/30 bg-surface-container-low hover:bg-surface-container hover:border-primary/40 transition-all cursor-pointer select-none focus:outline-none whitespace-nowrap flex-shrink-0 text-xs font-bold text-on-surface-variant"
             aria-label="Track your order live"
           >
             <motion.span
@@ -298,7 +298,7 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
             >
               radar
             </motion.span>
-            <span className="text-xs font-bold text-on-surface-variant whitespace-nowrap hidden xl:inline">Track Order</span>
+            <span className="whitespace-nowrap">Track Order</span>
           </button>
 
           {/* AuthControl */}
@@ -306,13 +306,13 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
             <div className="relative" ref={profileDropdownRef}>
               <button
                 onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-outline-variant/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/30 transition-all cursor-pointer select-none focus:outline-none animate-fade-in whitespace-nowrap flex-shrink-0"
+                className="hidden md:flex h-9 items-center gap-2 px-3.5 rounded-full border border-outline-variant/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/30 transition-all cursor-pointer select-none focus:outline-none animate-fade-in whitespace-nowrap flex-shrink-0 text-xs font-bold text-primary"
                 aria-label={`Logged in as ${user.name}. Click to view menu.`}
               >
                 <div className="w-5 h-5 rounded-full flex items-center justify-center bg-primary text-white text-[10px] font-bold uppercase">
                   {user.name?.charAt(0) || 'U'}
                 </div>
-                <span className="text-label-sm font-bold text-primary truncate max-w-[90px]">
+                <span className="truncate max-w-[90px]">
                   {user.name?.split(' ')[0] || 'User'}
                 </span>
                 <span className="material-symbols-outlined text-primary font-bold text-xs">
@@ -362,7 +362,7 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
           ) : (
             <button
               onClick={onLoginClick}
-              className="hidden md:flex items-center gap-2 px-2 py-2 xl:px-4 xl:py-2 rounded-full border border-outline-variant/30 bg-primary hover:bg-primary/95 text-white shadow-sm hover:shadow transition-all cursor-pointer select-none focus:outline-none text-sm font-bold whitespace-nowrap flex-shrink-0"
+              className="hidden md:flex h-9 items-center gap-2 px-4 rounded-full border border-outline-variant/30 bg-primary hover:bg-primary/95 text-white shadow-sm hover:shadow transition-all cursor-pointer select-none focus:outline-none text-xs font-bold whitespace-nowrap flex-shrink-0"
               aria-label="Account login"
             >
               <div className="w-4 h-4 rounded-full flex items-center justify-center bg-white/20 flex-shrink-0">
@@ -370,7 +370,7 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
                   person
                 </span>
               </div>
-              <span className="whitespace-nowrap hidden xl:inline">Log In</span>
+              <span className="whitespace-nowrap">Log In</span>
             </button>
           )}
 

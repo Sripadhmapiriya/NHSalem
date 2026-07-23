@@ -484,8 +484,8 @@ export default function CategoryListing() {
 
   const metaKey = selectedCategories.length === 1 ? selectedCategories[0] : (categorySlug || 'all')
   const meta = CATEGORY_META[metaKey] || {
-    title: selectedCategories.length > 0 ? `${selectedCategories.length} Categories Selected` : 'All Seafood Categories',
-    description: 'Fresh coastal catches filtered by your custom preferences.'
+    title: selectedCategories.length > 0 ? `${selectedCategories.length} Categories Selected` : 'Products',
+    description: 'Explore our complete selection of daily-caught ocean fish, prawns, crabs, lobsters, dried fish, and curated combos.'
   }
 
   const maxPriceLimit = useMemo(() => {
@@ -625,17 +625,28 @@ export default function CategoryListing() {
       <div className="container-max">
         {/* Header */}
         <div className="mb-6">
-          <nav aria-label="Breadcrumb" className="mb-3 w-full overflow-x-auto hide-scrollbar">
-            <ul className="flex flex-row items-center flex-nowrap gap-2 text-label-sm text-on-surface-variant whitespace-nowrap pb-1 min-w-max">
-              <li className="flex-none">
-                <Link to="/" className="hover:text-primary transition-colors">Home</Link>
-              </li>
-              <li className="flex-none" aria-hidden="true">/</li>
-              <li className="flex-none text-on-surface font-semibold">{meta.title}</li>
-            </ul>
-          </nav>
-          <h1 className="text-headline-lg md:text-display-lg text-on-surface font-bold mb-1.5">{meta.title}</h1>
-          <p className="text-body-md md:text-body-lg text-on-surface-variant max-w-2xl">{meta.description}</p>
+          <div className="flex flex-wrap items-center gap-3 mb-3">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#000516] bg-white border border-slate-200/80 hover:bg-slate-100 hover:border-slate-300 px-3.5 py-1.5 rounded-full shadow-sm transition-all duration-200 group"
+            >
+              <span className="material-symbols-outlined text-base group-hover:-translate-x-0.5 transition-transform">arrow_back</span>
+              <span>Back to Home</span>
+            </Link>
+
+            <nav aria-label="Breadcrumb" className="overflow-x-auto hide-scrollbar">
+              <ul className="flex flex-row items-center flex-nowrap gap-2 text-xs text-slate-500 whitespace-nowrap">
+                <li>
+                  <Link to="/" className="hover:text-primary transition-colors">Home</Link>
+                </li>
+                <li aria-hidden="true">/</li>
+                <li className="text-slate-800 font-semibold">{meta.title}</li>
+              </ul>
+            </nav>
+          </div>
+
+          <h1 className="text-xl md:text-2xl font-extrabold text-[#000516] mb-1 leading-snug">{meta.title}</h1>
+          <p className="text-xs md:text-sm text-slate-600 max-w-2xl leading-relaxed">{meta.description}</p>
         </div>
 
         <div className="flex gap-8">

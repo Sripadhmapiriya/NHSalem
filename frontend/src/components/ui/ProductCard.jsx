@@ -98,10 +98,10 @@ export default function ProductCard({ product }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.4 }}
-      className="bg-white rounded-[28px] shadow-card overflow-hidden group flex flex-col"
+      className="bg-white rounded-2xl shadow-card overflow-hidden group flex flex-col"
     >
       {/* Image */}
-      <div className="relative overflow-hidden aspect-square w-full">
+      <div className="relative overflow-hidden aspect-[4/3] w-full">
         <Link to={`/product/${id}`} aria-label={`View ${name}`}>
           <img
             src={image}
@@ -113,7 +113,7 @@ export default function ProductCard({ product }) {
         </Link>
 
         {/* Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1.5 max-w-[45%]">
+        <div className="absolute top-2.5 left-2.5 flex flex-col gap-1 max-w-[50%]">
           {badges.map((badge) => (
             <Badge key={badge.type} variant={badge.type}>
               {badge.label}
@@ -126,11 +126,11 @@ export default function ProductCard({ product }) {
           whileTap={{ scale: 0.85 }}
           onClick={handleWishlistToggle}
           aria-label={wishlisted ? `Remove ${name} from wishlist` : `Add ${name} to wishlist`}
-          className="absolute top-3 right-3 w-9 h-9 bg-[#0b1e3d]/35 backdrop-blur-md border border-white/25 rounded-full flex items-center justify-center shadow-sm hover:bg-[#0b1e3d]/50 transition-colors"
+          className="absolute top-2.5 right-2.5 w-8 h-8 bg-[#0b1e3d]/35 backdrop-blur-md border border-white/25 rounded-full flex items-center justify-center shadow-sm hover:bg-[#0b1e3d]/50 transition-colors"
         >
           <span
             className={`material-symbols-outlined ${wishlisted ? 'filled text-[#FB7185]' : 'text-white'} transition-all`}
-            style={{ fontSize: '20px' }}
+            style={{ fontSize: '18px' }}
             aria-hidden="true"
           >
             favorite
@@ -139,7 +139,7 @@ export default function ProductCard({ product }) {
       </div>
 
       {/* Content */}
-      <div className="p-4 md:p-5 flex flex-col gap-3 flex-1">
+      <div className="p-3.5 sm:p-4 flex flex-col gap-2 flex-1">
         {/* Name + tagline */}
         <div>
           <Link to={`/product/${id}`}>

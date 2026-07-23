@@ -15,7 +15,7 @@ export default function IconButton({
   ...props
 }) {
   const sizeMap = {
-    sm: { btn: 'w-8 h-8', icon: '18px' },
+    sm: { btn: 'w-7 h-7', icon: '17px' },
     md: { btn: 'w-10 h-10', icon: '22px' },
     lg: { btn: 'w-12 h-12', icon: '26px' },
   }
