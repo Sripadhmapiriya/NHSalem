@@ -165,7 +165,7 @@ export default function ProductDetail() {
           {/* Images */}
           <div className="space-y-4">
             {/* Main image */}
-            <div className="relative overflow-hidden rounded-[28px] aspect-[4/3] bg-surface-container-low">
+            <div className="relative overflow-hidden rounded-[28px] aspect-[4/3] bg-surface-container-low group">
               <AnimatePresence mode="wait">
                 <motion.img
                   key={selectedImage}
@@ -175,7 +175,7 @@ export default function ProductDetail() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.35 }}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform duration-[2500ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-108"
                 />
               </AnimatePresence>
               {/* Badges overlay */}
