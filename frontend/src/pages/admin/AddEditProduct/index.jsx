@@ -201,8 +201,8 @@ export default function AdminAddEditProduct() {
           {/* Main fields */}
           <div className="lg:col-span-2 space-y-5">
             <AdminCard title={isNew ? 'New Product' : `Edit — ${existing?.name ?? id}`}>
-              <div className="p-5 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 sm:p-5 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   {/* Name */}
                   <div className="col-span-2">
                     <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">

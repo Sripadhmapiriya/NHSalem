@@ -180,7 +180,7 @@ export default function AdminReviews() {
       )}
 
       {/* Stats Header */}
-      <div className="grid grid-cols-3 gap-4 mb-5">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-5">
         <div className="bg-white rounded-[14px] border border-admin-border/60 p-4 text-center">
           <p className="text-2xl font-bold text-admin-navy">{reviews.length}</p>
           <p className="text-[11px] text-admin-text-sub mt-0.5">Total Reviews</p>

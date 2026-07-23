@@ -169,11 +169,11 @@ export default function AdminLayout() {
           <div className="flex items-center gap-3">
             {/* Mobile hamburger */}
             <button
-              className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg hover:bg-admin-seafoam transition-colors"
+              className="md:hidden w-10 h-10 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-admin-seafoam transition-colors cursor-pointer"
               onClick={() => setSidebarOpen(true)}
               aria-label="Open sidebar"
             >
-              <span className="material-symbols-outlined text-admin-navy" style={{ fontSize: '20px' }}>menu</span>
+              <span className="material-symbols-outlined text-admin-navy" style={{ fontSize: '22px' }}>menu</span>
             </button>
             <h1 className="text-[15px] font-bold text-admin-navy tracking-tight">{pageTitle}</h1>
           </div>

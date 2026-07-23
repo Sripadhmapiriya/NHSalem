@@ -93,7 +93,7 @@ export default function Layout({ children }) {
           <span className="material-symbols-outlined text-[24px]">home</span>
           <span className="text-[10px] font-semibold">Home</span>
         </NavLink>
-        <NavLink to="/category/fish" className={({isActive}) => `flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${isActive ? 'text-primary' : 'text-on-surface-variant'}`}>
+        <NavLink to="/category" className={({isActive}) => `flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${isActive ? 'text-primary' : 'text-on-surface-variant'}`}>
           <span className="material-symbols-outlined text-[24px]">grid_view</span>
           <span className="text-[10px] font-semibold">Categories</span>
         </NavLink>

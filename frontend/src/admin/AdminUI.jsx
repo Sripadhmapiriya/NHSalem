@@ -188,9 +188,9 @@ export function AdminBtn({ children, variant = 'primary', onClick, type = 'butto
     gold:      { backgroundColor: '#C9A227', color: '#ffffff', borderColor: '#C9A227' },
   }
   const sizes = {
-    sm: 'px-3 py-1.5 text-[12px]',
-    md: 'px-4 py-2 text-[13px]',
-    lg: 'px-6 py-2.5 text-[14px]',
+    sm: 'px-3 py-1.5 text-[12px] min-h-[38px] sm:min-h-[44px]',
+    md: 'px-4 py-2 text-[13px] min-h-[44px]',
+    lg: 'px-6 py-2.5 text-[14px] min-h-[44px]',
   }
   return (
     <button
