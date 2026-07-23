@@ -9,6 +9,7 @@ const Home         = lazy(() => import('@/pages/Home'))
 const CategoryListing = lazy(() => import('@/pages/CategoryListing'))
 const ProductDetail = lazy(() => import('@/pages/ProductDetail'))
 const Cart         = lazy(() => import('@/pages/Cart'))
+const Wishlist     = lazy(() => import('@/pages/Wishlist'))
 const Checkout     = lazy(() => import('@/pages/Checkout'))
 const Login        = lazy(() => import('@/pages/Login'))
 const OrderTracking = lazy(() => import('@/pages/OrderTracking'))
@@ -82,6 +83,7 @@ function RootRoutes() {
           <Route path="/login" element={<Login />} />
           <Route path="/my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
           <Route path="/my-orders/:orderRef" element={<ProtectedRoute><OrderDetail /></ProtectedRoute>} />
+          <Route path="/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
 
           {/* Content pages */}
           <Route path="/quality" element={<Quality />} />

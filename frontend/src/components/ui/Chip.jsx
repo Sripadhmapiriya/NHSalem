@@ -16,10 +16,8 @@ export default function Chip({
   className = '',
   ...props
 }) {
-  // Before: px-2.5 py-1 rounded-[8px]   → ~23px tall, 8px radius
-  // After:  px-2.5 py-[3px] rounded-full → ~21px tall, full pill
   const base =
-    'inline-flex items-center gap-1 px-2.5 py-[3px] rounded-full text-[13px] font-semibold leading-none transition-all duration-150 cursor-pointer select-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50'
+    'inline-flex items-center gap-1 px-2 h-9 rounded-lg text-[13px] font-semibold leading-none transition-all duration-150 cursor-pointer select-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50'
 
   const variants = {
     filter: selected

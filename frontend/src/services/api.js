@@ -307,3 +307,21 @@ export async function deleteUserAddress(id) {
   })
   return handleResponse(response)
 }
+
+// ── Wishlist ──────────────────────────────────────────────────────────────────
+
+export async function getWishlist() {
+  const response = await fetch(`${API_URL}/api/wishlist`, {
+    headers: getHeaders(true)
+  })
+  return handleResponse(response)
+}
+
+export async function toggleWishlistApi(productId) {
+  const response = await fetch(`${API_URL}/api/wishlist/toggle`, {
+    method: 'POST',
+    headers: getHeaders(true),
+    body: JSON.stringify({ productId })
+  })
+  return handleResponse(response)
+}

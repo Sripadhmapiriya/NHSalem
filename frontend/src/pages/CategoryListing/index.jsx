@@ -237,7 +237,7 @@ function FilterPanel({
                   key={pack.id}
                   type="button"
                   onClick={() => toggleWeight(pack.id)}
-                  className={`px-3.5 py-2 rounded-full border text-xs font-semibold transition-all duration-150 focus:outline-none select-none min-h-[38px] flex items-center gap-1.5 ${
+                  className={`px-3.5 py-2 rounded-lg border text-xs font-semibold transition-all duration-150 focus:outline-none select-none min-h-[38px] flex items-center gap-1.5 ${
                     isSelected
                       ? 'bg-primary border-primary text-white font-bold shadow-sm'
                       : 'bg-white border-outline-variant/50 text-on-surface-variant hover:border-primary/50'
@@ -397,7 +397,7 @@ function FilterPanel({
                       setPriceMin(p.min)
                       setPriceMax(p.max)
                     }}
-                    className={`px-3.5 py-2 rounded-full border text-[12px] font-semibold transition-colors duration-150 focus:outline-none select-none min-h-[38px] ${
+                    className={`px-3.5 py-2 rounded-lg border text-[12px] font-semibold transition-colors duration-150 focus:outline-none select-none min-h-[38px] ${
                       active
                         ? 'bg-primary border-primary text-white font-bold'
                         : 'bg-white border-outline-variant text-on-surface-variant hover:border-primary/50'
@@ -414,7 +414,7 @@ function FilterPanel({
 
       {/* Sticky footer action bar */}
       <div className={footerClass}>
-        <div className="w-full flex items-stretch border border-outline-variant/50 rounded-full overflow-hidden shadow-sm h-12 bg-white">
+        <div className="w-full flex items-stretch border border-outline-variant/50 rounded-md overflow-hidden shadow-sm h-12 bg-white">
           {/* Left Zone - Clear */}
           <button
             type="button"

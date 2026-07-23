@@ -1,7 +1,7 @@
 import express from 'express'
 import { z } from 'zod'
 import pool from '../db/pool.js'
-import asyncHandler from '../middleware/asyncHandler.js'
+import asyncHandler from '../utils/asyncHandler.js'
 
 const router = express.Router()
 

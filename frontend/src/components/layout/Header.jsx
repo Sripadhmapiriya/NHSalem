@@ -230,7 +230,7 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
         <div ref={searchRef} className="flex items-center gap-2 ml-auto md:ml-0">
 
           {/* Unified pill — expands when search is open, highlights border on focus */}
-          <div className={`h-9 flex items-center gap-1 px-2 bg-surface-container-low/70 border rounded-full shadow-inner-sm transition-all duration-200 ${searchOpen ? 'border-primary/40 ring-2 ring-primary/10' : 'border-outline-variant/30'}`}>
+          <div className={`h-9 flex items-center gap-1 px-2 bg-surface-container-low/70 border rounded-lg shadow-inner-sm transition-all duration-200 ${searchOpen ? 'border-primary/40 ring-2 ring-primary/10' : 'border-outline-variant/30'}`}>
 
             {/* Search icon OR expanded search input + close */}
             {searchOpen ? (
@@ -312,7 +312,7 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
             <span className="w-px h-4 bg-outline-variant/40 mx-0.5 flex-shrink-0" />
 
             {/* Wishlist */}
-            <Link to="/cart" aria-label={`Wishlist, ${wishlistCount} items`}>
+            <Link to="/wishlist" aria-label={`Wishlist, ${wishlistCount} items`}>
               <IconButton
                 size="sm"
                 icon="favorite"
@@ -527,6 +527,14 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
                       <div className="text-center py-2 text-label-md font-semibold text-primary bg-primary/5 rounded-[12px] border border-outline-variant/30">
                         Hi, {user.name} 👋
                       </div>
+                      <NavLink
+                        to="/wishlist"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="py-3 bg-white border border-outline-variant/50 text-on-surface rounded-full text-label-md font-semibold flex items-center justify-center gap-2 shadow-sm hover:bg-surface-container-low transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">favorite</span>
+                        My Wishlist
+                      </NavLink>
                       <NavLink
                         to="/my-orders"
                         onClick={() => setMobileMenuOpen(false)}

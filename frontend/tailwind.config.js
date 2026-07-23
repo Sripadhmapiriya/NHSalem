@@ -89,14 +89,7 @@ export default {
         "label-sm": ["12px", { lineHeight: "16px", fontWeight: "500", letterSpacing: "0.05em" }],
       },
       borderRadius: {
-        sm: "0.25rem",
-        DEFAULT: "0.5rem",
-        md: "0.75rem",
-        lg: "1rem",
-        xl: "1.5rem",
-        "2xl": "1.75rem",
         "card": "28px",
-        full: "9999px",
       },
       spacing: {
         "base": "8px",

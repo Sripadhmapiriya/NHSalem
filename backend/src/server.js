@@ -20,6 +20,7 @@ import storeLocatorRoutes from './routes/storeLocator.routes.js'
 import faqRoutes from './routes/faqs.routes.js'
 import addressRoutes from './routes/addresses.routes.js'
 import newsletterRoutes from './routes/newsletter.routes.js'
+import wishlistsRoutes from './routes/wishlists.routes.js'
 
 import fs from 'fs';
 import path from 'path';
@@ -157,6 +158,7 @@ app.use('/api', storeLocatorRoutes)        // handles /cities and /admin/cities
 app.use('/api/faqs', faqRoutes)            // handles /faqs
 app.use('/api/addresses', addressRoutes)   // handles /addresses
 app.use('/api/newsletter', newsletterRoutes) // handles /api/newsletter
+app.use('/api', wishlistsRoutes)           // handles /api/wishlist
 app.use('/api/admin/reviews', productRoutes)
 
 // 3. Centralized error handling
@@ -171,6 +173,17 @@ async function verifyDatabase(pool) {
     // Safe schema additions — these use IF NOT EXISTS / IF NOT EXISTS so they are idempotent
     await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS variants JSONB NOT NULL DEFAULT '[]'`)
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS status VARCHAR(50) NOT NULL DEFAULT 'active'`)
+    
+    // Ensure wishlists table exists
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS wishlists (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        UNIQUE(user_id, product_id)
+      )
+    `)
 
     await pool.query(`
       INSERT INTO categories (id, slug, name)

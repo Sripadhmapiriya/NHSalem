@@ -87,7 +87,7 @@ export default function StoreLocator() {
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by city or pincode…"
             aria-label="Search cities"
-            className="w-full rounded-full border border-outline-variant bg-white pl-11 pr-5 py-3.5 text-body-md text-on-surface placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary/15 outline-none shadow-card"
+            className="w-full rounded-lg border border-outline-variant bg-white pl-11 pr-5 py-3.5 text-body-md text-on-surface placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary/15 outline-none shadow-card"
           />
         </div>
 
@@ -149,7 +149,7 @@ export default function StoreLocator() {
             </div>
             <div className="flex flex-wrap gap-2">
               {selectedCity.slots.map((slot) => (
-                <span key={slot} className="px-3 py-1.5 bg-white/15 rounded-full text-label-md font-semibold text-white border border-white/20">
+                <span key={slot} className="px-3 py-1.5 bg-white/15 rounded-lg text-label-md font-semibold text-white border border-white/20">
                   {slot}
                 </span>
               ))}
@@ -187,11 +187,12 @@ export default function StoreLocator() {
             <div className="flex-1">
               <input
                 type="email"
-                placeholder="your@email.com"
+                placeholder="Enter your email address"
                 aria-label="Email for city launch notification"
                 aria-invalid={!!errors.email}
+                required
                 {...register('email')}
-                className="w-full rounded-full border border-outline-variant bg-white px-5 py-3 text-body-md text-on-surface placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary/15 outline-none"
+                className="w-full rounded-lg border border-outline-variant bg-white px-5 py-3 text-body-md text-on-surface placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary/15 outline-none"
               />
               {errors.email && (
                 <p role="alert" className="text-label-sm text-error mt-1 pl-2">{errors.email.message}</p>

@@ -49,8 +49,8 @@ export const SPACING = {
 };
 
 export const RADIUS = {
-  sm: 8, md: 12, lg: 16,
-  xl: 20, xxl: 24, full: 999,
+  sm: 4, md: 6, lg: 8,
+  xl: 12, xxl: 16, full: 999,
 };
 
 export const globalStyles = StyleSheet.create({

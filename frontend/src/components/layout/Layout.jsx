@@ -53,6 +53,17 @@ export default function Layout({ children }) {
     }
   }, [user, pendingAction, addItem, addToast, setPendingAction, toggleWishlist, navigate])
 
+  const { fetchWishlist, clear: clearWishlist } = useWishlistStore()
+  
+  // Fetch wishlist when user logs in, clear when logged out
+  useEffect(() => {
+    if (user) {
+      fetchWishlist()
+    } else {
+      clearWishlist()
+    }
+  }, [user, fetchWishlist, clearWishlist])
+
   const { items = [], totalItems = 0 } = useCartStore()
   const location = useLocation()
   const hiddenRoutes = ['/cart', '/checkout', '/admin']
@@ -150,12 +161,12 @@ export default function Layout({ children }) {
       >
         <div className="p-6 text-center space-y-5">
           <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto text-primary">
-            <span className="material-symbols-outlined text-3xl font-bold">shopping_cart</span>
+            <span className="material-symbols-outlined text-3xl font-bold">person</span>
           </div>
           <div className="space-y-2">
-            <h3 className="text-headline-sm text-on-surface font-bold">Please sign in to add items to your cart</h3>
+            <h3 className="text-headline-sm text-on-surface font-bold">Please sign in to continue</h3>
             <p className="text-body-md text-on-surface-variant leading-relaxed">
-              Create an account or sign in to save items to your cart and track deliveries.
+              Create an account or sign in to save items, manage your wishlist, and track deliveries.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">

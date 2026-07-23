@@ -27,7 +27,7 @@ function AdminReturnBanner() {
       </div>
       <a
         href="/admin/recipes"
-        className="px-3 py-1.5 rounded-full text-[11px] font-bold text-white border border-white/30 hover:bg-white/10 transition-colors"
+        className="px-3 py-1.5 rounded-lg text-[11px] font-bold text-white border border-white/30 hover:bg-white/10 transition-colors"
       >
         ← Return to Admin
       </a>
@@ -56,16 +56,16 @@ const MemoRecipeCard = memo(function RecipeCard({ recipe }) {
             className="w-full h-full object-cover transition-transform duration-[2500ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-110"
           />
           <div className="absolute top-3 left-3 flex gap-2 flex-wrap">
-            <span className="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-label-sm font-semibold">
+            <span className="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-lg text-label-sm font-semibold">
               {recipe.category}
             </span>
           </div>
           <div className="absolute bottom-3 right-3 flex gap-2">
-            <span className="px-2.5 py-1 bg-black/60 text-white rounded-full text-label-sm flex items-center gap-1">
+            <span className="px-2.5 py-1 bg-black/60 text-white rounded-lg text-label-sm flex items-center gap-1">
               <span className="material-symbols-outlined" style={{ fontSize: '12px' }} aria-hidden="true">schedule</span>
               {recipe.time}
             </span>
-            <span className="px-2.5 py-1 bg-black/60 text-white rounded-full text-label-sm flex items-center gap-1">
+            <span className="px-2.5 py-1 bg-black/60 text-white rounded-lg text-label-sm flex items-center gap-1">
               <span className="material-symbols-outlined" style={{ fontSize: '12px' }} aria-hidden="true">people</span>
               {recipe.servings}
             </span>
@@ -82,7 +82,7 @@ const MemoRecipeCard = memo(function RecipeCard({ recipe }) {
           {recipe.description}
         </p>
         <div className="flex items-center justify-between">
-          <span className={`text-label-sm font-semibold px-2.5 py-1 rounded-full ${
+          <span className={`text-label-sm font-semibold px-2.5 py-1 rounded-lg ${
             recipe.difficulty === 'Easy' ? 'bg-success/10 text-success' :
             recipe.difficulty === 'Medium' ? 'bg-secondary-container/30 text-secondary' :
             'bg-on-tertiary-container/10 text-on-tertiary-container'

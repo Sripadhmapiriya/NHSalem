@@ -52,11 +52,11 @@ export default function OrderTracking() {
                 placeholder="e.g. NHS-77421"
                 value={inputOrderId}
                 onChange={(e) => setInputOrderId(e.target.value)}
-                className="w-full px-5 py-3 border border-outline-variant rounded-full focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-center font-mono font-semibold"
+                className="w-full px-5 py-3 border border-outline-variant rounded-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-center font-mono font-semibold"
               />
               <button 
                 onClick={() => { if (inputOrderId) navigate(`/track-order/${inputOrderId}`) }}
-                className="w-full px-6 py-3 bg-primary text-white rounded-full font-bold hover:bg-primary/90 transition-colors"
+                className="w-full px-6 py-3 bg-primary text-white rounded-md font-bold hover:bg-primary/90 transition-colors"
               >
                 Track Now
               </button>
@@ -73,7 +73,7 @@ export default function OrderTracking() {
         </span>
         <h1 className="font-serif text-display-lg-mobile text-on-surface mb-2">Order Not Found</h1>
         <p className="text-body-md text-on-surface-variant mb-8">Order ID: <span className="font-mono font-bold text-primary">{orderId || 'Unknown'}</span></p>
-        <Link to="/" className="inline-flex px-6 py-2.5 bg-primary text-white rounded-full text-label-md font-semibold hover:opacity-90 transition-opacity">
+        <Link to="/" className="inline-flex px-6 py-2.5 bg-primary text-white rounded-md text-label-md font-semibold hover:opacity-90 transition-opacity">
           Back to Shore
         </Link>
       </div>
@@ -148,7 +148,7 @@ export default function OrderTracking() {
 
           <div className="text-center sm:text-right border-t sm:border-t-0 sm:border-l border-white/10 pt-4 sm:pt-0 sm:pl-6 w-full sm:w-auto">
             <p className="text-label-sm text-white/50 tracking-wider uppercase mb-1">Current Phase</p>
-            <span className="inline-flex px-3.5 py-1 rounded-full bg-secondary-container text-on-secondary-container text-label-sm font-bold uppercase tracking-wider">
+            <span className="inline-flex px-3.5 py-1 rounded-lg bg-secondary-container text-on-secondary-container text-label-sm font-bold uppercase tracking-wider">
               {order.status.replace('_', ' ')}
             </span>
           </div>

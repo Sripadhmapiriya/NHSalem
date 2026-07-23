@@ -70,7 +70,7 @@ export default function Badge({
   if (variant === 'outline') {
     return (
       <span
-        className={`inline-flex items-center px-3 py-1 rounded-full text-label-sm font-semibold border border-outline-variant bg-transparent text-on-surface ${className}`}
+        className={`inline-flex items-center px-3 py-1 rounded-lg text-label-sm font-semibold border border-outline-variant bg-transparent text-on-surface ${className}`}
       >
         {content}
       </span>
@@ -79,7 +79,7 @@ export default function Badge({
 
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2.5 py-[5px] rounded-full text-[12px] font-medium bg-[#0b1e3d]/38 backdrop-blur-md border border-white/25 text-white select-none ${className}`}
+      className={`inline-flex items-center gap-1 px-2.5 py-[5px] rounded-lg text-[12px] font-medium bg-[#0b1e3d]/38 backdrop-blur-md border border-white/25 text-white select-none ${className}`}
       style={{
         boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 8px rgba(0, 0, 0, 0.25)',
       }}

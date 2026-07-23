@@ -45,7 +45,11 @@ export default function ProductCard({ product }) {
   const cartItem = getItem(id, currentVariant.label)
   const wishlisted = isWishlisted(id)
 
-  const handleWishlistToggle = () => {
+  const handleWishlistToggle = (e) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
     const { user, setCartLoginPopupOpen, setPendingAction } = useAuthStore.getState()
     if (!user) {
       setPendingAction({

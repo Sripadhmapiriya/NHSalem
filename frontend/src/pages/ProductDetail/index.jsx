@@ -256,7 +256,7 @@ export default function ProductDetail() {
                       key={w.label}
                       onClick={() => setSelectedWeight(i)}
                       aria-pressed={selectedWeight === i}
-                      className={`px-4 py-2.5 rounded-full border-2 text-label-md font-semibold transition-all flex-shrink-0 ${
+                      className={`px-4 py-2.5 rounded-md border-2 text-label-md font-semibold transition-all flex-shrink-0 ${
                         selectedWeight === i
                           ? 'bg-secondary-container text-on-secondary-container border-secondary-container'
                           : 'bg-white text-on-surface-variant border-outline-variant hover:border-primary'
@@ -301,7 +301,7 @@ export default function ProductDetail() {
                     Add to Cart
                   </Button>
                 ) : (
-                  <div className="flex items-center bg-primary rounded-full overflow-hidden h-12 w-full md:w-56 justify-between">
+                  <div className="flex items-center bg-primary rounded-md overflow-hidden h-12 w-full md:w-56 justify-between">
                     <button
                       onClick={() => {
                         if (cartItem.quantity <= 1) removeItem(product.id, currentWeight.label)
@@ -325,12 +325,23 @@ export default function ProductDetail() {
 
                 {/* Wishlist toggle */}
                 <button
-                  onClick={() => toggleWishlist(product.id)}
+                  onClick={() => {
+                    const { user, setCartLoginPopupOpen, setPendingAction } = useAuthStore.getState()
+                    if (!user) {
+                      setPendingAction({
+                        type: 'TOGGLE_WISHLIST',
+                        payload: { id: product.id, name: product.name }
+                      })
+                      setCartLoginPopupOpen(true)
+                      return
+                    }
+                    toggleWishlist(product.id)
+                  }}
                   aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-                  className="w-12 h-12 bg-surface-container-low border border-outline-variant rounded-full flex items-center justify-center hover:border-on-tertiary-container transition-colors flex-shrink-0"
+                  className="w-12 h-12 bg-surface-container-low border border-outline-variant rounded-md flex items-center justify-center hover:border-on-tertiary-container transition-colors flex-shrink-0"
                 >
                   <span
-                    className={`material-symbols-outlined ${wishlisted ? 'filled' : ''} text-on-tertiary-container`}
+                    className={`material-symbols-outlined ${wishlisted ? 'filled text-[#FB7185]' : ''} text-on-tertiary-container`}
                     style={{ fontSize: '20px' }}
                   >favorite</span>
                 </button>
@@ -351,7 +362,7 @@ export default function ProductDetail() {
                   placeholder="Enter pincode"
                   maxLength={6}
                   aria-label="Enter delivery pincode"
-                  className="flex-1 rounded-full border border-outline-variant bg-white px-4 py-2.5 text-body-md text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/15 outline-none"
+                  className="flex-1 rounded-lg border border-outline-variant bg-white px-4 py-2.5 text-body-md text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/15 outline-none"
                 />
                 <Button
                   variant="primary"
@@ -379,7 +390,7 @@ export default function ProductDetail() {
                     {deliveryResult.slots && (
                       <div className="flex flex-wrap gap-1.5 mt-2">
                         {deliveryResult.slots.map((slot) => (
-                          <span key={slot} className="px-2.5 py-1 bg-success/10 text-success rounded-full text-label-sm">
+                          <span key={slot} className="px-2.5 py-1 bg-success/10 text-success rounded-lg text-label-sm">
                             {slot}
                           </span>
                         ))}
