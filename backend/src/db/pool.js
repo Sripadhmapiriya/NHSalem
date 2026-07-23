@@ -28,4 +28,8 @@ export const pool = new Pool({
   connectionTimeoutMillis: 10000
 })
 
+pool.on('error', (err) => {
+  console.error('⚠️  Unexpected idle client error on PostgreSQL pool:', err.message)
+})
+
 export default pool

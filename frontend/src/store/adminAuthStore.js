@@ -11,7 +11,7 @@ import { persist } from 'zustand/middleware'
  */
 const useAdminAuthStore = create(
   persist(
-    (set) => ({
+    (set, get) => ({
       admin: null,
       token: null,
 
@@ -19,7 +19,7 @@ const useAdminAuthStore = create(
       logout: () => set({ admin: null, token: null }),
 
       get isAdminLoggedIn() {
-        return !!useAdminAuthStore.getState().admin
+        return !!get().admin
       },
     }),
     {

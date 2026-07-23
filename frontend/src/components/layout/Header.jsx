@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SearchInput, IconButton, Modal, Input, Button } from '@/components/ui'
 import { useCartStore } from '@/store/cartStore'
@@ -37,6 +37,46 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
   // Profile dropdown state
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
   const profileDropdownRef = useRef(null)
+
+  const location = useLocation()
+  const [activeSection, setActiveSection] = useState('hero')
+
+  useEffect(() => {
+    if (location.pathname !== '/') {
+      return
+    }
+
+    const updateActiveSection = () => {
+      const scrollPos = window.scrollY + 220
+      const contactSection = document.getElementById('contact')
+      const aboutSection = document.getElementById('about')
+
+      if (contactSection && scrollPos >= contactSection.offsetTop) {
+        setActiveSection('contact')
+      } else if (aboutSection && scrollPos >= aboutSection.offsetTop) {
+        setActiveSection('about')
+      } else {
+        setActiveSection('hero')
+      }
+    }
+
+    updateActiveSection()
+    window.addEventListener('scroll', updateActiveSection, { passive: true })
+    return () => window.removeEventListener('scroll', updateActiveSection)
+  }, [location.pathname])
+
+  const getIsLinkActive = (link) => {
+    if (location.pathname === '/category' || location.pathname.startsWith('/category')) {
+      return link.path === '/category'
+    }
+    if (location.pathname === '/') {
+      if (link.sectionId) {
+        return activeSection === link.sectionId
+      }
+      return link.path === '/' && activeSection === 'hero'
+    }
+    return false
+  }
 
   const handleNavClick = (e, link) => {
     if (link.sectionId) {
@@ -167,23 +207,23 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
           className="hidden lg:flex items-center gap-6 px-4 py-1.5"
           aria-label="Main navigation"
         >
-          {NAV_LINKS.map((link) => (
-            <NavLink
-              key={link.label}
-              to={link.path}
-              onClick={(e) => handleNavClick(e, link)}
-              end={link.path === '/'}
-              className={({ isActive }) =>
-                `text-sm font-medium tracking-wide transition-all duration-200 relative py-1 flex items-center ${
-                  isActive && !link.sectionId
-                    ? 'text-primary font-semibold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-primary after:rounded-full'
-                    : 'text-on-surface-variant hover:text-primary hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:right-0 hover:after:h-[2px] hover:after:bg-primary/40 hover:after:rounded-full'
-                }`
-              }
-            >
-              {link.label}
-            </NavLink>
-          ))}
+          {NAV_LINKS.map((link) => {
+            const isActive = getIsLinkActive(link)
+            return (
+              <NavLink
+                key={link.label}
+                to={link.path}
+                onClick={(e) => handleNavClick(e, link)}
+                className={`text-sm tracking-wide transition-all duration-200 relative py-1 flex items-center ${
+                  isActive
+                    ? 'text-primary font-bold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2.5px] after:bg-primary after:rounded-full shadow-sm'
+                    : 'text-on-surface-variant font-medium hover:text-primary hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:right-0 hover:after:h-[2px] hover:after:bg-primary/40 hover:after:rounded-full'
+                }`}
+              >
+                {link.label}
+              </NavLink>
+            )
+          })}
         </nav>
 
         {/* Right icons / control deck */}
@@ -419,25 +459,29 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
 
               {/* Navigation Content */}
               <nav className="flex-1 overflow-y-auto p-4 flex flex-col gap-1" aria-label="Mobile navigation">
-                {NAV_LINKS.map((link) => (
-                  <NavLink
-                    key={link.label}
-                    to={link.path}
-                    end={link.path === '/'}
-                    onClick={(e) => {
-                      setMobileMenuOpen(false)
-                      handleNavClick(e, link)
-                    }}
-                    className={({ isActive }) =>
-                      `px-4 py-3 rounded-[12px] text-body-md font-semibold transition-colors flex items-center justify-between min-h-[44px] ${
-                        isActive && !link.sectionId ? 'bg-primary text-on-primary' : 'text-on-surface hover:bg-surface-container'
-                      }`
-                    }
-                  >
-                    <span>{link.label}</span>
-                    <span className="material-symbols-outlined text-[18px] opacity-60">chevron_right</span>
-                  </NavLink>
-                ))}
+                {NAV_LINKS.map((link) => {
+                  const isActive = getIsLinkActive(link)
+                  return (
+                    <NavLink
+                      key={link.label}
+                      to={link.path}
+                      onClick={(e) => {
+                        setMobileMenuOpen(false)
+                        handleNavClick(e, link)
+                      }}
+                      className={`px-4 py-3 rounded-[12px] text-body-md transition-colors flex items-center justify-between min-h-[44px] ${
+                        isActive
+                          ? 'bg-primary text-white font-bold shadow-sm'
+                          : 'text-on-surface font-semibold hover:bg-surface-container'
+                      }`}
+                    >
+                      <span>{link.label}</span>
+                      <span className="material-symbols-outlined text-[18px]">
+                        {isActive ? 'check_circle' : 'chevron_right'}
+                      </span>
+                    </NavLink>
+                  )
+                })}
                 
                 <div className="border-t border-outline-variant/30 mt-2 pt-4 flex flex-col gap-1">
                   <button

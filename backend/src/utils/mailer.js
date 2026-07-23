@@ -43,13 +43,18 @@ if (isConfigured) {
 
 // ── sendMail — never throws, never blocks the caller ──────────────────────────
 export async function sendMail({ to, subject, html }) {
+  if (!to || to.endsWith('@nhsalem.com')) {
+    console.log(`[Email Simulation - Dummy Domain] To: ${to} | Subject: ${subject}`)
+    return { skipped: true, message: 'Skipped real SMTP sending for dummy @nhsalem.com address' }
+  }
+
   if (!isConfigured || !transporter) {
     console.log(`[Email Simulation] To: ${to} | Subject: ${subject}`)
     return { skipped: true, message: 'SMTP transporter not configured' }
   }
   try {
     const info = await transporter.sendMail({
-      from: MAIL_FROM || '"NH Salem Sea Foods" <noreply@nhsalem.com>',
+      from: MAIL_FROM || '"NH Salem Sea Foods" <carenhsalem@gmail.com>',
       to,
       subject,
       html
