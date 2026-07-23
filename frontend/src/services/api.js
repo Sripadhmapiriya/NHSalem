@@ -152,25 +152,6 @@ export async function getCityByPincode(pincode) {
   return null
 }
 
-// ── Subscriptions ─────────────────────────────────────────────────────────────
-
-export async function getSubscriptionPlans() {
-  const response = await fetch(`${API_URL}/api/subscriptions/plans`)
-  return handleResponse(response)
-}
-
-export async function createSubscription(data) {
-  const payload = {
-    planId: data.planId,
-    address: data.address
-  }
-  const response = await fetch(`${API_URL}/api/subscriptions`, {
-    method: 'POST',
-    headers: getHeaders(true),
-    body: JSON.stringify(payload)
-  })
-  return handleResponse(response)
-}
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
@@ -197,16 +178,6 @@ export async function verifyOTP(phone, otp) {
   }))
 }
 
-// ── Newsletter ────────────────────────────────────────────────────────────────
-
-export async function subscribeNewsletter(email) {
-  const response = await fetch(`${API_URL}/api/newsletter/subscribe`, {
-    method: 'POST',
-    headers: getHeaders(false),
-    body: JSON.stringify({ email })
-  })
-  return handleResponse(response)
-}
 
 // ── Help ──────────────────────────────────────────────────────────────────────
 

@@ -156,19 +156,6 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
               <span>{link.label}</span>
             </NavLink>
           ))}
-          <NavLink
-            to="/subscriptions"
-            className={({ isActive }) =>
-              `px-1.5 xl:px-2.5 py-1 rounded-full text-xs xl:text-sm font-bold transition-all duration-250 ml-1 flex items-center gap-1 flex-shrink-0 whitespace-nowrap ${
-                isActive
-                  ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-sm shadow-amber-600/25 scale-[1.02]'
-                  : 'text-secondary hover:bg-secondary-container/20'
-              }`
-            }
-          >
-            <span className="text-[12px] xl:text-[14px] leading-none flex-shrink-0 hidden xl:inline">✦</span>
-            <span>Subscribe</span>
-          </NavLink>
         </nav>
 
         {/* Right icons / control deck */}
@@ -419,13 +406,6 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
                     <span>{link.label}</span>
                   </NavLink>
                 ))}
-                <NavLink
-                  to="/subscriptions"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="px-4 py-3 rounded-[12px] text-body-md font-semibold text-secondary hover:bg-secondary-container/20 transition-colors"
-                >
-                  ✦ Subscribe
-                </NavLink>
                 
                 <div className="border-t border-outline-variant/30 mt-2 pt-4 flex flex-col gap-1">
                   <button

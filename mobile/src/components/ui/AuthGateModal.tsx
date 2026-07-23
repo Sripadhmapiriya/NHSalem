@@ -42,7 +42,7 @@ export default function AuthGateModal() {
           
           <Text style={styles.title}>Sign In Required</Text>
           <Text style={styles.description}>
-            Create an account or sign in to save items to your cart, track deliveries, and subscribe.
+            Create an account or sign in to save items to your cart and track deliveries.
           </Text>
 
           <View style={styles.buttonContainer}>

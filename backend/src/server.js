@@ -11,7 +11,6 @@ import authRoutes from './routes/auth.routes.js'
 import adminRoutes from './routes/admin.routes.js'
 import productRoutes from './routes/products.routes.js'
 import promotionRoutes from './routes/promotions.routes.js'
-import subscriptionRoutes from './routes/subscriptions.routes.js'
 import cartRoutes from './routes/cart.routes.js'
 import orderRoutes from './routes/orders.routes.js'
 import paymentRoutes from './routes/payments.routes.js'
@@ -19,7 +18,6 @@ import wholesaleRoutes from './routes/wholesale.routes.js'
 import recipeRoutes from './routes/recipes.routes.js'
 import storeLocatorRoutes from './routes/storeLocator.routes.js'
 import faqRoutes from './routes/faqs.routes.js'
-import newsletterRoutes from './routes/newsletter.routes.js'
 import addressRoutes from './routes/addresses.routes.js'
 
 import fs from 'fs';
@@ -148,7 +146,6 @@ app.use('/api/auth', authRoutes)
 app.use('/api/admin', adminRoutes)         // handles admin auth, dashboard stats, customers list
 app.use('/api', productRoutes)             // handles /products and /admin/products
 app.use('/api', promotionRoutes)           // handles /promotions and /admin/promotions
-app.use('/api', subscriptionRoutes)        // handles /subscriptions and /admin/subscriptions/plans
 app.use('/api/cart', cartRoutes)           // handles /cart
 app.use('/api', orderRoutes)               // handles /orders and /admin/orders
 app.use('/api/payments', paymentRoutes)    // handles /payments
@@ -157,7 +154,6 @@ app.use('/api', wholesaleRoutes)           // handles /wholesale and /admin/whol
 app.use('/api', recipeRoutes)              // handles /recipes and /admin/recipes
 app.use('/api', storeLocatorRoutes)        // handles /cities and /admin/cities
 app.use('/api/faqs', faqRoutes)            // handles /faqs
-app.use('/api/newsletter', newsletterRoutes) // handles /newsletter
 app.use('/api/addresses', addressRoutes)   // handles /addresses
 app.use('/api/admin/reviews', productRoutes)
 

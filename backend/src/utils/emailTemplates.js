@@ -400,31 +400,6 @@ export function orderConfirmedCustomer({ orderRef, customerName, items, total, a
   return baseLayout(`Order Confirmed - #${orderRef}`, contentHtml)
 }
 
-// 4. NEWSLETTER WELCOME (Subscriber Template)
-export function newsletterWelcome({ email }) {
-  const contentHtml = `
-    <h2>Welcome to NH Salem Sea Foods! 🐟</h2>
-    <p>Thank you for subscribing to our fresh catch updates! We are thrilled to have you onboard.</p>
-    <p>From now on, you will be the first to know about:</p>
-    <ul style="padding-left: 20px;">
-      <li>⚡ Daily Flash Sales & Exclusive Deals</li>
-      <li>🌊 New Arrivals (Fresh crabs, premium lobsters, custom combos)</li>
-      <li>🍂 Seasonal catches direct from the coast</li>
-    </ul>
-    
-    <div class="details-box" style="background-color: #f0fdf4; border-color: #bbf7d0; text-align: center;">
-      <p style="margin: 0; color: #166534; font-weight: 700;">🎁 SUBSCRIBER SPECIAL</p>
-      <p style="margin: 5px 0 0 0; font-size: 16px;">Use code <strong>FRESH100</strong> for free delivery on orders above ₹499!</p>
-    </div>
-
-    <div style="text-align: center; margin-top: 25px;">
-      <a href="${BASE_URL}" class="btn">Shop Fresh Seafood Now</a>
-    </div>
-  `
-  // Create unsubscribe URL
-  const unsubUrl = `${process.env.VITE_API_URL || 'https://nhsalem-backend.onrender.com'}/api/newsletter/unsubscribe?email=${encodeURIComponent(email)}`
-  return baseLayout('Welcome to NH Salem Sea Foods!', contentHtml, unsubUrl)
-}
 
 // 5. PRODUCT / OFFER / PLAN UPDATE (Broadcast Template)
 export function productOfferUpdate({ updateType, subject, content, unsubscribeUrl }) {
@@ -450,23 +425,6 @@ export function productOfferUpdate({ updateType, subject, content, unsubscribeUr
       ${content.expires_at ? `<p style="font-size: 12px; color: #64748b;">*Valid until ${new Date(content.expires_at).toLocaleDateString()}</p>` : ''}
       <div style="text-align: center; margin-top: 20px;">
         <a href="${BASE_URL}" class="btn">Use Code Now</a>
-      </div>
-    `
-  } else if (updateType === 'new_subscription_plan') {
-    const highlightsHtml = Array.isArray(content.highlights) 
-      ? content.highlights.map(h => `<li>${h}</li>`).join('')
-      : `<li>${content.highlights || 'Premium delivery features included'}</li>`
-
-    innerContentHtml = `
-      <h2>⭐ New Plan: ${content.name}</h2>
-      <p>Upgrade to our premium subscriber plan and enjoy extra benefits!</p>
-      <p style="font-size: 20px; font-weight: 700; color: #166534; margin: 10px 0;">₹${content.price?.toLocaleString()} / ${content.period || 'month'}</p>
-      <h3>Plan Benefits:</h3>
-      <ul style="padding-left: 20px;">
-        ${highlightsHtml}
-      </ul>
-      <div style="text-align: center; margin-top: 20px;">
-        <a href="${BASE_URL}/subscriptions" class="btn">Subscribe Today</a>
       </div>
     `
   } else {

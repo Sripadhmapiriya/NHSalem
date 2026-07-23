@@ -8,11 +8,8 @@ import Modal from '@/components/ui/Modal'
 import LoginPage from '@/pages/Login'
 import useAuthStore from '@/store/authStore'
 import useCartStore from '@/store/cartStore'
-import useSubscriptionStore from '@/store/subscriptionStore'
 import useToastStore from '@/store/toastStore'
 import useWishlistStore from '@/store/wishlistStore'
-import { createSubscription, getSubscriptionPlans } from '@/services/api'
-import { MOCK_SUBSCRIPTION } from '@/mock/subscriptions'
 import { FloatingCartBar } from '@/components/ui'
 
 const pageVariants = {
@@ -31,18 +28,10 @@ export default function Layout({ children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { user, cartLoginPopupOpen, setCartLoginPopupOpen, pendingAction, setPendingAction } = useAuthStore()
   const { addItem } = useCartStore()
-  const { setSubscription } = useSubscriptionStore()
   const { addToast } = useToastStore()
   const { toggle: toggleWishlist } = useWishlistStore()
   const navigate = useNavigate()
-  const [plans, setPlans] = useState([])
   const [showDownload, setShowDownload] = useState(true)
-
-  useEffect(() => {
-    if (pendingAction && pendingAction.type === 'SUBSCRIBE' && plans.length === 0) {
-      getSubscriptionPlans().then(setPlans).catch(() => {})
-    }
-  }, [pendingAction, plans])
 
   useEffect(() => {
     if (user && pendingAction) {
@@ -53,25 +42,6 @@ export default function Layout({ children }) {
         if (action.type === 'ADD_TO_CART') {
           addItem(action.payload)
           addToast({ message: `${action.payload.name} added to cart!`, type: 'success' })
-        } else if (action.type === 'SUBSCRIBE') {
-          const { planId } = action.payload
-          try {
-            const result = await createSubscription({ planId })
-            if (result.success) {
-              let planName = 'Your Plan'
-              let currentPlans = plans
-              if (currentPlans.length === 0) {
-                currentPlans = await getSubscriptionPlans()
-              }
-              const plan = currentPlans.find((p) => p.id === planId)
-              if (plan) planName = plan.name
-
-              setSubscription({ ...MOCK_SUBSCRIPTION, planId, planName, status: 'active' })
-              addToast({ message: `🎉 Subscribed to ${planName}! Your first box ships soon.`, type: 'success', duration: 5000 })
-            }
-          } catch (e) {
-            addToast({ message: 'Failed to create subscription. Please try again.', type: 'error' })
-          }
         } else if (action.type === 'TOGGLE_WISHLIST') {
           toggleWishlist(action.payload.id)
           addToast({ message: `${action.payload.name} added to wishlist!`, type: 'success' })
@@ -81,7 +51,7 @@ export default function Layout({ children }) {
       }
       executeAction()
     }
-  }, [user, pendingAction, addItem, setSubscription, addToast, plans, setPendingAction, toggleWishlist, navigate])
+  }, [user, pendingAction, addItem, addToast, setPendingAction, toggleWishlist, navigate])
 
   const { items = [], totalItems = 0 } = useCartStore()
   const location = useLocation()
@@ -89,7 +59,7 @@ export default function Layout({ children }) {
   const isCartBarVisible = user && totalItems > 0 && !hiddenRoutes.some(r => location.pathname.startsWith(r))
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-[#000516] relative">
       <Header
         onLoginClick={(mode = 'login') => {
           setLoginModalMode(mode)
@@ -99,7 +69,7 @@ export default function Layout({ children }) {
         setMobileMenuOpen={setMobileMenuOpen}
       />
 
-      <main className={`flex-1 w-full ${isCartBarVisible ? 'pb-20' : ''}`} id="main-content" tabIndex={-1}>
+      <main className={`flex-1 w-full bg-slate-50 ${isCartBarVisible ? 'pb-20' : ''}`} id="main-content" tabIndex={-1}>
         <motion.div
           key={typeof window !== 'undefined' ? window.location.pathname : 'page'}
           variants={pageVariants}
@@ -185,7 +155,7 @@ export default function Layout({ children }) {
           <div className="space-y-2">
             <h3 className="text-headline-sm text-on-surface font-bold">Please sign in to add items to your cart</h3>
             <p className="text-body-md text-on-surface-variant leading-relaxed">
-              Create an account or sign in to save items to your cart, track deliveries, and subscribe.
+              Create an account or sign in to save items to your cart and track deliveries.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">

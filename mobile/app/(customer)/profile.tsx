@@ -40,13 +40,7 @@ export default function ProfileScreen() {
       subtitle: 'Track and view your orders',
       onPress: () => router.push('/(customer)/orders')
     },
-    {
-      id: 'subscription',
-      icon: 'refresh-circle-outline', 
-      label: 'My Subscription',
-      subtitle: 'Manage your seafood plan',
-      onPress: () => router.push('/(customer)/subscription')
-    },
+
     {
       id: 'addresses',
       icon: 'location-outline',

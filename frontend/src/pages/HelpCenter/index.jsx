@@ -12,7 +12,6 @@ const HELP_CATEGORIES = [
   { icon: 'refresh', label: 'Returns & Refunds' },
   { icon: 'verified_user', label: 'Account & Login' },
   { icon: 'payments', label: 'Payments' },
-  { icon: 'subscriptions', label: 'Subscriptions' },
   { icon: 'restaurant', label: 'Products & Quality' },
 ]
 
@@ -24,7 +23,6 @@ const SITEMAP = [
   { label: 'Lobster', to: '/category/lobster' },
   { label: 'Dried Fish', to: '/category/dried-fish' },
   { label: 'Combos', to: '/category/combos' },
-  { label: 'Subscriptions', to: '/subscriptions' },
   { label: 'Track Order', to: '/orders/NHS-77421' },
   { label: 'About Us', to: '/about' },
   { label: 'Quality Promise', to: '/quality' },

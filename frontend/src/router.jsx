@@ -12,7 +12,6 @@ const Cart         = lazy(() => import('@/pages/Cart'))
 const Checkout     = lazy(() => import('@/pages/Checkout'))
 const Login        = lazy(() => import('@/pages/Login'))
 const About        = lazy(() => import('@/pages/About'))
-const Subscriptions = lazy(() => import('@/pages/Subscriptions'))
 const OrderTracking = lazy(() => import('@/pages/OrderTracking'))
 const Quality      = lazy(() => import('@/pages/Quality'))
 const StoreLocator = lazy(() => import('@/pages/StoreLocator'))
@@ -85,7 +84,6 @@ function RootRoutes() {
 
           {/* Content pages */}
           <Route path="/about" element={<About />} />
-          <Route path="/subscriptions" element={<Subscriptions />} />
           <Route path="/quality" element={<Quality />} />
 
           {/* Operational */}

@@ -361,25 +361,7 @@ const SectionHeader = ({ title, onSeeAll }: any) => (
   </View>
 );
 
-const SubscribeBanner = ({ router }: any) => (
-  <TouchableOpacity onPress={() => router.push('/(customer)/subscription')} activeOpacity={0.9} style={{
-    marginHorizontal: SPACING.lg, marginVertical: SPACING.md, backgroundColor: '#eff6ff',
-    borderRadius: RADIUS.xl, borderWidth: 1, borderColor: '#bfdbfe', padding: SPACING.xl,
-    flexDirection: 'row', alignItems: 'center',
-  }}>
-    <View style={{ flex: 1 }}>
-      <View style={{ backgroundColor: '#dbeafe', borderRadius: RADIUS.sm, paddingHorizontal: SPACING.sm, paddingVertical: 3, alignSelf: 'flex-start', marginBottom: SPACING.sm }}>
-        <Text style={{ fontSize: 9, fontWeight: '700', color: '#1e40af', letterSpacing: 1 }}>🌟 SUBSCRIPTION</Text>
-      </View>
-      <Text style={{ fontSize: 20, fontWeight: '800', color: '#1e3a8a', marginBottom: 6 }}>Subscribe & Save</Text>
-      <Text style={{ fontSize: 13, color: '#3b82f6', lineHeight: 18, marginBottom: 14 }}>Get fresh seafood delivered weekly.{'\n'}Save up to 20%!</Text>
-      <View style={{ backgroundColor: '#1d4ed8', borderRadius: RADIUS.sm, paddingHorizontal: SPACING.lg, paddingVertical: 10, alignSelf: 'flex-start' }}>
-        <Text style={{ color: COLORS.surface, fontWeight: '700', fontSize: 13 }}>View Plans →</Text>
-      </View>
-    </View>
-    <Text style={{ fontSize: 56, marginLeft: SPACING.md }}>🐠</Text>
-  </TouchableOpacity>
-);
+
 
 const DeliveryInfoSection = () => (
   <View style={{
@@ -403,45 +385,7 @@ const DeliveryInfoSection = () => (
   </View>
 );
 
-const NewsletterSection = () => {
-  const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  const handleSubscribe = async () => {
-    if (!email || !email.includes('@')) return;
-    setLoading(true);
-    try {
-      await fetch(`${API_URL}/api/newsletter/subscribe`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }),
-      });
-      setEmail('');
-    } catch (e) {
-      console.log(e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <View style={{
-      marginHorizontal: SPACING.lg, marginVertical: SPACING.md, backgroundColor: COLORS.navy,
-      borderRadius: RADIUS.xl, padding: SPACING.xl,
-    }}>
-      <Text style={{ fontSize: 18, fontWeight: '800', color: COLORS.surface, textAlign: 'center', marginBottom: 6 }}>📧 Stay in the Loop</Text>
-      <Text style={{ fontSize: 13, color: COLORS.textLight, textAlign: 'center', marginBottom: SPACING.lg, lineHeight: 18 }}>Get flash sales and seasonal catches straight to your inbox</Text>
-      <View style={{ flexDirection: 'row', gap: SPACING.sm }}>
-        <TextInput
-          value={email} onChangeText={setEmail} placeholder="your@email.com" placeholderTextColor="#475569"
-          keyboardType="email-address" autoCapitalize="none"
-          style={{ flex: 1, backgroundColor: '#1e293b', borderRadius: RADIUS.sm, paddingHorizontal: 14, paddingVertical: 12, color: COLORS.surface, fontSize: 13, borderWidth: 1, borderColor: '#334155' }}
-        />
-        <TouchableOpacity onPress={handleSubscribe} disabled={loading} style={{ backgroundColor: COLORS.primary, borderRadius: RADIUS.sm, paddingHorizontal: SPACING.lg, paddingVertical: 12, justifyContent: 'center' }}>
-          {loading ? <ActivityIndicator size="small" color={COLORS.surface} /> : <Text style={{ color: COLORS.surface, fontWeight: '700', fontSize: 13 }}>Subscribe</Text>}
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-};
 
 const ProductGridSkeleton = () => (
   <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 10 }}>
@@ -571,7 +515,6 @@ export default function HomeScreen() {
           </View>
         )}
 
-        <SubscribeBanner router={router} />
 
         {popularProducts.length > 0 && (
           <View style={globalStyles.section}>
@@ -628,7 +571,7 @@ export default function HomeScreen() {
           )}
         </View>
 
-        <NewsletterSection />
+
         <View style={{ height: 80 }} />
       </ScrollView>
     </SafeAreaView>

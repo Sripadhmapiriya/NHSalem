@@ -5,7 +5,6 @@ import dotenv from 'dotenv'
 // Import mock data directly from frontend
 import { PRODUCTS } from '../../../frontend/src/mock/products.js'
 import { COUPONS } from '../../../frontend/src/mock/coupons.js'
-import { SUBSCRIPTION_PLANS } from '../../../frontend/src/mock/subscriptions.js'
 import { CITIES } from '../../../frontend/src/mock/cities.js'
 import { FAQS } from '../../../frontend/src/mock/faqs.js'
 import { RECIPES } from '../../../frontend/src/mock/recipes.js'
@@ -37,10 +36,9 @@ async function runSeed() {
     await client.query(
       `TRUNCATE TABLE 
         order_stages, order_items, orders, cart_items, 
-        subscriptions, subscription_plans, promotions, 
+        promotions, 
         reviews, products, categories, admins, users, 
-        wholesale_inquiries, recipes, cities, faqs, 
-        newsletter_subscribers 
+        wholesale_inquiries, recipes, cities, faqs 
        CASCADE`
     )
 
@@ -198,35 +196,6 @@ async function runSeed() {
       }
     }
 
-    // 6. Seed Subscription Plans
-    console.log('Seeding subscription plans...')
-    for (const plan of SUBSCRIPTION_PLANS) {
-      await client.query(
-        `INSERT INTO subscription_plans (slug, name, tagline, price, period, savings, highlights, color, badge, is_popular, status)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-         ON CONFLICT (slug) DO NOTHING`,
-        [
-          plan.id,
-          plan.name,
-          plan.tagline || null,
-          plan.price,
-          plan.period || 'week',
-          plan.savings || null,
-          JSON.stringify(plan.highlights || []),
-          plan.color || null,
-          plan.badge || null,
-          plan.isPopular || false,
-          plan.status || 'active'
-        ]
-      )
-    }
-
-    // Get subscription plan UUID mappings
-    const plansRes = await client.query('SELECT id, slug FROM subscription_plans')
-    const planMap = {}
-    plansRes.rows.forEach(p => {
-      planMap[p.slug] = p.id
-    })
 
     // 7. Seed Cities
     console.log('Seeding cities...')

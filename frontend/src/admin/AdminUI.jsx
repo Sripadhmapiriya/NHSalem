@@ -11,9 +11,6 @@ const STATUS_STYLES = {
   out_for_delivery: 'bg-purple-50 text-purple-700 border-purple-200',
   delivered:        'bg-green-50 text-green-700 border-green-200',
   cancelled:        'bg-red-50 text-red-600 border-red-200',
-  // Subscriptions
-  active:           'bg-green-50 text-green-700 border-green-200',
-  paused:           'bg-yellow-50 text-yellow-700 border-yellow-200',
   // Promotions
   scheduled:        'bg-blue-50 text-blue-700 border-blue-200',
   // Reviews

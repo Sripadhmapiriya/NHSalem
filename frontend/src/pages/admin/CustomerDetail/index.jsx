@@ -170,7 +170,7 @@ export default function CustomerDetail() {
         </div>
 
         {/* Stats Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white rounded-[14px] border border-admin-border/60 p-4 text-center">
             <p className="text-2xl font-bold text-admin-navy">{stats?.total_orders || 0}</p>
             <p className="text-[11px] text-admin-text-sub mt-0.5">Total Orders</p>
@@ -182,12 +182,6 @@ export default function CustomerDetail() {
           <div className="bg-white rounded-[14px] border border-admin-border/60 p-4 text-center">
             <p className="text-2xl font-bold capitalize text-admin-navy">{customer.status}</p>
             <p className="text-[11px] text-admin-text-sub mt-0.5">Account Status</p>
-          </div>
-          <div className="bg-white rounded-[14px] border border-admin-border/60 p-4 text-center">
-            <p className="text-2xl font-bold text-admin-gold truncate max-w-full px-2">
-              {customer.subscription_plan || 'None'}
-            </p>
-            <p className="text-[11px] text-admin-text-sub mt-0.5">Subscription Plan</p>
           </div>
         </div>
 

@@ -8,7 +8,7 @@ import Card from '@/components/ui/Card'
 import Modal from '@/components/ui/Modal'
 import useToastStore from '@/store/toastStore'
 import useAuthStore from '@/store/authStore'
-import { getProducts, subscribeNewsletter, getApprovedSiteReviews, submitSiteReview } from '@/services/api'
+import { getProducts, getApprovedSiteReviews, submitSiteReview } from '@/services/api'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -50,9 +50,7 @@ const HERO_SLIDES = [
   },
 ]
 
-const newsletterSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-})
+
 
 const reviewFormSchema = z.object({
   author: z.string().min(2, 'Name is required'),
@@ -105,14 +103,8 @@ export default function Home() {
           setTestimonials(reviewsRes.reviews)
         }
       })
-      .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
-
-  // Newsletter form
-  const { register: regNewsletter, handleSubmit: handleNewsletterSubmit, formState: { errors: newsletterErrors, isSubmitting: isSubmittingNewsletter }, reset: resetNewsletter } = useForm({
-    resolver: zodResolver(newsletterSchema),
-  })
 
   // Review Submission form
   const { register: regReview, handleSubmit: handleReviewSubmit, formState: { errors: reviewErrors, isSubmitting: isSubmittingReview }, reset: resetReview, setValue: setReviewValue, watch: watchReview } = useForm({
@@ -121,20 +113,6 @@ export default function Home() {
   })
 
   const currentRating = watchReview('rating') || 5
-
-  const onNewsletterSubmit = async ({ email }) => {
-    try {
-      await subscribeNewsletter(email)
-      addToast({ message: `🎉 Subscribed! Check your email for updates.`, type: 'success' })
-      resetNewsletter()
-    } catch (err) {
-      if (err.message === 'You are already subscribed!') {
-        addToast({ message: 'You are already subscribed!', type: 'info' })
-      } else {
-        addToast({ message: err.message || 'Subscription failed. Please try again.', type: 'error' })
-      }
-    }
-  }
 
   const onReviewSubmit = async (data) => {
     try {
@@ -543,44 +521,7 @@ export default function Home() {
         </form>
       </Modal>
 
-      {/* ── 5. Newsletter (Pure White Canvas) ───────────────────────────────── */}
-      <motion.section 
-        initial={{ opacity: 0, y: 20 }} 
-        whileInView={{ opacity: 1, y: 0 }} 
-        viewport={{ once: true }} 
-        transition={{ duration: 0.4 }}
-        className="py-20 bg-white" 
-        aria-labelledby="newsletter-heading"
-      >
-        <div className="container-max max-w-2xl mx-auto text-center">
-          <div className="w-12 h-12 rounded-full bg-[#000516]/5 text-[#000516] flex items-center justify-center mx-auto mb-4">
-            <span className="material-symbols-outlined text-2xl">mail</span>
-          </div>
-          <h2 id="newsletter-heading" className="text-headline-lg font-extrabold text-[#000516] mb-3">Stay in the Loop</h2>
-          <p className="text-body-lg text-slate-600 mb-8">Get early access to fresh catches, seasonal offers, and wholesale updates straight to your inbox.</p>
-          
-          <form onSubmit={handleNewsletterSubmit(onNewsletterSubmit)} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto" noValidate>
-            <div className="flex-1">
-              <input 
-                type="email" 
-                placeholder="your@email.com" 
-                {...regNewsletter('email')} 
-                className="w-full rounded-full bg-slate-50 border border-slate-300 px-5 py-3.5 text-body-md text-[#000516] placeholder:text-slate-400 focus:border-[#000516] focus:ring-2 focus:ring-[#000516]/15 outline-none transition-all" 
-              />
-              {newsletterErrors.email && <p className="text-label-sm text-error mt-1.5 text-left pl-3">{newsletterErrors.email.message}</p>}
-            </div>
-            <Button 
-              type="submit" 
-              variant="ghost"
-              icon="arrow_forward" 
-              loading={isSubmittingNewsletter} 
-              className="bg-[#000516] hover:bg-[#0b1e3d] text-white font-bold rounded-full px-8 py-3.5 border-none shadow-md"
-            >
-              Subscribe
-            </Button>
-          </form>
-        </div>
-      </motion.section>
+
     </div>
   )
 }

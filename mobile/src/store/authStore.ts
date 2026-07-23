@@ -13,7 +13,7 @@ interface User {
 }
 
 export type PendingAction = {
-  type: 'ADD_TO_CART' | 'TOGGLE_WISHLIST' | 'CHECKOUT' | 'SUBSCRIBE';
+  type: 'ADD_TO_CART' | 'TOGGLE_WISHLIST' | 'CHECKOUT';
   payload?: any;
 };
 

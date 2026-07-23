@@ -76,35 +76,6 @@ CREATE TABLE IF NOT EXISTS promotions (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- 6. Subscription Plans Table
-CREATE TABLE IF NOT EXISTS subscription_plans (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  slug VARCHAR(255) UNIQUE NOT NULL,
-  name VARCHAR(255) NOT NULL,
-  tagline VARCHAR(255),
-  price NUMERIC(10,2) NOT NULL,
-  period VARCHAR(50) NOT NULL DEFAULT 'week', -- 'week' | 'month' | 'year'
-  savings VARCHAR(50),
-  highlights JSONB NOT NULL DEFAULT '[]',
-  color VARCHAR(255),
-  badge VARCHAR(100),
-  is_popular BOOLEAN NOT NULL DEFAULT FALSE,
-  status VARCHAR(50) NOT NULL DEFAULT 'active', -- 'active' | 'inactive'
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- 7. Subscriptions Table
-CREATE TABLE IF NOT EXISTS subscriptions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  plan_id UUID NOT NULL REFERENCES subscription_plans(id) ON DELETE RESTRICT,
-  status VARCHAR(50) NOT NULL DEFAULT 'active', -- 'active' | 'paused' | 'cancelled'
-  start_date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  next_delivery_date TIMESTAMPTZ,
-  address JSONB NOT NULL DEFAULT '{}',
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
 
 -- 8. Cart Items Table
 CREATE TABLE IF NOT EXISTS cart_items (
@@ -226,12 +197,6 @@ CREATE TABLE IF NOT EXISTS faqs (
   category VARCHAR(100)
 );
 
--- 17. Newsletter Subscribers Table
-CREATE TABLE IF NOT EXISTS newsletter_subscribers (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  email VARCHAR(255) UNIQUE NOT NULL,
-  subscribed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
 
 -- 18. City Launch Notifications Table
 CREATE TABLE IF NOT EXISTS city_notifications (

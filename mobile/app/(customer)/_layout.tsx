@@ -77,7 +77,6 @@ export default function CustomerLayout() {
       <Tabs.Screen name="faq" options={{ href: null }} />
       <Tabs.Screen name="terms" options={{ href: null }} />
       <Tabs.Screen name="privacy" options={{ href: null }} />
-      <Tabs.Screen name="subscription" options={{ href: null }} />
       <Tabs.Screen name="editProfile" options={{ href: null }} />
       <Tabs.Screen name="wishlist" options={{ href: null }} />
     </Tabs>

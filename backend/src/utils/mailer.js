@@ -66,32 +66,27 @@ export async function sendMail({ to, subject, html }) {
 // ── broadcastToSubscribers — used by admin promotion broadcasts ───────────────
 export async function broadcastToSubscribers({ updateType, subject, content }) {
   try {
-    // 1. Fetch newsletter subscribers
-    const res1 = await pool.query('SELECT email FROM newsletter_subscribers')
-    const subs = res1.rows.map(r => r.email.toLowerCase().trim())
-
-    // 2. Fetch users who placed at least one order
-    const res2 = await pool.query(`
+    // 1. Fetch users who placed at least one order
+    const res = await pool.query(`
       SELECT DISTINCT LOWER(TRIM(u.email)) as email
       FROM users u
       JOIN orders o ON u.id = o.user_id
     `)
-    const customers = res2.rows.map(r => r.email)
+    const customers = res.rows.map(r => r.email)
 
-    // 3. Merge lists, remove duplicates, filter out mock domains
-    const allEmails = Array.from(new Set([...subs, ...customers]))
+    // 2. Filter out mock domains
+    const allEmails = Array.from(new Set(customers))
       .filter(email => email && !email.endsWith('@example.com') && !email.endsWith('@nhsalem.com'))
 
     console.log(`Starting broadcast of type ${updateType} to ${allEmails.length} recipients...`)
 
     let sentCount = 0
     for (const email of allEmails) {
-      const unsubscribeUrl = `${process.env.VITE_API_URL || 'https://nhsalem-backend.onrender.com'}/api/newsletter/unsubscribe?email=${encodeURIComponent(email)}`
-      const html = productOfferUpdate({ updateType, subject, content, unsubscribeUrl })
+      const html = productOfferUpdate({ updateType, subject, content })
 
       // Fire-and-forget per recipient so one failure doesn't stop the rest
-      const res = await sendMail({ to: email, subject, html })
-      if (res.success) sentCount++
+      const resMail = await sendMail({ to: email, subject, html })
+      if (resMail.success) sentCount++
     }
 
     console.log(`Broadcast completed. Sent to ${sentCount}/${allEmails.length} recipients.`)

@@ -153,40 +153,6 @@ export async function deleteAdminPromotion(id) {
   return handleResponse(response)
 }
 
-// ── Admin Subscriptions & Plans CRUD ──────────────────────────────────────────
-
-export async function getAdminPlans() {
-  const response = await fetch(`${API_URL}/api/admin/subscriptions/plans`, {
-    headers: getHeaders(true)
-  })
-  return handleResponse(response)
-}
-
-export async function createAdminPlan(data) {
-  const response = await fetch(`${API_URL}/api/admin/subscriptions/plans`, {
-    method: 'POST',
-    headers: getHeaders(true),
-    body: JSON.stringify(data)
-  })
-  return handleResponse(response)
-}
-
-export async function updateAdminPlan(id, data) {
-  const response = await fetch(`${API_URL}/api/admin/subscriptions/plans/${id}`, {
-    method: 'PUT',
-    headers: getHeaders(true),
-    body: JSON.stringify(data)
-  })
-  return handleResponse(response)
-}
-
-export async function deleteAdminPlan(id) {
-  const response = await fetch(`${API_URL}/api/admin/subscriptions/plans/${id}`, {
-    method: 'DELETE',
-    headers: getHeaders(true)
-  })
-  return handleResponse(response)
-}
 
 // ── Admin Orders ──────────────────────────────────────────────────────────────
 

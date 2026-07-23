@@ -41,7 +41,7 @@ html {
 
 body {
   font-family: 'Inter', sans-serif;
-  background-color: #fbf8fc;
+  background-color: #000516;
   color: #1b1b1e;
   line-height: 1.5;
   overflow-x: hidden;
@@ -59,11 +59,18 @@ body {
   font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
-/* ─── Scrollbar ───────────────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #f5f3f6; }
-::-webkit-scrollbar-thumb { background: #c5c6cf; border-radius: 9999px; }
-::-webkit-scrollbar-thumb:hover { background: #75777f; }
+/* ─── Scrollbar (Hidden visually, full scrolling functionality retained) ─── */
+html, body {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE / Edge */
+}
+
+::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+  width: 0px;
+  height: 0px;
+  background: transparent;
+}
 
 /* ─── Selection ───────────────────────────────────────────────────────── */
 ::selection {
