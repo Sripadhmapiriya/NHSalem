@@ -26,8 +26,9 @@ import { Navigate } from 'react-router-dom'
 
 function ProtectedRoute({ children }) {
   const user = useAuthStore((state) => state.user)
+  const location = useLocation()
   if (!user) {
-    return <Navigate to="/" replace />
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />
   }
   return children
 }
@@ -89,9 +90,9 @@ function RootRoutes() {
           <Route path="/quality" element={<Quality />} />
 
           {/* Operational */}
-          <Route path="/orders/:orderId" element={<OrderTracking />} />
-          <Route path="/track-order" element={<OrderTracking />} />
-          <Route path="/track-order/:orderId" element={<OrderTracking />} />
+          <Route path="/orders/:orderId" element={<ProtectedRoute><OrderTracking /></ProtectedRoute>} />
+          <Route path="/track-order" element={<ProtectedRoute><OrderTracking /></ProtectedRoute>} />
+          <Route path="/track-order/:orderId" element={<ProtectedRoute><OrderTracking /></ProtectedRoute>} />
           <Route path="/stores" element={<StoreLocator />} />
           <Route path="/bulk-orders" element={<BulkOrders />} />
           <Route path="/help" element={<HelpCenter />} />

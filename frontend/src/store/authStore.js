@@ -1,60 +1,50 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
 import { useCartStore } from './cartStore'
 
 /**
- * Auth Store — persisted to localStorage
- * user: { id, name, phone, email } | null
+ * Auth Store — token and user data are backed by localStorage explicitly.
  */
-const useAuthStore = create(
-  persist(
-    (set) => ({
-      user: null,
-      token: null,
-      cartLoginPopupOpen: false,
-      pendingAction: null,
-      _hasHydrated: false,
+const useAuthStore = create((set, get) => ({
+  user: null,
+  token: null,
+  cartLoginPopupOpen: false,
+  pendingAction: null,
+  isAppReady: false, // Replaces _hasHydrated
 
-      setHasHydrated: (state) => set({ _hasHydrated: state }),
+  setAppReady: (ready) => set({ isAppReady: ready }),
 
-      setUser: (user, token) => {
-        // Clear the previous user's cart from localStorage whenever a new session begins.
-        // This prevents one user's cart from leaking into another user's session.
-        try {
-          localStorage.removeItem('nh-salem-cart-v2')
-          localStorage.removeItem('nh-salem-cart') // legacy cleanup
-          useCartStore.getState().clearCart() // clear in-memory state
-        } catch (_) {}
-        set({ user, token })
-      },
+  setUser: (user, token) => {
+    try {
+      localStorage.removeItem('nh-salem-cart-v2')
+      localStorage.removeItem('nh-salem-cart') 
+      useCartStore.getState().clearCart()
+      
+      // Explicitly persist to localStorage
+      localStorage.setItem('nh-salem-token', token)
+      localStorage.setItem('nh-salem-user', JSON.stringify(user))
+    } catch (_) {}
+    set({ user, token })
+  },
 
-      logout: () => {
-        // Clear cart on logout so the next user (or guest) starts with an empty basket.
-        try {
-          localStorage.removeItem('nh-salem-cart-v2')
-          localStorage.removeItem('nh-salem-cart') // legacy cleanup
-          useCartStore.getState().clearCart() // clear in-memory state
-        } catch (_) {}
-        set({ user: null, token: null })
-      },
+  logout: () => {
+    try {
+      localStorage.removeItem('nh-salem-cart-v2')
+      localStorage.removeItem('nh-salem-cart') 
+      useCartStore.getState().clearCart()
+      
+      // Explicitly remove from localStorage
+      localStorage.removeItem('nh-salem-token')
+      localStorage.removeItem('nh-salem-user')
+    } catch (_) {}
+    set({ user: null, token: null })
+  },
 
-      setCartLoginPopupOpen: (isOpen) => set({ cartLoginPopupOpen: isOpen }),
-      setPendingAction: (action) => set({ pendingAction: action }),
+  setCartLoginPopupOpen: (isOpen) => set({ cartLoginPopupOpen: isOpen }),
+  setPendingAction: (action) => set({ pendingAction: action }),
 
-      get isLoggedIn() {
-        return !!useAuthStore.getState().user
-      },
-    }),
-    {
-      name: 'nh-salem-auth',
-      partialize: (state) => ({ user: state.user, token: state.token }),
-      onRehydrateStorage: () => (state) => {
-        if (state) {
-          state.setHasHydrated(true)
-        }
-      },
-    }
-  )
-)
+  get isLoggedIn() {
+    return !!get().user
+  },
+}))
 
 export default useAuthStore

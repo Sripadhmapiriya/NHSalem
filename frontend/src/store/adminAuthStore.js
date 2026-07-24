@@ -1,40 +1,34 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
 
 /**
- * Admin Auth Store — persisted to localStorage under 'nh-salem-admin-auth'.
- * Kept completely separate from useAuthStore ('nh-salem-auth') so an admin
- * and a customer can be simultaneously logged in on the same browser.
- *
- * admin: { id, name, email, role } | null
- * token: string | null
+ * Admin Auth Store — explicitly backed by localStorage
  */
-const useAdminAuthStore = create(
-  persist(
-    (set, get) => ({
-      admin: null,
-      token: null,
-      _hasHydrated: false,
+const useAdminAuthStore = create((set, get) => ({
+  admin: null,
+  token: null,
+  isAdminAppReady: false,
 
-      setHasHydrated: (state) => set({ _hasHydrated: state }),
+  setAdminAppReady: (ready) => set({ isAdminAppReady: ready }),
 
-      setAdmin: (admin, token) => set({ admin, token }),
-      logout: () => set({ admin: null, token: null }),
+  setAdmin: (admin, token) => {
+    try {
+      localStorage.setItem('nh-salem-admin-token', token)
+      localStorage.setItem('nh-salem-admin', JSON.stringify(admin))
+    } catch (_) {}
+    set({ admin, token })
+  },
+  
+  logout: () => {
+    try {
+      localStorage.removeItem('nh-salem-admin-token')
+      localStorage.removeItem('nh-salem-admin')
+    } catch (_) {}
+    set({ admin: null, token: null })
+  },
 
-      get isAdminLoggedIn() {
-        return !!get().admin
-      },
-    }),
-    {
-      name: 'nh-salem-admin-auth',
-      partialize: (state) => ({ admin: state.admin, token: state.token }),
-      onRehydrateStorage: () => (state) => {
-        if (state) {
-          state.setHasHydrated(true)
-        }
-      },
-    }
-  )
-)
+  get isAdminLoggedIn() {
+    return !!get().admin
+  },
+}))
 
 export default useAdminAuthStore

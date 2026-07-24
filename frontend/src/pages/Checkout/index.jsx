@@ -178,6 +178,7 @@ export default function Checkout() {
               razorpaySignature: paymentData.razorpaySignature,
             })
             clearCart()
+            sessionStorage.setItem('justCompletedOrderId', orderId)
             addToast({ message: '🎉 Order placed successfully!', type: 'success', duration: 5000 })
             setSuccessOrderRef(orderId)
           } catch (err) {
@@ -203,6 +204,7 @@ export default function Checkout() {
         paymentMethod: 'cod',
       })
       clearCart()
+      sessionStorage.setItem('justCompletedOrderId', orderId)
       addToast({ message: '🎉 Order placed successfully!', type: 'success', duration: 5000 })
       setSuccessOrderRef(orderId)
     } catch (err) {

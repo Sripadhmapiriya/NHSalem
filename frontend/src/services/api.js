@@ -8,7 +8,7 @@ function getHeaders(authRequired = false) {
     'Content-Type': 'application/json'
   }
   if (authRequired) {
-    const token = useAuthStore.getState().token
+    const token = typeof window !== 'undefined' ? localStorage.getItem('nh-salem-token') : null
     if (token) {
       headers['Authorization'] = `Bearer ${token}`
     }
@@ -57,7 +57,9 @@ export async function getProductBySlug(slug) {
 // ── Orders ────────────────────────────────────────────────────────────────────
 
 export async function getOrderStatus(orderId) {
-  const response = await fetch(`${API_URL}/api/orders/${orderId}`)
+  const response = await fetch(`${API_URL}/api/orders/${orderId}`, {
+    headers: getHeaders(true)
+  })
   return handleResponse(response).catch(() => null)
 }
 

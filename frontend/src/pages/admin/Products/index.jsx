@@ -81,7 +81,7 @@ export default function AdminProducts() {
 
       <AdminCard subtitle={`${sorted.length} products`}>
         <AdminTable headers={[
-          { label: 'Product', className: 'sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]' }, 
+          'Product', 
           'Category', 
           'Base Price', 
           'Rating', 
@@ -91,7 +91,7 @@ export default function AdminProducts() {
         ]}>
           {paginated.map((p) => (
             <Tr key={p.id} onClick={() => navigate(`/admin/products/${p.id}/edit`)}>
-              <Td className="sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] p-0">
+              <Td className="p-0">
                 <div className="flex items-center gap-3 px-4 py-2.5">
                   {p.image
                     ? <img src={p.image} alt={p.name} className="w-10 h-10 rounded-[8px] object-cover border border-admin-border/50 shrink-0" />

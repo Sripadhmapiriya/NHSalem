@@ -169,11 +169,37 @@ function baseLayout(title, contentHtml, unsubscribeUrl = null) {
   `
 }
 
+}
+
+// --- Formatting Helpers ---
+const toTitleCase = (str) => {
+  if (!str) return ''
+  return str.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')
+}
+
+const formatAddress = (addr) => {
+  if (!addr) return ''
+  const line1 = toTitleCase(addr.line1)
+  const city = toTitleCase(addr.city)
+  const state = toTitleCase(addr.state)
+  
+  let result = line1
+  // Prevent duplicate city names (e.g. "Kanchipuram, Kanchipuram")
+  if (city && !result.toLowerCase().includes(city.toLowerCase())) {
+    result += `, ${city}`
+  }
+  if (state && !result.toLowerCase().includes(state.toLowerCase())) {
+    result += `, ${state}`
+  }
+  return `${result} - ${addr.pincode}`
+}
+
 // 1. ORDER PLACED (Customer Template)
 export function orderPlacedCustomer({ orderRef, customerName, items, total, address, slot }) {
+  const formattedName = toTitleCase(customerName)
   const itemsHtml = items.map(item => `
     <tr>
-      <td>${item.name}</td>
+      <td>${toTitleCase(item.name)}</td>
       <td>${item.quantity}</td>
       <td>${item.weight || 'N/A'}</td>
       <td>₹${(item.price * item.quantity).toLocaleString()}</td>
@@ -182,7 +208,15 @@ export function orderPlacedCustomer({ orderRef, customerName, items, total, addr
 
   const subtotal = items.reduce((acc, curr) => acc + (curr.price * curr.quantity), 0)
   const deliveryCharge = total >= 499 ? 0 : 40
-  const discount = subtotal + deliveryCharge - total
+  
+  let discount = 0
+  let taxesAndFees = 0
+  
+  if (subtotal + deliveryCharge > total) {
+    discount = (subtotal + deliveryCharge) - total
+  } else if (subtotal + deliveryCharge < total) {
+    taxesAndFees = total - (subtotal + deliveryCharge)
+  }
 
   const contentHtml = `
     <!-- Order ID Banner -->
@@ -203,7 +237,7 @@ export function orderPlacedCustomer({ orderRef, customerName, items, total, addr
     </div>
 
     <h2>Your Order #${orderRef} is Confirmed! 🎉</h2>
-    <p>Thank you for shopping with NH Salem Sea Foods, <strong>${customerName}</strong>! We've received your order and are getting it ready for dispatch.</p>
+    <p>Thank you for shopping with NH Salem Sea Foods, <strong>${formattedName}</strong>! We've received your order and are getting it ready for dispatch.</p>
     
     <table class="table">
       <thead>
@@ -234,6 +268,12 @@ export function orderPlacedCustomer({ orderRef, customerName, items, total, addr
         <span>Delivery:</span>
         <span>${deliveryCharge === 0 ? 'FREE' : `₹${deliveryCharge}`}</span>
       </div>
+      ${taxesAndFees > 0 ? `
+      <div class="totals-row">
+        <span>Taxes & Fees:</span>
+        <span>₹${taxesAndFees.toLocaleString()}</span>
+      </div>
+      ` : ''}
       <div class="totals-row grand-total">
         <span>Total:</span>
         <span>₹${total.toLocaleString()}</span>
@@ -243,7 +283,7 @@ export function orderPlacedCustomer({ orderRef, customerName, items, total, addr
 
     <div class="details-box">
       <h3>Delivery Details</h3>
-      <p><strong>Address:</strong> ${address.line1}, ${address.city}, ${address.state} - ${address.pincode}</p>
+      <p><strong>Address:</strong> ${formatAddress(address)}</p>
       <p><strong>Delivery Slot:</strong> ${slot}</p>
     </div>
 
@@ -261,9 +301,10 @@ export function orderPlacedCustomer({ orderRef, customerName, items, total, addr
 
 // 2. NEW ORDER ALERT (Admin Template)
 export function newOrderAdmin({ orderRef, customerName, customerEmail, customerPhone, items, total, address, slot, paymentMethod, orderId }) {
+  const formattedName = toTitleCase(customerName)
   const itemsHtml = items.map(item => `
     <tr>
-      <td>${item.name}</td>
+      <td>${toTitleCase(item.name)}</td>
       <td>${item.quantity} x ${item.weight || 'N/A'}</td>
       <td>₹${(item.price * item.quantity).toLocaleString()}</td>
     </tr>
@@ -275,7 +316,7 @@ export function newOrderAdmin({ orderRef, customerName, customerEmail, customerP
 
     <div class="details-box">
       <h3>Customer Information</h3>
-      <p><strong>Name:</strong> ${customerName}</p>
+      <p><strong>Name:</strong> ${formattedName}</p>
       <p><strong>Email:</strong> ${customerEmail}</p>
       <p><strong>Phone:</strong> ${customerPhone}</p>
     </div>
@@ -299,7 +340,7 @@ export function newOrderAdmin({ orderRef, customerName, customerEmail, customerP
 
     <div class="details-box">
       <h3>Delivery Preferences</h3>
-      <p><strong>Address:</strong> ${address.line1}, ${address.city}, ${address.state} - ${address.pincode}</p>
+      <p><strong>Address:</strong> ${formatAddress(address)}</p>
       <p><strong>Time Slot:</strong> ${slot}</p>
       <p><strong>Payment Method:</strong> ${paymentMethod.toUpperCase()}</p>
     </div>
@@ -314,9 +355,10 @@ export function newOrderAdmin({ orderRef, customerName, customerEmail, customerP
 
 // 3. ORDER CONFIRMED (Customer Accepted Template)
 export function orderConfirmedCustomer({ orderRef, customerName, items, total, address, slot }) {
+  const formattedName = toTitleCase(customerName)
   const itemsHtml = items.map(item => `
     <tr>
-      <td>${item.name}</td>
+      <td>${toTitleCase(item.name)}</td>
       <td>${item.quantity}</td>
       <td>₹${(item.price * item.quantity).toLocaleString()}</td>
     </tr>
@@ -324,7 +366,15 @@ export function orderConfirmedCustomer({ orderRef, customerName, items, total, a
 
   const subtotal = items.reduce((acc, curr) => acc + (curr.price * curr.quantity), 0)
   const deliveryCharge = total >= 499 ? 0 : 40
-  const discount = subtotal + deliveryCharge - total
+  
+  let discount = 0
+  let taxesAndFees = 0
+  
+  if (subtotal + deliveryCharge > total) {
+    discount = (subtotal + deliveryCharge) - total
+  } else if (subtotal + deliveryCharge < total) {
+    taxesAndFees = total - (subtotal + deliveryCharge)
+  }
 
   const contentHtml = `
     <!-- Order ID Banner -->
@@ -345,7 +395,7 @@ export function orderConfirmedCustomer({ orderRef, customerName, items, total, a
     </div>
 
     <h2>✅ Your Order #${orderRef} has been Confirmed!</h2>
-    <p>Great news, <strong>${customerName}</strong>! Your order has been accepted by our store manager and is currently being prepared with fresh, premium seafood.</p>
+    <p>Great news, <strong>${formattedName}</strong>! Your order has been accepted by our store manager and is currently being prepared with fresh, premium seafood.</p>
 
     <table class="table">
       <thead>
@@ -375,6 +425,12 @@ export function orderConfirmedCustomer({ orderRef, customerName, items, total, a
         <span>Delivery:</span>
         <span>${deliveryCharge === 0 ? 'FREE' : `₹${deliveryCharge}`}</span>
       </div>
+      ${taxesAndFees > 0 ? `
+      <div class="totals-row">
+        <span>Taxes & Fees:</span>
+        <span>₹${taxesAndFees.toLocaleString()}</span>
+      </div>
+      ` : ''}
       <div class="totals-row grand-total">
         <span>Total:</span>
         <span>₹${total.toLocaleString()}</span>
@@ -384,7 +440,7 @@ export function orderConfirmedCustomer({ orderRef, customerName, items, total, a
 
     <div class="details-box">
       <h3>Estimated Dispatch Information</h3>
-      <p><strong>Delivery Address:</strong> ${address.line1}, ${address.city}, ${address.state} - ${address.pincode}</p>
+      <p><strong>Delivery Address:</strong> ${formatAddress(address)}</p>
       <p><strong>Scheduled Slot:</strong> ${slot}</p>
     </div>
 
@@ -481,9 +537,10 @@ export function cityLaunchedNotification({ cityName }) {
 
 // 8. ORDER CANCELLED (Customer Template)
 export function orderCancelledCustomer({ orderRef, customerName, items, total, address, cancelReason }) {
+  const formattedName = toTitleCase(customerName)
   const itemsHtml = items.map(item => `
     <tr>
-      <td>${item.name}</td>
+      <td>${toTitleCase(item.name)}</td>
       <td>${item.quantity}</td>
       <td>₹${(item.price * item.quantity).toLocaleString()}</td>
     </tr>
@@ -491,7 +548,15 @@ export function orderCancelledCustomer({ orderRef, customerName, items, total, a
 
   const subtotal = items.reduce((acc, curr) => acc + (curr.price * curr.quantity), 0)
   const deliveryCharge = total >= 499 ? 0 : 40
-  const discount = subtotal + deliveryCharge - total
+  
+  let discount = 0
+  let taxesAndFees = 0
+  
+  if (subtotal + deliveryCharge > total) {
+    discount = (subtotal + deliveryCharge) - total
+  } else if (subtotal + deliveryCharge < total) {
+    taxesAndFees = total - (subtotal + deliveryCharge)
+  }
 
   const contentHtml = `
     <!-- Order ID Banner -->
@@ -509,7 +574,7 @@ export function orderCancelledCustomer({ orderRef, customerName, items, total, a
     </div>
 
     <h2>❌ Your Order #${orderRef} has been Cancelled</h2>
-    <p>Dear <strong>${customerName}</strong>,</p>
+    <p>Dear <strong>${formattedName}</strong>,</p>
     <p>We regret to inform you that your order has been cancelled.</p>
     
     ${cancelReason ? `<div class="details-box" style="background-color: #fee2e2; border-color: #fca5a5;">
@@ -532,9 +597,30 @@ export function orderCancelledCustomer({ orderRef, customerName, items, total, a
       </tbody>
     </table>
 
-    <div class="totals-row grand-total" style="font-size: 16px; margin: 15px 0; float: right; width: 200px;">
-      <div style="display:flex; justify-content:space-between; width:100%;">
-        <strong>Total:</strong> <span>₹${total.toLocaleString()}</span>
+    <div class="totals-section">
+      <div class="totals-row">
+        <span>Subtotal:</span>
+        <span>₹${subtotal.toLocaleString()}</span>
+      </div>
+      ${discount > 0 ? `
+      <div class="totals-row" style="color: #166534;">
+        <span>Discount:</span>
+        <span>-₹${discount.toLocaleString()}</span>
+      </div>
+      ` : ''}
+      <div class="totals-row">
+        <span>Delivery:</span>
+        <span>${deliveryCharge === 0 ? 'FREE' : `₹${deliveryCharge}`}</span>
+      </div>
+      ${taxesAndFees > 0 ? `
+      <div class="totals-row">
+        <span>Taxes & Fees:</span>
+        <span>₹${taxesAndFees.toLocaleString()}</span>
+      </div>
+      ` : ''}
+      <div class="totals-row grand-total">
+        <span>Total:</span>
+        <span>₹${total.toLocaleString()}</span>
       </div>
     </div>
     <div class="clear"></div>

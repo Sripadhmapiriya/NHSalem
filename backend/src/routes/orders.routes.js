@@ -365,19 +365,19 @@ router.get('/my-orders', requireUser, asyncHandler(async (req, res) => {
 }))
 
 // ── GET /api/orders/:orderId ──────────────────────────────────────────────────
-router.get('/orders/:orderId', asyncHandler(async (req, res) => {
+router.get('/orders/:orderId', requireUser, asyncHandler(async (req, res) => {
   const { orderId } = req.params
 
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderId)
 
   const sql = isUuid 
-    ? 'SELECT * FROM orders WHERE id = $1' 
-    : 'SELECT * FROM orders WHERE order_number = $1'
+    ? 'SELECT * FROM orders WHERE id = $1 AND user_id = $2' 
+    : 'SELECT * FROM orders WHERE order_number = $1 AND user_id = $2'
 
-  const result = await pool.query(sql, [orderId])
+  const result = await pool.query(sql, [orderId, req.user.id])
 
   if (result.rows.length === 0) {
-    return res.status(404).json({ success: false, message: 'Order not found' })
+    return res.status(404).json({ success: false, message: 'Order not found or access denied' })
   }
 
   const details = await formatOrderDetails(result.rows[0])

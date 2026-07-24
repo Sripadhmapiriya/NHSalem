@@ -7,7 +7,7 @@ function getHeaders(authRequired = true) {
     'Content-Type': 'application/json'
   }
   if (authRequired) {
-    const token = useAdminAuthStore.getState().token
+    const token = typeof window !== 'undefined' ? localStorage.getItem('nh-salem-admin-token') : null
     if (token) {
       headers['Authorization'] = `Bearer ${token}`
     }

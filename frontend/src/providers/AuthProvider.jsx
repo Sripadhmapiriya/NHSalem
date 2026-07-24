@@ -7,51 +7,139 @@ import { verifyAdminSession } from '@/services/adminApi'
 import { SeafoodLoader } from '@/components/ui'
 
 export default function AuthProvider({ children }) {
-  const [isVerifying, setIsVerifying] = useState(true)
+  const [isBooting, setIsBooting] = useState(true)
+  const [error, setError] = useState(false)
   const location = useLocation()
 
-  // We read the tokens on first mount. 
-  // Since Zustand's localStorage persist is synchronous, these are already hydrated.
-  const token = useAuthStore.getState().token
-  const adminToken = useAdminAuthStore.getState().token
-
   useEffect(() => {
-    const verifyTokens = async () => {
-      const isAdminRoute = location.pathname.startsWith('/admin')
+    const bootApp = async () => {
+      setError(false)
+      
+      const customerToken = localStorage.getItem('nh-salem-token')
+      const adminToken = localStorage.getItem('nh-salem-admin-token')
 
-      if (isAdminRoute) {
-        // Admin validation
-        if (adminToken) {
-          const res = await verifyAdminSession(adminToken)
-          if (!res.valid) {
-            useAdminAuthStore.getState().logout()
-          } else {
-            // Update admin details in case they changed on the server
-            useAdminAuthStore.getState().setAdmin(res.admin, adminToken)
+      const promises = []
+
+      // 1. Verify Admin Session if token exists
+      if (adminToken) {
+        // Optimistically populate UI with cached user
+        try {
+          const cachedAdmin = localStorage.getItem('nh-salem-admin')
+          if (cachedAdmin) {
+            useAdminAuthStore.getState().setAdmin(JSON.parse(cachedAdmin), adminToken)
           }
-        }
+        } catch (_) {}
+
+        promises.push(
+          verifyAdminSession(adminToken)
+            .then(res => {
+              if (res.valid) {
+                useAdminAuthStore.getState().setAdmin(res.admin, adminToken)
+              } else {
+                useAdminAuthStore.getState().logout()
+              }
+            })
+            .catch(err => {
+              console.error('Admin session verification failed:', err)
+              useAdminAuthStore.getState().logout()
+            })
+        )
       } else {
-        // Customer validation
-        if (token) {
-          const res = await verifySession(token)
-          if (!res.valid) {
-            useAuthStore.getState().logout()
-          } else {
-            useAuthStore.getState().setUser(res.user, token)
-          }
-        }
+        useAdminAuthStore.getState().logout()
       }
 
-      setIsVerifying(false)
+      // 2. Verify Customer Session if token exists
+      if (customerToken) {
+        // Optimistically populate UI with cached user
+        try {
+          const cachedUser = localStorage.getItem('nh-salem-user')
+          if (cachedUser) {
+            useAuthStore.getState().setUser(JSON.parse(cachedUser), customerToken)
+          }
+        } catch (_) {}
+
+        promises.push(
+          verifySession(customerToken)
+            .then(res => {
+              if (res.valid) {
+                useAuthStore.getState().setUser(res.user, customerToken)
+              } else {
+                useAuthStore.getState().logout()
+              }
+            })
+            .catch(err => {
+              console.error('Customer session verification failed:', err)
+              useAuthStore.getState().logout()
+            })
+        )
+      } else {
+        useAuthStore.getState().logout()
+      }
+
+      // Wait for all verification promises to resolve, or timeout after 8s
+      try {
+        if (promises.length > 0) {
+          const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Session verification timed out')), 8000))
+          await Promise.race([Promise.all(promises), timeoutPromise])
+        }
+      } catch (err) {
+        console.error('Auth verification error/timeout:', err)
+        setError(true)
+      } finally {
+        useAuthStore.getState().setAppReady(true)
+        useAdminAuthStore.getState().setAdminAppReady(true)
+        setIsBooting(false)
+      }
     }
 
-    verifyTokens()
-    
-    // We only want this to run once when the app boots.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    bootApp()
   }, [])
 
-  if (isVerifying) {
+  if (error) {
+    const isAdmin = location.pathname.startsWith('/admin')
+    
+    if (isAdmin) {
+      return (
+        <div className="min-h-screen bg-admin-seafoam flex flex-col items-center justify-center p-4">
+          <div className="bg-white p-6 rounded-xl shadow-lg text-center max-w-sm w-full border border-red-200">
+            <span className="material-symbols-outlined text-red-500 text-4xl mb-3">error</span>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Session Error</h3>
+            <p className="text-sm text-gray-600 mb-4">We couldn't verify your admin session. Please try logging in again.</p>
+            <button
+              onClick={() => {
+                useAdminAuthStore.getState().logout()
+                window.location.reload()
+              }}
+              className="w-full py-2 bg-admin-navy text-white rounded-lg font-medium hover:bg-admin-navy/90 transition"
+            >
+              Log Out & Retry
+            </button>
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <div className="min-h-screen bg-surface-container-lowest flex flex-col items-center justify-center p-4">
+        <div className="bg-white p-6 rounded-2xl shadow-stat text-center max-w-sm w-full border border-red-100">
+          <span className="material-symbols-outlined text-red-500 text-4xl mb-3">gpp_maybe</span>
+          <h3 className="text-lg font-bold text-on-surface mb-2">Session Error</h3>
+          <p className="text-sm text-on-surface-variant mb-5">There was a problem verifying your secure session. Please try again.</p>
+          <button
+            onClick={() => {
+              useAuthStore.getState().logout()
+              window.location.reload()
+            }}
+            className="w-full py-2.5 bg-primary text-white rounded-full font-bold hover:bg-primary/90 transition shadow-sm"
+          >
+            Log Out & Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (isBooting) {
     const isAdmin = location.pathname.startsWith('/admin')
     
     if (isAdmin) {

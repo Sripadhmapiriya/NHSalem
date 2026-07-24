@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import Button from '@/components/ui/Button'
@@ -28,6 +28,17 @@ export default function Cart() {
   const [couponLoading, setCouponLoading] = useState(false)
   const [couponError, setCouponError] = useState('')
   const [removedItem, setRemovedItem] = useState(null)
+  const [recentOrder, setRecentOrder] = useState(null)
+
+  useEffect(() => {
+    if (items.length === 0) {
+      const orderId = sessionStorage.getItem('justCompletedOrderId')
+      if (orderId) {
+        setRecentOrder(orderId)
+        sessionStorage.removeItem('justCompletedOrderId')
+      }
+    }
+  }, [items.length])
 
   const handleRemove = (item) => {
     setRemovedItem({ ...item })
@@ -71,6 +82,27 @@ export default function Cart() {
   }
 
   if (items.length === 0) {
+    if (recentOrder) {
+      return (
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="text-center p-8">
+            <div className="w-24 h-24 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <span className="material-symbols-outlined text-success" style={{ fontSize: '48px' }} aria-hidden="true">
+                check_circle
+              </span>
+            </div>
+            <h1 className="text-headline-md text-on-surface mb-2">Order Placed Successfully!</h1>
+            <p className="text-body-lg text-on-surface-variant mb-8">
+              Your order has been received and is being prepared. Track your delivery below.
+            </p>
+            <Button variant="primary" onClick={() => navigate(`/orders/${recentOrder}`)}>
+              Track Order
+            </Button>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center p-8">

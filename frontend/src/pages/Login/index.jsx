@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -589,6 +589,7 @@ function RegisterForm({ onSuccess }) {
  */
 export default function LoginPage({ isModal = false, initialMode = 'login', onSuccess }) {
   const navigate = useNavigate()
+  const location = useLocation()
   const [activeTab, setActiveTab] = useState('email') // 'email' | 'phone'
   const [mode, setMode] = useState(initialMode) // 'login' | 'register'
 
@@ -596,7 +597,8 @@ export default function LoginPage({ isModal = false, initialMode = 'login', onSu
     if (onSuccess) {
       onSuccess()
     } else {
-      navigate('/', { replace: true })
+      const from = location.state?.from || '/'
+      navigate(from, { replace: true })
     }
   }
 
