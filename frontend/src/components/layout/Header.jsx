@@ -185,12 +185,14 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
           to="/"
           onClick={(e) => handleNavClick(e, { sectionId: 'hero' })}
           className="flex items-center gap-3 flex-shrink-0 select-none hover:opacity-95 transition-opacity"
+          style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
           aria-label="NH Salem Sea Foods — Home"
         >
           <img
             src="/crest.png"
             alt="NH Salem Sea Foods Logo"
             className="w-10 h-10 md:w-12 md:h-12 object-contain"
+            style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
             loading="eager"
             fetchpriority="high"
             width={56}
@@ -226,11 +228,12 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
           })}
         </nav>
 
-        {/* Right icons / control deck */}
         <div ref={searchRef} className="flex items-center gap-2 ml-auto md:ml-0">
 
           {/* Unified pill — expands when search is open, highlights border on focus */}
-          <div className={`h-9 flex items-center gap-1 px-2 bg-surface-container-low/70 border rounded-lg shadow-inner-sm transition-all duration-200 ${searchOpen ? 'border-primary/40 ring-2 ring-primary/10' : 'border-outline-variant/30'}`}>
+          <div 
+            className={`h-9 flex items-center gap-1 px-2 bg-surface-container-low/70 border rounded-full shadow-inner-sm transition-all duration-200 ${searchOpen ? 'border-primary/40 ring-2 ring-primary/10' : 'border-outline-variant/30'}`}
+          >
 
             {/* Search icon OR expanded search input + close */}
             {searchOpen ? (

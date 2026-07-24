@@ -84,7 +84,7 @@ const app = express()
 const PORT = process.env.PORT || 4000
 
 // 1. Basic security and helper middlewares
-app.use(helmet())
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }))
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
@@ -114,6 +114,11 @@ app.use(express.json())
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+app.use('/uploads', (req, res, next) => {
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+}, express.static(path.join(__dirname, '../public/uploads')));
+
 app.use(express.static(path.join(__dirname, '../public')));
 
 // ── Health check & root — must come BEFORE rate limiter and other routes ───────

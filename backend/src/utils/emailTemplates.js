@@ -479,3 +479,70 @@ export function cityLaunchedNotification({ cityName }) {
   return baseLayout(`NH Salem is now LIVE in ${cityName}! 🐟`, contentHtml)
 }
 
+// 8. ORDER CANCELLED (Customer Template)
+export function orderCancelledCustomer({ orderRef, customerName, items, total, address, cancelReason }) {
+  const itemsHtml = items.map(item => `
+    <tr>
+      <td>${item.name}</td>
+      <td>${item.quantity}</td>
+      <td>₹${(item.price * item.quantity).toLocaleString()}</td>
+    </tr>
+  `).join('')
+
+  const subtotal = items.reduce((acc, curr) => acc + (curr.price * curr.quantity), 0)
+  const deliveryCharge = total >= 499 ? 0 : 40
+  const discount = subtotal + deliveryCharge - total
+
+  const contentHtml = `
+    <!-- Order ID Banner -->
+    <div style="background:#fef2f2; border:2px solid #b91c1c; 
+                border-radius:8px; padding:16px; text-align:center; 
+                margin-bottom:24px;">
+      <p style="margin:0; font-size:12px; color:#666; 
+                text-transform:uppercase; letter-spacing:1px;">
+        Your Order ID
+      </p>
+      <p style="margin:4px 0 0; font-size:28px; font-weight:900; 
+                color:#b91c1c; letter-spacing:2px;">
+        ${orderRef}
+      </p>
+    </div>
+
+    <h2>❌ Your Order #${orderRef} has been Cancelled</h2>
+    <p>Dear <strong>${customerName}</strong>,</p>
+    <p>We regret to inform you that your order has been cancelled.</p>
+    
+    ${cancelReason ? `<div class="details-box" style="background-color: #fee2e2; border-color: #fca5a5;">
+      <p style="margin:0; color: #991b1b;"><strong>Reason for Cancellation:</strong> ${cancelReason}</p>
+    </div>` : ''}
+
+    <p style="font-weight: 600;">Refund Information:</p>
+    <p>If you have already paid for this order online, a refund of <strong>₹${total.toLocaleString()}</strong> will be initiated and should reflect in your original payment method within 5-7 business days.</p>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Qty</th>
+          <th>Price</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${itemsHtml}
+      </tbody>
+    </table>
+
+    <div class="totals-row grand-total" style="font-size: 16px; margin: 15px 0; float: right; width: 200px;">
+      <div style="display:flex; justify-content:space-between; width:100%;">
+        <strong>Total:</strong> <span>₹${total.toLocaleString()}</span>
+      </div>
+    </div>
+    <div class="clear"></div>
+
+    <div style="text-align:center; margin-top:30px; padding-top:20px; border-top: 1px solid #e2e8f0;">
+      <p style="font-size: 14px; color: #475569;">If you have any questions or need further assistance, please contact our support team.</p>
+      <a href="${BASE_URL}/#contact" class="btn">Contact Support</a>
+    </div>
+  `
+  return baseLayout(`Order Cancelled - #${orderRef}`, contentHtml)
+}

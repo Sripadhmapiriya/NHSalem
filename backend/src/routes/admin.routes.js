@@ -1,14 +1,36 @@
 import express from 'express'
+// Trigger nodemon restart
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import pool from '../db/pool.js'
 import { generateAdminToken } from '../utils/jwt.js'
 import { requireAdmin } from '../middleware/adminAuth.js'
 import asyncHandler from '../utils/asyncHandler.js'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import multer from 'multer'
 import cloudinary from '../utils/cloudinary.js'
 
-const upload = multer({ dest: 'uploads/' })
+// Ensure uploads directory exists to prevent multer 500 errors
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const uploadDir = path.join(__dirname, '../../public/uploads')
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true })
+}
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadDir)
+  },
+  filename: function (req, file, cb) {
+    const ext = path.extname(file.originalname)
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+    cb(null, file.fieldname + '-' + uniqueSuffix + ext)
+  }
+})
+
+const upload = multer({ storage: storage })
 
 const router = express.Router()
 
@@ -61,25 +83,16 @@ router.post('/upload', requireAdmin, upload.single('image'), asyncHandler(async 
     return res.status(400).json({ success: false, message: 'No file provided' })
   }
   
-  try {
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      folder: 'nhsalem/products'
-    })
-    res.json({ success: true, url: result.secure_url })
-  } catch (error) {
-    console.error('Cloudinary upload error:', error)
-    res.status(500).json({ success: false, message: 'Upload failed' })
-  }
+  // Directly save locally since Cloudinary is not configured yet
+  const localUrl = `http://localhost:4000/uploads/${req.file.filename}`
+  res.json({ success: true, url: localUrl })
 }))
 
 // Dashboard stats
 router.get('/dashboard/stats', requireAdmin, asyncHandler(async (req, res) => {
   // Generate promises for all queries to run in parallel
   const kpiPromises = [
-    pool.query(`SELECT COALESCE(SUM(total), 0) as total FROM orders WHERE placed_at >= CURRENT_DATE AND status != 'cancelled'`),
-    pool.query("SELECT COUNT(*) as count FROM orders WHERE placed_at >= CURRENT_DATE"),
-    pool.query("SELECT COUNT(*) as count FROM users"),
-    pool.query("SELECT COUNT(*) as count FROM orders WHERE status NOT IN ('delivered', 'cancelled')"),
+    pool.query(`SELECT COUNT(DISTINCT user_id) as count FROM orders WHERE placed_at >= NOW() - INTERVAL '30 days' AND user_id IS NOT NULL`),
     pool.query(`
       SELECT oi.product_name as name, COALESCE(SUM(oi.quantity), 0) as sales, COALESCE(SUM(oi.price * oi.quantity), 0) as revenue
       FROM order_items oi
@@ -92,35 +105,35 @@ router.get('/dashboard/stats', requireAdmin, asyncHandler(async (req, res) => {
     pool.query("SELECT status, COUNT(*) as count FROM orders GROUP BY status")
   ]
 
-  // Add the 7 weekly stats queries
+  // Add the 7 weekly stats queries (Today is index 0 in this loop when i=0, but pushed last)
   for (let i = 6; i >= 0; i--) {
     kpiPromises.push(
       pool.query(
-        `SELECT COALESCE(SUM(total), 0) as total, COUNT(*) as count 
+        `SELECT 
+           COALESCE(SUM(CASE WHEN status != 'cancelled' THEN total ELSE 0 END), 0) as total, 
+           COUNT(*) as count 
          FROM orders 
-         WHERE placed_at::date = CURRENT_DATE - $1::integer AND status != 'cancelled'`,
+         WHERE placed_at::date = CURRENT_DATE - $1::integer`,
         [i]
       )
     )
   }
 
-  // Run all 13 queries concurrently
+  // Run all 10 queries concurrently
   const results = await Promise.all(kpiPromises)
 
-  const todayRevenue = Number(results[0].rows[0].total)
-  const todayOrders = Number(results[1].rows[0].count)
-  const activeCustomers = Number(results[2].rows[0].count)
-  const pendingOrders = Number(results[3].rows[0].count)
+  const activeCustomers = Number(results[0].rows[0].count)
   
-  let topProducts = results[4].rows.map(r => ({
+  let topProducts = results[1].rows.map(r => ({
     name: r.name,
     sales: Number(r.sales),
     revenue: Number(r.revenue)
   }))
 
-  const statusRows = results[5].rows
+  const statusRows = results[2].rows
   const orderStatusBreakdown = {
     confirmed: 0,
+    accepted: 0,
     packed: 0,
     out_for_delivery: 0,
     delivered: 0,
@@ -132,21 +145,17 @@ router.get('/dashboard/stats', requireAdmin, asyncHandler(async (req, res) => {
     }
   })
 
-  // Extract weekly results (indexes 6 to 12)
-  const weeklyResults = results.slice(6)
+  // Calculate pending orders derived directly from the breakdown sum
+  const pendingOrders = orderStatusBreakdown.confirmed + orderStatusBreakdown.accepted + orderStatusBreakdown.packed + orderStatusBreakdown.out_for_delivery
+
+  // Extract weekly results (indexes 3 to 9)
+  const weeklyResults = results.slice(3)
   const weeklyRevenue = weeklyResults.map(res => Number(res.rows[0].total))
   const weeklyOrders = weeklyResults.map(res => Number(res.rows[0].count))
 
-  // If no sales yet, fill with mock fallback products so chart doesn't look empty
-  if (topProducts.length === 0) {
-    topProducts = [
-      { name: 'Premium Atlantic Salmon', sales: 0, revenue: 0 },
-      { name: 'Silver Pomfret', sales: 0, revenue: 0 },
-      { name: 'Premium Seer Fish (Vanjaram)', sales: 0, revenue: 0 },
-      { name: 'Hand-Cleaned Squid', sales: 0, revenue: 0 },
-      { name: 'Jumbo Tiger Prawns', sales: 0, revenue: 0 }
-    ]
-  }
+  // Today's stats are exactly the last item in the weekly charts (i=0)
+  const todayRevenue = weeklyRevenue[6]
+  const todayOrders = weeklyOrders[6]
 
   res.json({
     success: true,
@@ -154,10 +163,10 @@ router.get('/dashboard/stats', requireAdmin, asyncHandler(async (req, res) => {
     todayOrders,
     activeCustomers,
     pendingOrders,
-    revenueGrowth: '+12.4%',
-    orderGrowth: '+8.2%',
-    customerGrowth: '+3.1%',
-    pendingChange: '-2',
+    revenueGrowth: '+12.4%', // Placeholder
+    orderGrowth: '+8.2%', // Placeholder
+    customerGrowth: '+3.1%', // Placeholder
+    pendingChange: '-2', // Placeholder
     weeklyRevenue,
     weeklyOrders,
     topProducts,

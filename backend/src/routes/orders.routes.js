@@ -6,7 +6,7 @@ import { requireAdmin } from '../middleware/adminAuth.js'
 import { requireUser } from '../middleware/auth.js'
 import asyncHandler from '../utils/asyncHandler.js'
 import { sendMail } from '../utils/mailer.js'
-import { orderPlacedCustomer, newOrderAdmin, orderConfirmedCustomer } from '../utils/emailTemplates.js'
+import { orderPlacedCustomer, newOrderAdmin, orderConfirmedCustomer, orderCancelledCustomer } from '../utils/emailTemplates.js'
 
 
 const router = express.Router()
@@ -29,7 +29,8 @@ const placeOrderSchema = z.object({
 })
 
 const updateStatusSchema = z.object({
-  status: z.enum(['confirmed', 'accepted', 'packed', 'out_for_delivery', 'delivered', 'cancelled'])
+  status: z.enum(['confirmed', 'accepted', 'packed', 'out_for_delivery', 'delivered', 'cancelled']),
+  cancelReason: z.string().optional().nullable()
 })
 
 function getOptionalUser(req) {
@@ -411,12 +412,14 @@ router.get('/admin/orders/:id', requireAdmin, asyncHandler(async (req, res) => {
 // PUT /api/admin/orders/:id/status
 router.put('/admin/orders/:id/status', requireAdmin, asyncHandler(async (req, res) => {
   const { id } = req.params
-  const { status } = updateStatusSchema.parse(req.body)
+  const { status, cancelReason } = updateStatusSchema.parse(req.body)
 
-  const check = await pool.query('SELECT status FROM orders WHERE id = $1', [id])
+  const check = await pool.query('SELECT * FROM orders WHERE id = $1', [id])
   if (check.rows.length === 0) {
     return res.status(404).json({ success: false, message: 'Order not found' })
   }
+  const oldStatus = check.rows[0].status
+  const orderRow = check.rows[0]
 
   let paymentStatusUpdate = ''
   if (status === 'delivered') {
@@ -438,6 +441,51 @@ router.put('/admin/orders/:id/status', requireAdmin, asyncHandler(async (req, re
 
   const updatedOrder = await pool.query('SELECT * FROM orders WHERE id = $1', [id])
   const details = await formatOrderDetails(updatedOrder.rows[0])
+
+  // Fire emails non-blockingly if status changed
+  if (status !== oldStatus) {
+    let customerEmail = details.address?.email
+    if (!customerEmail && orderRow.user_id) {
+      const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [orderRow.user_id])
+      if (userRes.rows.length > 0) customerEmail = userRes.rows[0].email
+    }
+
+    if (customerEmail) {
+      try {
+        if (status === 'cancelled') {
+          const emailHtml = orderCancelledCustomer({
+            orderRef: details.id,
+            customerName: details.address?.name || 'Valued Customer',
+            items: details.items,
+            total: details.total,
+            address: details.address,
+            cancelReason
+          })
+          sendMail({
+            to: customerEmail,
+            subject: `❌ Order Cancelled - #${details.id}`,
+            html: emailHtml
+          }).catch(err => console.error('Failed to send cancellation email:', err))
+        } else if (status === 'accepted' || status === 'confirmed') {
+          const emailHtml = orderConfirmedCustomer({
+            orderRef: details.id,
+            customerName: details.address?.name || 'Valued Customer',
+            items: details.items,
+            total: details.total,
+            address: details.address,
+            slot: details.estimatedDelivery || orderRow.delivery_slot
+          })
+          sendMail({
+            to: customerEmail,
+            subject: `✅ Your Order #${details.id} has been ${status === 'accepted' ? 'Accepted' : 'Confirmed'}!`,
+            html: emailHtml
+          }).catch(err => console.error('Failed to send acceptance email:', err))
+        }
+      } catch (mailErr) {
+        console.error('Failed to build/send order status email:', mailErr)
+      }
+    }
+  }
 
   res.json({
     success: true,

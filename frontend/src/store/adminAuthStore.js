@@ -14,6 +14,9 @@ const useAdminAuthStore = create(
     (set, get) => ({
       admin: null,
       token: null,
+      _hasHydrated: false,
+
+      setHasHydrated: (state) => set({ _hasHydrated: state }),
 
       setAdmin: (admin, token) => set({ admin, token }),
       logout: () => set({ admin: null, token: null }),
@@ -25,6 +28,11 @@ const useAdminAuthStore = create(
     {
       name: 'nh-salem-admin-auth',
       partialize: (state) => ({ admin: state.admin, token: state.token }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.setHasHydrated(true)
+        }
+      },
     }
   )
 )

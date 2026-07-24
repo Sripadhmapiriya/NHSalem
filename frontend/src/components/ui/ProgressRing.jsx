@@ -62,9 +62,9 @@ export default function ProgressRing({
           stroke={color}
           strokeWidth={strokeWidth}
           strokeLinecap="round"
-          strokeDasharray={circumference}
-          initial={{ strokeDashoffset: circumference }}
-          animate={controls}
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: pct }}
+          transition={{ duration: 1, ease: 'easeOut' }}
         />
       </svg>
       {/* Center label */}

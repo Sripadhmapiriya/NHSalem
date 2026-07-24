@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, Suspense } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import useAdminAuthStore from '@/store/adminAuthStore'
 
@@ -181,7 +181,7 @@ export default function AdminLayout() {
             {/* Notification bell (decorative — wired in later task) */}
             <button className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-admin-seafoam transition-colors relative" aria-label="Notifications">
               <span className="material-symbols-outlined text-admin-text-sub" style={{ fontSize: '20px' }}>notifications</span>
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-admin-coral border border-white" />
+              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-admin-coral text-[9px] font-bold text-white shadow-sm border border-white">3</span>
             </button>
             {/* Admin avatar */}
             <div className="w-8 h-8 rounded-full bg-admin-navy flex items-center justify-center border-2 border-admin-gold/30 cursor-default select-none" title={admin?.email}>
@@ -192,7 +192,16 @@ export default function AdminLayout() {
 
         {/* Main scrollable content */}
         <main ref={mainRef} className="flex-1 overflow-y-auto">
-          <Outlet />
+          <Suspense fallback={
+            <div className="h-full w-full flex items-center justify-center">
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-10 h-10 border-4 border-admin-navy border-t-admin-gold rounded-full animate-spin" />
+                <p className="text-admin-text-sub text-sm font-medium tracking-wide">Loading…</p>
+              </div>
+            </div>
+          }>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>

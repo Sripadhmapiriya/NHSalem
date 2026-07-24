@@ -71,11 +71,14 @@ export async function sendMail({ to, subject, html }) {
 // ── broadcastToSubscribers — used by admin promotion broadcasts ───────────────
 export async function broadcastToSubscribers({ updateType, subject, content }) {
   try {
-    // 1. Fetch users who placed at least one order
+    // 1. Fetch users who placed at least one order AND newsletter subscribers
     const res = await pool.query(`
-      SELECT DISTINCT LOWER(TRIM(u.email)) as email
+      SELECT LOWER(TRIM(u.email)) as email
       FROM users u
       JOIN orders o ON u.id = o.user_id
+      UNION
+      SELECT LOWER(TRIM(email)) as email
+      FROM newsletter_subscribers
     `)
     const customers = res.rows.map(r => r.email)
 

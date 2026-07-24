@@ -21,14 +21,13 @@ const schema = z.object({
 export default function AdminLogin() {
   const navigate = useNavigate()
   const admin = useAdminAuthStore((s) => s.admin)
-  const hasHydrated = useAdminAuthStore((s) => s._hasHydrated)
   const { setAdmin } = useAdminAuthStore()
 
   useEffect(() => {
-    if (hasHydrated && admin) {
+    if (admin) {
       navigate('/admin/dashboard', { replace: true })
     }
-  }, [hasHydrated, admin, navigate])
+  }, [admin, navigate])
 
   const [showPassword, setShowPassword] = useState(false)
   const [submitState, setSubmitState] = useState('idle') // 'idle' | 'loading' | 'success' | 'error'

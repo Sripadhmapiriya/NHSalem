@@ -216,7 +216,7 @@ export default function ProductDetail() {
             </div>
 
             {/* Rating */}
-            {product.rating && (
+            {product.reviewCount > 0 ? (
               <div className="flex items-center gap-3">
                 <div className="flex gap-0.5">
                   {[1, 2, 3, 4, 5].map((star) => (
@@ -230,6 +230,10 @@ export default function ProductDetail() {
                 </div>
                 <span className="text-label-md font-semibold text-on-surface">{product.rating}</span>
                 <span className="text-label-md text-on-surface-variant">({product.reviewCount?.toLocaleString()} reviews)</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="text-label-md text-on-surface-variant italic">No reviews yet</span>
               </div>
             )}
 
@@ -275,8 +279,8 @@ export default function ProductDetail() {
               {currentWeight?.originalPrice && (
                 <>
                   <p className="text-xl text-outline line-through">₹{currentWeight.originalPrice.toLocaleString()}</p>
-                  <Badge variant="hot">
-                    {Math.round((1 - currentWeight.price / currentWeight.originalPrice) * 100)}% OFF
+                  <Badge variant="hot" className="whitespace-nowrap">
+                    {Math.round(((currentWeight.originalPrice - currentWeight.price) / currentWeight.originalPrice) * 100)}% OFF
                   </Badge>
                 </>
               )}

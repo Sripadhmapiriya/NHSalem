@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { useCartStore } from './cartStore'
 
 /**
  * Auth Store — persisted to localStorage
@@ -12,12 +13,17 @@ const useAuthStore = create(
       token: null,
       cartLoginPopupOpen: false,
       pendingAction: null,
+      _hasHydrated: false,
+
+      setHasHydrated: (state) => set({ _hasHydrated: state }),
 
       setUser: (user, token) => {
         // Clear the previous user's cart from localStorage whenever a new session begins.
         // This prevents one user's cart from leaking into another user's session.
         try {
-          localStorage.removeItem('nh-salem-cart')
+          localStorage.removeItem('nh-salem-cart-v2')
+          localStorage.removeItem('nh-salem-cart') // legacy cleanup
+          useCartStore.getState().clearCart() // clear in-memory state
         } catch (_) {}
         set({ user, token })
       },
@@ -25,7 +31,9 @@ const useAuthStore = create(
       logout: () => {
         // Clear cart on logout so the next user (or guest) starts with an empty basket.
         try {
-          localStorage.removeItem('nh-salem-cart')
+          localStorage.removeItem('nh-salem-cart-v2')
+          localStorage.removeItem('nh-salem-cart') // legacy cleanup
+          useCartStore.getState().clearCart() // clear in-memory state
         } catch (_) {}
         set({ user: null, token: null })
       },
@@ -40,6 +48,11 @@ const useAuthStore = create(
     {
       name: 'nh-salem-auth',
       partialize: (state) => ({ user: state.user, token: state.token }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.setHasHydrated(true)
+        }
+      },
     }
   )
 )

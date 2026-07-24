@@ -80,50 +80,64 @@ export default function AdminProducts() {
       </div>
 
       <AdminCard subtitle={`${sorted.length} products`}>
-        <AdminTable headers={['', 'Name', 'Category', 'Base Price', 'Rating', 'Reviews', 'Freshness', 'Badges', '']}>
+        <AdminTable headers={[
+          { label: 'Product', className: 'sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]' }, 
+          'Category', 
+          'Base Price', 
+          'Rating', 
+          'Freshness (0-100)', 
+          'Badges', 
+          'Actions'
+        ]}>
           {paginated.map((p) => (
             <Tr key={p.id} onClick={() => navigate(`/admin/products/${p.id}/edit`)}>
-              <Td>
-                {p.image
-                  ? <img src={p.image} alt={p.name} className="w-12 h-12 rounded-[10px] object-cover border border-admin-border/50" />
-                  : <div className="w-12 h-12 rounded-[10px] bg-admin-seafoam border border-admin-border/50 flex items-center justify-center"><span className="material-symbols-outlined text-admin-text-sub" style={{ fontSize: '20px' }}>image</span></div>
-                }
-              </Td>
-              <Td>
-                <div>
-                  <p className="font-semibold text-admin-navy">{p.name}</p>
-                  <p className="text-[11px] text-admin-text-sub">{p.tagline}</p>
+              <Td className="sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] p-0">
+                <div className="flex items-center gap-3 px-4 py-2.5">
+                  {p.image
+                    ? <img src={p.image} alt={p.name} className="w-10 h-10 rounded-[8px] object-cover border border-admin-border/50 shrink-0" />
+                    : <div className="w-10 h-10 rounded-[8px] bg-admin-seafoam border border-admin-border/50 flex items-center justify-center shrink-0"><span className="material-symbols-outlined text-admin-text-sub" style={{ fontSize: '20px' }}>image</span></div>
+                  }
+                  <p className="font-semibold text-admin-navy truncate max-w-[150px] md:max-w-[200px]" title={p.name}>{p.name}</p>
                 </div>
               </Td>
               <Td className="capitalize">{CATEGORY_MAP[p.category] || p.category}</Td>
               <Td><span className="font-bold">{formatCurrency(p.basePrice)}</span></Td>
               <Td>
-                <span className="flex items-center gap-1">
+                <div className="flex items-center gap-1.5 whitespace-nowrap">
                   <span className="material-symbols-outlined text-admin-gold" style={{ fontSize: '14px', fontVariationSettings: "'FILL' 1" }}>star</span>
-                  {p.rating ?? '—'}
-                </span>
+                  {p.reviewCount > 0 ? (
+                    <span>{p.rating} <span className="text-admin-text-sub text-[11px]">({p.reviewCount?.toLocaleString()})</span></span>
+                  ) : (
+                    <span className="text-admin-text-sub italic" title="No ratings">—</span>
+                  )}
+                </div>
               </Td>
-              <Td>{p.reviewCount?.toLocaleString() ?? '0'}</Td>
               <Td>
-                <div className="flex items-center gap-1">
-                  <div className="h-1.5 w-16 bg-admin-border rounded-full overflow-hidden">
-                    <div className="h-full bg-admin-success rounded-full" style={{ width: `${p.freshnessScore ?? 0}%` }} />
+                <div className="flex items-center gap-2 whitespace-nowrap">
+                  <div className="h-1.5 w-20 bg-admin-border rounded-full overflow-hidden shrink-0">
+                    <div className="h-full bg-admin-success rounded-full" style={{ width: `${Math.max(0, Math.min(100, p.freshnessScore ?? 0))}%` }} />
                   </div>
-                  <span className="text-[11px] font-semibold">{p.freshnessScore ?? '—'}</span>
+                  <span className="text-[11px] font-semibold min-w-[24px]">{p.freshnessScore ?? '—'}</span>
                 </div>
               </Td>
               <Td>
-                <div className="flex flex-wrap gap-1">
-                  {p.badges?.map((b) => (
-                    <StatusBadge
-                      key={b.type}
-                      status={b.type === 'hot' ? 'flagged' : b.type === 'fresh' ? 'active' : b.type === 'new' ? 'new' : 'paid'}
-                    />
-                  ))}
+                <div className="flex flex-wrap gap-1 min-w-[100px]">
+                  {p.badges?.map((b) => {
+                    const isFlagged = b.type === 'hot'
+                    const isPaid = b.type === 'paid' || b.label?.toLowerCase() === 'paid'
+                    const isNew = b.type === 'new'
+                    const status = isFlagged ? 'flagged' : isPaid ? 'paid' : isNew ? 'new' : 'active'
+                    const tooltip = isFlagged ? 'Flagged products can remain active pending review.' : isPaid ? 'Paid Promotion' : ''
+                    return (
+                      <span key={b.type} title={tooltip}>
+                        <StatusBadge status={status} />
+                      </span>
+                    )
+                  })}
                 </div>
               </Td>
-              <Td>
-                <div className="flex gap-1">
+              <Td className="w-auto">
+                <div className="flex gap-2 justify-end">
                   <AdminBtn
                     size="sm"
                     variant="secondary"

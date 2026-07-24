@@ -170,11 +170,11 @@ export async function getAdminOrder(id) {
   return handleResponse(response)
 }
 
-export async function updateAdminOrderStatus(id, status) {
+export async function updateAdminOrderStatus(id, status, cancelReason = null) {
   const response = await fetch(`${API_URL}/api/admin/orders/${id}/status`, {
     method: 'PUT',
     headers: getHeaders(true),
-    body: JSON.stringify({ status })
+    body: JSON.stringify({ status, cancelReason })
   })
   return handleResponse(response)
 }

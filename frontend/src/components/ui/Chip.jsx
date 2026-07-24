@@ -50,16 +50,16 @@ export default function Chip({
       )}
       {children}
       {removable && (
-        <button
-          type="button"
+        <div
+          role="button"
           onClick={(e) => { e.stopPropagation(); onRemove?.() }}
-          className="w-3 h-3 rounded-full flex items-center justify-center hover:bg-black/15 ml-0.5 flex-shrink-0"
+          className="w-3 h-3 rounded-full flex items-center justify-center hover:bg-black/15 ml-0.5 flex-shrink-0 cursor-pointer"
           aria-label="Remove filter"
         >
           <span className="material-symbols-outlined" style={{ fontSize: '10px' }} aria-hidden="true">
             close
           </span>
-        </button>
+        </div>
       )}
     </motion.button>
   )

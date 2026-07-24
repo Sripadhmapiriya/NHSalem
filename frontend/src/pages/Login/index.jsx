@@ -389,17 +389,17 @@ function RegisterForm({ onSuccess }) {
     `flex-1 bg-transparent text-sm font-medium text-on-surface placeholder:text-outline/70 focus:outline-none disabled:opacity-60 ${hasError ? 'text-red-700' : ''}`
 
   const wrapCls = (hasError) =>
-    `flex items-center gap-3 px-4 py-2 rounded-full border bg-surface-container-low transition-all duration-150 ${
+    `flex items-center gap-2 px-3 h-10 rounded-full border bg-surface-container-low transition-all duration-150 ${
       hasError
         ? 'border-red-400 ring-2 ring-red-400/20'
         : 'border-outline-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15'
     }`
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-3">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-2">
       {/* Full Name */}
       <div>
-        <label htmlFor="reg-name" className="block text-[12px] font-bold text-on-surface mb-1">
+        <label htmlFor="reg-name" className="block text-[11px] font-bold text-on-surface mb-0.5">
           Full Name <span className="text-red-500">*</span>
         </label>
         <div className={wrapCls(!!errors.name)}>
@@ -420,7 +420,7 @@ function RegisterForm({ onSuccess }) {
 
       {/* Email */}
       <div>
-        <label htmlFor="reg-email" className="block text-[12px] font-bold text-on-surface mb-1">
+        <label htmlFor="reg-email" className="block text-[11px] font-bold text-on-surface mb-0.5">
           Email Address <span className="text-red-500">*</span>
         </label>
         <div className={wrapCls(!!errors.email)}>
@@ -441,7 +441,7 @@ function RegisterForm({ onSuccess }) {
 
       {/* Phone */}
       <div>
-        <label htmlFor="reg-phone" className="block text-[12px] font-bold text-on-surface mb-1">
+        <label htmlFor="reg-phone" className="block text-[11px] font-bold text-on-surface mb-0.5">
           Mobile Number <span className="text-red-500">*</span>
         </label>
         <div className={wrapCls(!!errors.phone)}>
@@ -466,64 +466,67 @@ function RegisterForm({ onSuccess }) {
         <FieldError message={errors.phone?.message} />
       </div>
 
-      {/* Password */}
-      <div>
-        <label htmlFor="reg-password" className="block text-[12px] font-bold text-on-surface mb-1">
-          Password <span className="text-red-500">*</span>
-        </label>
-        <div className={wrapCls(!!errors.password)}>
-          <span className="material-symbols-outlined text-outline flex-shrink-0 leading-none" style={{ fontSize: '16px' }}>
-            lock
-          </span>
-          <input
-            id="reg-password"
-            type={showPassword ? 'text' : 'password'}
-            placeholder="••••••••"
-            disabled={loading}
-            {...register('password')}
-            className={inputCls(!!errors.password)}
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword((v) => !v)}
-            className="text-outline hover:text-on-surface transition-colors flex-shrink-0"
-          >
-            <span className="material-symbols-outlined leading-none" style={{ fontSize: '16px' }}>
-              {showPassword ? 'visibility_off' : 'visibility'}
+      {/* Password fields row */}
+      <div className="flex flex-col md:flex-row gap-3 md:gap-4">
+        {/* Password */}
+        <div className="flex-1 min-w-0">
+          <label htmlFor="reg-password" className="block text-[11px] font-bold text-on-surface mb-1 truncate">
+            Password <span className="text-red-500">*</span>
+          </label>
+          <div className={wrapCls(!!errors.password)}>
+            <span className="material-symbols-outlined text-outline flex-shrink-0 leading-none" style={{ fontSize: '15px' }}>
+              lock
             </span>
-          </button>
+            <input
+              id="reg-password"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="••••••••"
+              disabled={loading}
+              {...register('password')}
+              className={inputCls(!!errors.password)}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className="text-outline hover:text-on-surface transition-colors flex-shrink-0"
+            >
+              <span className="material-symbols-outlined leading-none" style={{ fontSize: '15px' }}>
+                {showPassword ? 'visibility_off' : 'visibility'}
+              </span>
+            </button>
+          </div>
+          <FieldError message={errors.password?.message} />
         </div>
-        <FieldError message={errors.password?.message} />
-      </div>
 
-      {/* Confirm Password */}
-      <div>
-        <label htmlFor="reg-confirm-password" className="block text-[12px] font-bold text-on-surface mb-1">
-          Confirm Password <span className="text-red-500">*</span>
-        </label>
-        <div className={wrapCls(!!errors.confirmPassword)}>
-          <span className="material-symbols-outlined text-outline flex-shrink-0 leading-none" style={{ fontSize: '16px' }}>
-            lock_reset
-          </span>
-          <input
-            id="reg-confirm-password"
-            type={showConfirmPassword ? 'text' : 'password'}
-            placeholder="••••••••"
-            disabled={loading}
-            {...register('confirmPassword')}
-            className={inputCls(!!errors.confirmPassword)}
-          />
-          <button
-            type="button"
-            onClick={() => setShowConfirmPassword((v) => !v)}
-            className="text-outline hover:text-on-surface transition-colors flex-shrink-0"
-          >
-            <span className="material-symbols-outlined leading-none" style={{ fontSize: '16px' }}>
-              {showConfirmPassword ? 'visibility_off' : 'visibility'}
+        {/* Confirm Password */}
+        <div className="flex-1 min-w-0">
+          <label htmlFor="reg-confirm-password" className="block text-[11px] font-bold text-on-surface mb-1 truncate">
+            Confirm Password <span className="text-red-500">*</span>
+          </label>
+          <div className={wrapCls(!!errors.confirmPassword)}>
+            <span className="material-symbols-outlined text-outline flex-shrink-0 leading-none" style={{ fontSize: '15px' }}>
+              lock_reset
             </span>
-          </button>
+            <input
+              id="reg-confirm-password"
+              type={showConfirmPassword ? 'text' : 'password'}
+              placeholder="••••••••"
+              disabled={loading}
+              {...register('confirmPassword')}
+              className={inputCls(!!errors.confirmPassword)}
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword((v) => !v)}
+              className="text-outline hover:text-on-surface transition-colors flex-shrink-0"
+            >
+              <span className="material-symbols-outlined leading-none" style={{ fontSize: '15px' }}>
+                {showConfirmPassword ? 'visibility_off' : 'visibility'}
+              </span>
+            </button>
+          </div>
+          <FieldError message={errors.confirmPassword?.message} />
         </div>
-        <FieldError message={errors.confirmPassword?.message} />
       </div>
 
       {/* Server Error */}
@@ -600,7 +603,7 @@ export default function LoginPage({ isModal = false, initialMode = 'login', onSu
   const content = (
     <div className="px-2 py-0.5">
       {/* Redesigned Header Row: Logo next to Title */}
-      <div className="flex items-center justify-center gap-2.5 mb-2.5 mt-1.5 select-none">
+      <div className="flex items-center justify-center gap-2 mb-1.5 mt-0 select-none">
         <img
           src="/crest.png"
           alt="NH Salem Sea Foods Logo"
@@ -610,13 +613,13 @@ export default function LoginPage({ isModal = false, initialMode = 'login', onSu
           Welcome to NH Salem
         </h2>
       </div>
-      <p className="text-[11px] text-center text-gray-500 mb-2.5">
+      <p className="text-[11px] text-center text-gray-500 mb-1.5">
         {mode === 'login' ? 'Sign in to continue' : 'Create an account to continue'}
       </p>
 
       {/* Tab switcher */}
       {mode === 'login' && (
-        <div className="flex bg-gray-100 rounded-full p-0.5 mb-2.5">
+        <div className="flex bg-gray-100 rounded-full p-0.5 mb-1.5">
           <button
             type="button"
             onClick={() => setActiveTab('email')}
@@ -639,7 +642,7 @@ export default function LoginPage({ isModal = false, initialMode = 'login', onSu
       )}
 
       {/* Animated form panels */}
-      <div className="mb-4">
+      <div className="mb-2">
         <AnimatePresence mode="wait">
           {mode === 'login' ? (
             activeTab === 'email' ? (
@@ -678,7 +681,7 @@ export default function LoginPage({ isModal = false, initialMode = 'login', onSu
       </div>
 
       {/* Toggle link */}
-      <div className="text-center mt-4">
+      <div className="text-center mt-2">
         {mode === 'login' ? (
           <button
             type="button"
@@ -698,7 +701,7 @@ export default function LoginPage({ isModal = false, initialMode = 'login', onSu
         )}
       </div>
       {/* Footer links */}
-      <p className="text-label-sm text-on-surface-variant text-center">
+      <p className="text-[10px] text-on-surface-variant text-center mt-1">
         By continuing, you agree to our{' '}
         <a href="/help" className="text-primary hover:underline">Terms of Service</a>
         {' '}and{' '}

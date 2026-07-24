@@ -188,6 +188,21 @@ export async function getFAQs(search = '') {
 
 // ── User Auth (Email + Password) ──────────────────────────────────────────────
 
+export async function verifySession(token) {
+  try {
+    const response = await fetch(`${API_URL}/api/auth/me`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    const data = await handleResponse(response)
+    return { valid: true, user: data.user }
+  } catch (err) {
+    return { valid: false }
+  }
+}
+
 export async function loginWithEmail(email, password) {
   try {
     const response = await fetch(`${API_URL}/api/auth/login`, {

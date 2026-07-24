@@ -158,29 +158,29 @@ export default function ProductCard({ product }) {
 
         {/* Rating */}
         <div className="flex items-center gap-1.5">
-          <div className="flex gap-0.5">
-            {[1, 2, 3, 4, 5].map((star) => {
-              const isFilled = rating > 0 && star <= Math.round(rating)
-              return (
-                <span
-                  key={star}
-                  className={`material-symbols-outlined ${isFilled ? 'filled' : ''} text-secondary-container`}
-                  style={{ fontSize: '12px' }}
-                  aria-hidden="true"
-                >
-                  star
-                </span>
-              )
-            })}
-          </div>
-          {rating > 0 ? (
-            <span className="text-[11px] text-on-surface-variant">
-              {rating} ({reviewCount?.toLocaleString()})
-            </span>
+          {reviewCount > 0 ? (
+            <>
+              <div className="flex gap-0.5">
+                {[1, 2, 3, 4, 5].map((star) => {
+                  const isFilled = rating > 0 && star <= Math.round(rating)
+                  return (
+                    <span
+                      key={star}
+                      className={`material-symbols-outlined ${isFilled ? 'filled' : ''} text-secondary-container`}
+                      style={{ fontSize: '12px' }}
+                      aria-hidden="true"
+                    >
+                      star
+                    </span>
+                  )
+                })}
+              </div>
+              <span className="text-[11px] text-on-surface-variant">
+                {rating} ({reviewCount?.toLocaleString()})
+              </span>
+            </>
           ) : (
-            <span className="inline-flex items-center bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
-              New
-            </span>
+            <span className="text-[11px] text-on-surface-variant italic">No reviews yet</span>
           )}
         </div>
 

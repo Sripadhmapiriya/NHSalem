@@ -4,6 +4,7 @@ import useToastStore from '@/store/toastStore'
 import { getAdminOrder, updateAdminOrderStatus } from '@/services/adminApi'
 import { AdminPage, AdminCard, StatusBadge, AdminBtn, formatCurrency, formatDate } from '@/admin/AdminUI'
 import { SeafoodLoader } from '@/components/ui'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const STAGE_ICONS = {
   confirmed: 'check',
@@ -44,6 +45,8 @@ export default function AdminOrderDetail() {
   const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
+  const [cancelModalOpen, setCancelModalOpen] = useState(false)
+  const [cancelReason, setCancelReason] = useState('')
 
   useEffect(() => {
     async function loadOrder() {
@@ -81,6 +84,23 @@ export default function AdminOrderDetail() {
     }
   }
 
+  const handleCancelOrder = async () => {
+    if (!order) return
+    setUpdating(true)
+    try {
+      const res = await updateAdminOrderStatus(order.dbId || id, 'cancelled', cancelReason)
+      if (res.success) {
+        setOrder(res.order)
+        addToast({ message: 'Order cancelled successfully and email sent!', type: 'success' })
+        setCancelModalOpen(false)
+      }
+    } catch (err) {
+      addToast({ message: err.message || 'Failed to cancel order', type: 'error' })
+    } finally {
+      setUpdating(false)
+    }
+  }
+
   if (loading) {
     return (
       <AdminPage>
@@ -112,11 +132,50 @@ export default function AdminOrderDetail() {
         </AdminBtn>
       }
       action={
-        <>
+        <div className="flex items-center gap-3">
           <AdminBtn variant="secondary" icon="print" onClick={() => window.print()}>Print Invoice</AdminBtn>
-        </>
+          {order.status !== 'cancelled' && order.status !== 'delivered' && (
+            <AdminBtn variant="primary" style={{ backgroundColor: '#b91c1c' }} onClick={() => setCancelModalOpen(true)}>Cancel Order</AdminBtn>
+          )}
+        </div>
       }
     >
+      <AnimatePresence>
+        {cancelModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-xl shadow-xl max-w-md w-full overflow-hidden"
+            >
+              <div className="p-6">
+                <h3 className="text-xl font-bold text-admin-navy mb-2">Cancel Order</h3>
+                <p className="text-sm text-admin-text-sub mb-6">Are you sure you want to cancel order <strong>{order.id}</strong>? The customer will be notified via email.</p>
+                
+                <div className="mb-6">
+                  <label className="block text-sm font-semibold text-admin-navy mb-2">Cancellation Reason (Optional)</label>
+                  <textarea 
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                    placeholder="e.g. Out of stock, Customer requested..."
+                    className="w-full border border-admin-border rounded-lg p-3 text-sm outline-none focus:border-admin-primary resize-none"
+                    rows={3}
+                  />
+                </div>
+
+                <div className="flex gap-3 justify-end">
+                  <AdminBtn variant="secondary" onClick={() => setCancelModalOpen(false)}>Back</AdminBtn>
+                  <AdminBtn variant="primary" style={{ backgroundColor: '#b91c1c' }} onClick={handleCancelOrder} disabled={updating}>
+                    {updating ? 'Cancelling...' : 'Confirm Cancellation'}
+                  </AdminBtn>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Order info + items */}
         <div className="lg:col-span-2 space-y-5">

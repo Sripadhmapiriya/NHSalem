@@ -7,6 +7,7 @@
 const STATUS_STYLES = {
   // Orders
   confirmed:        'bg-blue-50 text-blue-700 border-blue-200',
+  accepted:         'bg-indigo-50 text-indigo-700 border-indigo-200',
   packed:           'bg-yellow-50 text-yellow-700 border-yellow-200',
   out_for_delivery: 'bg-purple-50 text-purple-700 border-purple-200',
   delivered:        'bg-green-50 text-green-700 border-green-200',
@@ -34,6 +35,7 @@ const STATUS_STYLES = {
 const STATUS_LABELS = {
   out_for_delivery: 'Out for Delivery',
   confirmed:        'Confirmed',
+  accepted:         'Accepted',
   packed:           'Packed',
   delivered:        'Delivered',
   cancelled:        'Cancelled',
@@ -135,14 +137,18 @@ export function AdminTable({ headers, children, emptyMessage = 'No data availabl
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-admin-border/40">
-            {headers.map((h, i) => (
-              <th
-                key={`${h}-${i}`}
-                className="text-left px-5 py-3 text-[10px] font-bold text-admin-text-sub uppercase tracking-[0.1em] whitespace-nowrap"
-              >
-                {h}
-              </th>
-            ))}
+            {headers.map((h, i) => {
+              const label = typeof h === 'string' ? h : h.label
+              const cls = typeof h === 'string' ? '' : h.className || ''
+              return (
+                <th
+                  key={`${label}-${i}`}
+                  className={`text-left px-4 py-2.5 text-[10px] font-bold text-admin-text-sub uppercase tracking-[0.1em] whitespace-nowrap ${cls}`}
+                >
+                  {label}
+                </th>
+              )
+            })}
           </tr>
         </thead>
         <tbody>
@@ -172,7 +178,7 @@ export function Tr({ onClick, children, className = '' }) {
 
 export function Td({ children, className = '' }) {
   return (
-    <td className={`px-5 py-3.5 text-[13px] text-admin-text ${className}`}>
+    <td className={`px-4 py-2.5 text-[13px] text-admin-text ${className}`}>
       {children}
     </td>
   )
@@ -256,12 +262,11 @@ export function FilterPill({ label, active, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      style={
-        active
-          ? { backgroundColor: '#0B1E3D', color: '#ffffff', borderColor: '#0B1E3D' }
-          : {}
-      }
-      className={`px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-all duration-150 capitalize whitespace-nowrap
+      style={{
+        padding: '2px 12px',
+        ...(active ? { backgroundColor: '#0B1E3D', color: '#ffffff', borderColor: '#0B1E3D' } : {})
+      }}
+      className={`rounded-full text-[11px] font-semibold border transition-all duration-150 capitalize whitespace-nowrap
         ${active
           ? 'border-transparent'
           : 'bg-white text-admin-text-sub border-admin-border hover:border-admin-navy/50 hover:text-admin-navy'

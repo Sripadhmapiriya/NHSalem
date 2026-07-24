@@ -96,6 +96,11 @@ function RootRoutes() {
           <Route path="/bulk-orders" element={<BulkOrders />} />
           <Route path="/help" element={<HelpCenter />} />
 
+          {/* Redirects */}
+          <Route path="/contact" element={<Navigate to="/#contact" replace />} />
+          <Route path="/contact-us" element={<Navigate to="/#contact" replace />} />
+          <Route path="/about" element={<Navigate to="/#about" replace />} />
+
           {/* 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
@@ -126,11 +131,15 @@ function ScrollToTop() {
   return null
 }
 
+import AuthProvider from '@/providers/AuthProvider'
+
 export default function AppRouter() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <RootRoutes />
+      <AuthProvider>
+        <RootRoutes />
+      </AuthProvider>
     </BrowserRouter>
   )
 }

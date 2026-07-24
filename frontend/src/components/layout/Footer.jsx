@@ -1,9 +1,9 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 
 const FOOTER_LINKS = {
   'Quick Links': [
     { label: 'Home', to: '/' },
-    { label: 'About Us', to: '/about' },
+    { label: 'About Us', to: '/#about' },
     { label: 'Quality Promise', to: '/quality' },
     { label: 'Store Locator', to: '/stores' },
     { label: 'Wholesale / B2B', to: '/bulk-orders' },
@@ -20,9 +20,8 @@ const FOOTER_LINKS = {
   'Support': [
     { label: 'Help Center', to: '/help' },
     { label: 'Track Order', to: '/track-order' },
-    { label: 'Contact Us', to: '/help' },
+    { label: 'Contact Us', to: '/#contact' },
     { label: 'FAQ & Help', to: '/help' },
-    { label: 'Sitemap', to: '/help' },
   ],
 }
 
@@ -30,6 +29,31 @@ const FOOTER_LINKS = {
  * Compact Enterprise Footer — Deep Navy background (#000516)
  */
 export default function Footer() {
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const handleLinkClick = (e, to) => {
+    if (to.startsWith('/#')) {
+      e.preventDefault()
+      const sectionId = to.split('#')[1]
+      if (location.pathname === '/') {
+        const el = document.getElementById(sectionId)
+        if (el) el.scrollIntoView({ behavior: 'smooth' })
+      } else {
+        navigate('/')
+        setTimeout(() => {
+          const el = document.getElementById(sectionId)
+          if (el) el.scrollIntoView({ behavior: 'smooth' })
+        }, 150)
+      }
+    } else if (to === '/') {
+      if (location.pathname === '/') {
+        e.preventDefault()
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    }
+  }
+
   return (
     <footer className="w-full bg-[#000516] text-white border-t border-white/10 shrink-0 pt-10 pb-5" aria-label="Site footer">
       <div className="container-max">
@@ -100,6 +124,7 @@ export default function Footer() {
                   <li key={link.label}>
                     <Link
                       to={link.to}
+                      onClick={(e) => handleLinkClick(e, link.to)}
                       className="text-xs text-slate-200 hover:text-[#fed255] hover:underline transition-colors block py-0.5 font-medium"
                     >
                       {link.label}

@@ -14,7 +14,8 @@ const productSchema = z.object({
   localName: z.string().optional().nullable(),
   tagline: z.string().optional().nullable(),
   description: z.string().optional().nullable(),
-  how_to_cook: z.string().optional().nullable(),
+  howToCook: z.string().optional().nullable(),
+  catchTime: z.string().optional().nullable(),
   image: z.string().optional().nullable(),
   images: z.array(z.string()).optional().default([]),
   badges: z.array(z.any()).optional().default([]),
@@ -256,8 +257,8 @@ router.post('/admin/products', requireAdmin, asyncHandler(async (req, res) => {
 
   const result = await pool.query(
     `INSERT INTO products (
-      slug, category, name, local_name, tagline, description, how_to_cook, image, images, badges, weights, base_price, freshness_score, nutrition, unit, stock_qty, stock_status, is_active, variants
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+      slug, category, name, local_name, tagline, description, how_to_cook, image, images, badges, weights, base_price, freshness_score, catch_time, nutrition, unit, stock_qty, stock_status, is_active, variants
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
      RETURNING *`,
     [
       slug,
@@ -266,13 +267,14 @@ router.post('/admin/products', requireAdmin, asyncHandler(async (req, res) => {
       p.localName,
       p.tagline,
       p.description,
-      p.how_to_cook,
+      p.howToCook,
       p.image,
       JSON.stringify(p.images),
       JSON.stringify(p.badges),
       JSON.stringify(p.weights || p.variants || []),
       p.basePrice,
       p.freshnessScore,
+      p.catchTime,
       JSON.stringify(p.nutrition),
       p.unit,
       p.stock_qty,
@@ -312,8 +314,8 @@ router.put('/admin/products/:id', requireAdmin, asyncHandler(async (req, res) =>
 
   const result = await pool.query(
     `UPDATE products SET
-      slug = $1, category = $2, name = $3, local_name = $4, tagline = $5, description = $6, how_to_cook = $7, image = $8, images = $9, badges = $10, weights = $11, base_price = $12, freshness_score = $13, nutrition = $14, unit = $15, stock_qty = $16, stock_status = $17, is_active = $18, variants = $19, updated_at = NOW()
-     WHERE id = $20
+      slug = $1, category = $2, name = $3, local_name = $4, tagline = $5, description = $6, how_to_cook = $7, image = $8, images = $9, badges = $10, weights = $11, base_price = $12, freshness_score = $13, catch_time = $14, nutrition = $15, unit = $16, stock_qty = $17, stock_status = $18, is_active = $19, variants = $20, updated_at = NOW()
+     WHERE id = $21
      RETURNING *`,
     [
       newSlug,
@@ -322,13 +324,14 @@ router.put('/admin/products/:id', requireAdmin, asyncHandler(async (req, res) =>
       p.localName,
       p.tagline,
       p.description,
-      p.how_to_cook,
+      p.howToCook,
       p.image,
       JSON.stringify(p.images),
       JSON.stringify(p.badges),
       JSON.stringify(p.weights || p.variants || []),
       p.basePrice,
       p.freshnessScore,
+      p.catchTime,
       JSON.stringify(p.nutrition),
       p.unit,
       p.stock_qty,

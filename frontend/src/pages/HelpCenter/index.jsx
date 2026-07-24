@@ -15,21 +15,6 @@ const HELP_CATEGORIES = [
   { icon: 'restaurant', label: 'Products & Quality' },
 ]
 
-const SITEMAP = [
-  { label: 'Home', to: '/' },
-  { label: 'Fish', to: '/category/fish' },
-  { label: 'Prawns & Shrimp', to: '/category/prawns-shrimp' },
-  { label: 'Crabs', to: '/category/crabs' },
-  { label: 'Lobster', to: '/category/lobster' },
-  { label: 'Dried Fish', to: '/category/dried-fish' },
-  { label: 'Combos', to: '/category/combos' },
-  { label: 'Track Order', to: '/orders/NHS-77421' },
-  { label: 'About Us', to: '/about' },
-  { label: 'Quality Promise', to: '/quality' },
-  { label: 'Store Locator', to: '/stores' },
-  { label: 'Wholesale / B2B', to: '/bulk-orders' },
-]
-
 export default function HelpCenter() {
   const [allFaqs, setAllFaqs] = useState([])
   const [search, setSearch] = useState('')
@@ -176,21 +161,6 @@ export default function HelpCenter() {
               </div>
             </div>
 
-            {/* Sitemap */}
-            <div className="bg-surface-container-low rounded-[28px] p-6">
-              <h2 className="text-headline-sm text-on-surface mb-4">Quick Links</h2>
-              <div className="flex flex-col gap-1">
-                {SITEMAP.map((link) => (
-                  <Link
-                    key={link.label}
-                    to={link.to}
-                    className="text-label-md text-on-surface-variant hover:text-primary transition-colors py-1.5 border-b border-outline-variant/20 last:border-0"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
       </div>

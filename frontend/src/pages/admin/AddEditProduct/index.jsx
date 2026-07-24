@@ -47,6 +47,8 @@ export default function AdminAddEditProduct() {
   const [saving, setSaving] = useState(false)
   const [imageUploadMode, setImageUploadMode] = useState('url')
   const [uploadingImage, setUploadingImage] = useState(false)
+  const [localPreview, setLocalPreview] = useState(null)
+  const [imageError, setImageError] = useState(false)
 
   // Variants state management
   const [variants, setVariants] = useState(existing?.variants || existing?.weights || [])
@@ -112,6 +114,11 @@ export default function AdminAddEditProduct() {
   })
 
   const currentImage = useWatch({ control, name: 'image' })
+  const displayImage = localPreview || currentImage
+
+  useEffect(() => {
+    setImageError(false)
+  }, [displayImage])
 
   // Re-run setSelectedBadges when existing changes/loads
   useEffect(() => {
@@ -442,8 +449,18 @@ export default function AdminAddEditProduct() {
             <AdminCard title="Image">
               <div className="p-4">
                 <div className="mb-4">
-                  {currentImage ? (
-                    <img src={currentImage} alt="Preview" className="w-full h-40 object-cover rounded-[10px] border border-admin-border" />
+                  {displayImage && !imageError ? (
+                    <img 
+                      src={displayImage} 
+                      alt="Preview" 
+                      className="w-full h-40 object-cover rounded-[10px] border border-admin-border" 
+                      onError={() => setImageError(true)}
+                    />
+                  ) : displayImage && imageError ? (
+                    <div className="w-full h-40 bg-admin-coral/10 border border-admin-coral border-dashed rounded-[10px] flex flex-col items-center justify-center text-admin-coral">
+                      <span className="material-symbols-outlined mb-1" style={{ fontSize: '32px' }}>broken_image</span>
+                      <span className="text-[11px] font-bold uppercase tracking-wider">Invalid Image URL</span>
+                    </div>
                   ) : (
                     <div className="w-full h-40 bg-admin-seafoam border border-admin-border border-dashed rounded-[10px] flex items-center justify-center text-admin-text-sub">
                       <span className="material-symbols-outlined" style={{ fontSize: '32px' }}>image</span>
@@ -487,11 +504,16 @@ export default function AdminAddEditProduct() {
                         const file = e.target.files?.[0]
                         if (!file) return
                         
+                        const objectUrl = URL.createObjectURL(file)
+                        setLocalPreview(objectUrl)
+                        setImageError(false)
                         setUploadingImage(true)
+
                         try {
                           const res = await uploadAdminImage(file)
                           if (res.success) {
                             setValue('image', res.url, { shouldDirty: true })
+                            setLocalPreview(null)
                             addToast({ message: 'Image uploaded successfully!', type: 'success' })
                           } else {
                             addToast({ message: 'Failed to upload image', type: 'error' })
