@@ -23,6 +23,32 @@ async function handleResponse(response) {
   return response.json()
 }
 
+// ==========================================
+// Contact Messages
+// ==========================================
+
+export const getAdminMessages = async () => {
+  const res = await fetch(`${API_URL}/api/admin/messages`, { headers: getHeaders(true) })
+  return handleResponse(res)
+}
+
+export const updateAdminMessageStatus = async (id, status) => {
+  const res = await fetch(`${API_URL}/api/admin/messages/${id}`, {
+    method: 'PUT',
+    headers: getHeaders(true),
+    body: JSON.stringify({ status })
+  })
+  return handleResponse(res)
+}
+
+export const deleteAdminMessage = async (id) => {
+  const res = await fetch(`${API_URL}/api/admin/messages/${id}`, {
+    method: 'DELETE',
+    headers: getHeaders(true)
+  })
+  return handleResponse(res)
+}
+
 // ── Admin Auth ────────────────────────────────────────────────────────────────
 
 export async function adminLogin(email, password) {

@@ -19,10 +19,22 @@ function getHeaders(authRequired = false) {
 // Helper for fetch errors
 async function handleResponse(response) {
   if (!response.ok) {
-    const errData = await response.json().catch(() => ({}))
-    throw new Error(errData.message || 'Something went wrong')
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(errorData.error || errorData.message || 'An error occurred')
   }
   return response.json()
+}
+
+// ==========================================
+// Public/Customer Contact Form
+// ==========================================
+export const submitContactMessage = async (data) => {
+  const res = await fetch(`${API_URL}/api/contact`, {
+    method: 'POST',
+    headers: getHeaders(false),
+    body: JSON.stringify(data)
+  })
+  return handleResponse(res)
 }
 
 // ── Products ──────────────────────────────────────────────────────────────────

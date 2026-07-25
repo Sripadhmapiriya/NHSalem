@@ -8,7 +8,7 @@ import Card from '@/components/ui/Card'
 import Modal from '@/components/ui/Modal'
 import useToastStore from '@/store/toastStore'
 import useAuthStore from '@/store/authStore'
-import { getProducts, getApprovedSiteReviews, submitSiteReview, subscribeNewsletter } from '@/services/api'
+import { getProducts, getApprovedSiteReviews, submitSiteReview, subscribeNewsletter, submitContactMessage } from '@/services/api'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -151,11 +151,15 @@ export default function Home() {
   const onContactSubmit = async (data) => {
     setContactSubmitting(true)
     try {
-      await new Promise((resolve) => setTimeout(resolve, 600))
-      addToast({ message: 'Thank you! Your message has been sent to NH Salem team.', type: 'success', duration: 5000 })
-      resetContact()
+      const res = await submitContactMessage(data)
+      if (res.success) {
+        addToast({ message: 'Thank you! Your message has been sent to NH Salem team.', type: 'success', duration: 5000 })
+        resetContact()
+      } else {
+        addToast({ message: res.error || 'Failed to send message.', type: 'error' })
+      }
     } catch (err) {
-      addToast({ message: 'Failed to send message.', type: 'error' })
+      addToast({ message: err.message || 'Failed to send message.', type: 'error' })
     } finally {
       setContactSubmitting(false)
     }

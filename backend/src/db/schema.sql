@@ -223,3 +223,13 @@ CREATE TABLE IF NOT EXISTS wishlists (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE(user_id, product_id)
 );
+
+-- 21. Contact Messages Table
+CREATE TABLE IF NOT EXISTS contact_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(255) NOT NULL,
+  contact VARCHAR(255) NOT NULL,
+  message TEXT NOT NULL,
+  status VARCHAR(50) DEFAULT 'unread', -- 'unread', 'read', 'archived'
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

@@ -21,6 +21,20 @@ import faqRoutes from './routes/faqs.routes.js'
 import addressRoutes from './routes/addresses.routes.js'
 import newsletterRoutes from './routes/newsletter.routes.js'
 import wishlistsRoutes from './routes/wishlists.routes.js'
+import contactRoutes from './routes/contact.routes.js'
+
+import pool from './db/pool.js'
+
+pool.query(`
+CREATE TABLE IF NOT EXISTS contact_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(255) NOT NULL,
+  contact VARCHAR(255) NOT NULL,
+  message TEXT NOT NULL,
+  status VARCHAR(50) DEFAULT 'unread',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+`).then(() => console.log('✅ Contact messages table ready')).catch(console.error)
 
 import fs from 'fs';
 import path from 'path';
@@ -164,6 +178,7 @@ app.use('/api/faqs', faqRoutes)            // handles /faqs
 app.use('/api/addresses', addressRoutes)   // handles /addresses
 app.use('/api/newsletter', newsletterRoutes) // handles /api/newsletter
 app.use('/api', wishlistsRoutes)           // handles /api/wishlist
+app.use('/api', contactRoutes)             // handles /api/contact and /api/admin/messages
 app.use('/api/admin/reviews', productRoutes)
 
 // 3. Centralized error handling

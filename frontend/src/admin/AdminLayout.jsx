@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { to: '/admin/reviews',        icon: 'star_rate',         label: 'Reviews' },
   { to: '/admin/store-locator',  icon: 'store',             label: 'Store Locator' },
   { to: '/admin/wholesale',      icon: 'business_center',   label: 'Wholesale / B2B' },
+  { to: '/admin/messages',       icon: 'forum',             label: 'Messages' },
 ]
 
 const PAGE_TITLES = {
@@ -23,6 +24,7 @@ const PAGE_TITLES = {
   '/admin/reviews':       'Reviews',
   '/admin/store-locator': 'Store Locator & Delivery Zones',
   '/admin/wholesale':     'Wholesale / B2B Inquiries',
+  '/admin/messages':      'Messages',
 }
 
 /**

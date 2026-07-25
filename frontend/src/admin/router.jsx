@@ -16,6 +16,7 @@ const AdminPromotions   = lazy(() => import('@/pages/admin/Promotions'))
 const AdminReviews      = lazy(() => import('@/pages/admin/Reviews'))
 const AdminStoreLocator = lazy(() => import('@/pages/admin/StoreLocator'))
 const AdminWholesale    = lazy(() => import('@/pages/admin/Wholesale'))
+const AdminMessages     = lazy(() => import('@/pages/admin/Messages'))
 
 function AdminPageLoader() {
   return (
@@ -56,6 +57,7 @@ export default function AdminRoutes() {
             <Route path="reviews"                   element={<AdminReviews />} />
             <Route path="store-locator"             element={<AdminStoreLocator />} />
             <Route path="wholesale"                 element={<AdminWholesale />} />
+            <Route path="messages"                  element={<AdminMessages />} />
           </Route>
         </Route>
 
