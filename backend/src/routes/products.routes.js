@@ -433,8 +433,7 @@ router.post('/admin/reviews/:id/reply', requireAdmin, asyncHandler(async (req, r
   const result = await pool.query(`
     UPDATE reviews 
     SET admin_reply = $1,
-        reply_at = NOW(),
-        updated_at = NOW()
+        reply_at = NOW()
     WHERE id = $2
     RETURNING *
   `, [reply.trim(), id])
