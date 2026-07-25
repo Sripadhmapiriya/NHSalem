@@ -178,11 +178,6 @@ export default function AdminLayout() {
             <h1 className="text-[15px] font-bold text-admin-navy tracking-tight">{pageTitle}</h1>
           </div>
           <div className="flex items-center gap-3">
-            {/* Notification bell (decorative — wired in later task) */}
-            <button className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-admin-seafoam transition-colors relative" aria-label="Notifications">
-              <span className="material-symbols-outlined text-admin-text-sub" style={{ fontSize: '20px' }}>notifications</span>
-              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-admin-coral text-[9px] font-bold text-white shadow-sm border border-white">3</span>
-            </button>
             {/* Admin avatar */}
             <div className="w-8 h-8 rounded-full bg-admin-navy flex items-center justify-center border-2 border-admin-gold/30 cursor-default select-none" title={admin?.email}>
               <span className="text-white font-bold text-[11px]">{admin?.name?.charAt(0) ?? 'A'}</span>

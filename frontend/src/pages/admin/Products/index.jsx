@@ -84,6 +84,7 @@ export default function AdminProducts() {
           'Product', 
           'Category', 
           'Base Price', 
+          'Variants',
           'Rating', 
           'Freshness (0-100)', 
           'Badges', 
@@ -103,12 +104,29 @@ export default function AdminProducts() {
               <Td className="capitalize">{CATEGORY_MAP[p.category] || p.category}</Td>
               <Td><span className="font-bold">{formatCurrency(p.basePrice)}</span></Td>
               <Td>
+                {p.variants?.length > 0 ? (
+                  <div className="flex flex-wrap gap-1">
+                    {p.variants.map((v, i) => (
+                      <span key={i} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                        {v.label}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-xs text-gray-400">
+                    {p.unit || '500g'}
+                  </span>
+                )}
+              </Td>
+              <Td>
                 <div className="flex items-center gap-1.5 whitespace-nowrap">
-                  <span className="material-symbols-outlined text-admin-gold" style={{ fontSize: '14px', fontVariationSettings: "'FILL' 1" }}>star</span>
                   {p.reviewCount > 0 ? (
-                    <span>{p.rating} <span className="text-admin-text-sub text-[11px]">({p.reviewCount?.toLocaleString()})</span></span>
+                    <>
+                      <span className="material-symbols-outlined text-admin-gold" style={{ fontSize: '14px', fontVariationSettings: "'FILL' 1" }}>star</span>
+                      <span>{p.rating} <span className="text-admin-text-sub text-[11px]">({p.reviewCount?.toLocaleString()})</span></span>
+                    </>
                   ) : (
-                    <span className="text-admin-text-sub italic" title="No ratings">—</span>
+                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">New</span>
                   )}
                 </div>
               </Td>

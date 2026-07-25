@@ -180,7 +180,9 @@ export default function ProductCard({ product }) {
               </span>
             </>
           ) : (
-            <span className="text-[11px] text-on-surface-variant italic">No reviews yet</span>
+            <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-medium flex items-center gap-1 w-fit">
+              ✨ New Arrival
+            </span>
           )}
         </div>
 

@@ -249,6 +249,15 @@ export async function deleteAdminReview(id) {
   return handleResponse(response)
 }
 
+export async function replyToAdminReview(id, replyText) {
+  const response = await fetch(`${API_URL}/api/admin/reviews/${id}/reply`, {
+    method: 'POST',
+    headers: getHeaders(true),
+    body: JSON.stringify({ reply: replyText })
+  })
+  return handleResponse(response)
+}
+
 // ── Admin Recipes CRUD ────────────────────────────────────────────────────────
 
 export async function getAdminRecipes() {
@@ -287,7 +296,7 @@ export async function deleteAdminRecipe(id) {
 // ── Admin Customer Details & Status Toggle ────────────────────────────────────
 
 export async function getCustomerOrders(customerId) {
-  const response = await fetch(`${API_URL}/api/admin/customers/${customerId}/orders`, {
+  const response = await fetch(`${API_URL}/api/admin/customers/${customerId}`, {
     headers: getHeaders(true)
   })
   return handleResponse(response)

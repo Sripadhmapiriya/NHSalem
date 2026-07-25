@@ -169,8 +169,6 @@ function baseLayout(title, contentHtml, unsubscribeUrl = null) {
   `
 }
 
-}
-
 // --- Formatting Helpers ---
 const toTitleCase = (str) => {
   if (!str) return ''

@@ -338,9 +338,7 @@ router.get('/customers/:id/orders', requireAdmin, asyncHandler(async (req, res) 
       email: addressObj.email || '',
       phone: addressObj.phone || '',
       status: 'guest',
-      joinedAt,
-      subscription_plan: null,
-      subscription_status: null
+      joinedAt
     }
 
     stats.total_orders = ordersRows.length
@@ -355,12 +353,8 @@ router.get('/customers/:id/orders', requireAdmin, asyncHandler(async (req, res) 
 
     const customerRes = await pool.query(
       `SELECT u.id::text, u.name, u.email, COALESCE(u.phone, '') as phone, COALESCE(u.status, 'active') as status,
-              TO_CHAR(u.created_at, 'YYYY-MM-DD') as "joinedAt",
-              sp.name AS subscription_plan,
-              s.status AS subscription_status
+              TO_CHAR(u.created_at, 'YYYY-MM-DD') as "joinedAt"
        FROM users u
-       LEFT JOIN subscriptions s ON s.user_id = u.id AND s.status = 'active'
-       LEFT JOIN subscription_plans sp ON sp.id = s.plan_id
        WHERE u.id = $1`,
       [id]
     )
@@ -430,6 +424,100 @@ router.patch('/customers/:id/status', requireAdmin, asyncHandler(async (req, res
     success: true,
     message: `Customer status updated to ${status}`
   })
+}))
+
+// GET /api/admin/customers/:id
+router.get('/customers/:id', requireAdmin, asyncHandler(async (req, res) => {
+  try {
+    const { id } = req.params
+    console.log('Fetching customer:', id) // debug log
+
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+    
+    let customer
+    
+    if (isUuid) {
+      // Step 1: Get customer basic info
+      const customerRes = await pool.query(
+        `SELECT u.id, u.name, u.email, u.phone, u.status, u.created_at
+         FROM users u WHERE u.id = $1`,
+        [id]
+      )
+      if (customerRes.rows.length) {
+        customer = customerRes.rows[0]
+      }
+    }
+
+    if (!customer) {
+      // Check if it's a guest in orders
+      let guestQuery
+      if (isUuid) {
+         guestQuery = `SELECT address->>'name' as name, address->>'email' as email, address->>'phone' as phone, MIN(placed_at) as created_at FROM orders WHERE user_id = $1 GROUP BY address->>'name', address->>'email', address->>'phone' LIMIT 1`
+      } else {
+         guestQuery = `SELECT address->>'name' as name, address->>'email' as email, address->>'phone' as phone, MIN(placed_at) as created_at FROM orders WHERE 'guest-' || md5(COALESCE(address->>'email', address->>'name', '')) = $1 GROUP BY address->>'name', address->>'email', address->>'phone' LIMIT 1`
+      }
+      const ordersUser = await pool.query(guestQuery, [id])
+      if (!ordersUser.rows.length) {
+        return res.status(404).json({ error: 'Customer not found', id })
+      }
+      customer = {
+        id,
+        name: ordersUser.rows[0].name || 'Guest',
+        email: ordersUser.rows[0].email || '',
+        phone: ordersUser.rows[0].phone || '',
+        status: 'guest',
+        created_at: ordersUser.rows[0].created_at
+      }
+    }
+
+    // Step 2: Get customer orders separately
+    let ordersQuery
+    if (isUuid) {
+      ordersQuery = `
+        SELECT id, order_number as order_ref, status, address as delivery_address,
+               estimated_delivery as delivery_slot, payment_method, placed_at,
+               subtotal, discount, total, 
+               (SELECT json_agg(json_build_object('name', product_name, 'quantity', quantity, 'price', price, 'weight', weight)) FROM order_items WHERE order_id = orders.id) as items
+        FROM orders WHERE user_id = $1 ORDER BY placed_at DESC
+      `
+    } else {
+      ordersQuery = `
+        SELECT id, order_number as order_ref, status, address as delivery_address,
+               estimated_delivery as delivery_slot, payment_method, placed_at,
+               subtotal, discount, total, 
+               (SELECT json_agg(json_build_object('name', product_name, 'quantity', quantity, 'price', price, 'weight', weight)) FROM order_items WHERE order_id = orders.id) as items
+        FROM orders WHERE 'guest-' || md5(COALESCE(address->>'email', address->>'name', '')) = $1 ORDER BY placed_at DESC
+      `
+    }
+    const ordersRes = await pool.query(ordersQuery, [id])
+
+    // Step 3: Get order stats
+    let statsQuery
+    if (isUuid) {
+      statsQuery = `SELECT COUNT(*)::int AS order_count, COALESCE(SUM(total), 0)::numeric AS total_spent, MAX(placed_at) AS last_order_date FROM orders WHERE user_id = $1`
+    } else {
+      statsQuery = `SELECT COUNT(*)::int AS order_count, COALESCE(SUM(total), 0)::numeric AS total_spent, MAX(placed_at) AS last_order_date FROM orders WHERE 'guest-' || md5(COALESCE(address->>'email', address->>'name', '')) = $1`
+    }
+    const statsRes = await pool.query(statsQuery, [id])
+    const stats = statsRes.rows[0]
+
+    res.json({
+      customer: {
+        ...customer,
+        order_count: stats.order_count,
+        total_spent: stats.total_spent,
+        last_order_date: stats.last_order_date,
+      },
+      orders: ordersRes.rows,
+    })
+    
+  } catch (err) {
+    console.error('Customer detail error:', err.message, err.stack)
+    res.status(500).json({ 
+      error: 'Failed to fetch customer',
+      detail: err.message 
+    })
+  }
 }))
 
 export default router

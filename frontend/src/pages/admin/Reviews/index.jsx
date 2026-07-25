@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import useToastStore from '@/store/toastStore'
-import { getAdminReviews, updateAdminReviewStatus, deleteAdminReview } from '@/services/adminApi'
+import { getAdminReviews, updateAdminReviewStatus, deleteAdminReview, replyToAdminReview } from '@/services/adminApi'
 import {
   AdminPage,
   AdminCard,
@@ -158,14 +158,19 @@ export default function AdminReviews() {
     }
   }
 
-  const handleReplySubmit = (replyText) => {
-    setReviews((prev) =>
-      prev.map((r) =>
-        r.id === replyTarget.id ? { ...r, adminReply: replyText } : r
+  const handleReplySubmit = async (replyText) => {
+    try {
+      await replyToAdminReview(replyTarget.id, replyText)
+      setReviews((prev) =>
+        prev.map((r) =>
+          r.id === replyTarget.id ? { ...r, adminReply: replyText } : r
+        )
       )
-    )
-    addToast({ message: 'Reply sent successfully.', type: 'success' })
-    setReplyTarget(null)
+      addToast({ message: 'Reply sent successfully.', type: 'success' })
+      setReplyTarget(null)
+    } catch (err) {
+      addToast({ message: err.message || 'Failed to send reply', type: 'error' })
+    }
   }
 
   return (

@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000'
 import useToastStore from '@/store/toastStore'
 import { getCustomerOrders, toggleCustomerStatus, updateAdminOrderStatus } from '@/services/adminApi'
 import {
@@ -19,32 +20,53 @@ export default function CustomerDetail() {
 
   const [customer, setCustomer] = useState(null)
   const [orders, setOrders] = useState([])
-  const [stats, setStats] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [updatingStatus, setUpdatingStatus] = useState(false)
   const [expandedOrders, setExpandedOrders] = useState({})
 
-  async function loadCustomerData() {
+  const fetchCustomerDetail = async () => {
     setLoading(true)
+    setError(null)
     try {
-      const res = await getCustomerOrders(customerId)
-      if (res.success) {
-        setCustomer(res.customer)
-        setOrders(res.orders)
-        setStats(res.stats)
-      } else {
-        addToast({ message: res.error || 'Failed to fetch customer data', type: 'error' })
+      const token = localStorage.getItem('nh-salem-admin-token') 
+                 || localStorage.getItem('adminToken')
+                 || localStorage.getItem('admin_token')
+                 || localStorage.getItem('token')
+                 || sessionStorage.getItem('adminToken')
+      
+      const res = await fetch(
+        `${API_URL}/api/admin/customers/${customerId}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      )
+      
+      console.log('Response status:', res.status)
+      const data = await res.json()
+      console.log('Response data:', data)
+      
+      if (!res.ok) {
+        setError(data.error || 'Customer not found')
+        return
       }
+      
+      setCustomer(data.customer)
+      setOrders(data.orders || [])
+      
     } catch (err) {
-      console.error('Error fetching customer details:', err)
-      addToast({ message: err.message || 'Failed to fetch customer data', type: 'error' })
+      console.error('Fetch error:', err)
+      setError('Network error — please try again')
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    loadCustomerData()
+    if (!customerId) return
+    fetchCustomerDetail()
   }, [customerId])
 
   const handleToggleStatus = async (id, currentStatus) => {
@@ -74,10 +96,10 @@ export default function CustomerDetail() {
   const handleStatusChange = async (orderDbId, newStatus) => {
     try {
       const res = await updateAdminOrderStatus(orderDbId, newStatus)
-      if (res.success) {
+      if (res.success || res.order) {
         // Update order in state list
         setOrders(prev =>
-          prev.map(o => (o.dbId === orderDbId ? { ...o, status: newStatus } : o))
+          prev.map(o => (o.id === orderDbId ? { ...o, status: newStatus } : o))
         )
         addToast({ message: `Order status successfully updated to "${newStatus.replace(/_/g, ' ')}"!`, type: 'success' })
       } else {
@@ -95,25 +117,50 @@ export default function CustomerDetail() {
     }))
   }
 
-  if (loading) {
-    return (
-      <AdminPage>
-        <SeafoodLoader text="Loading customer profile..." className="min-h-[50vh]" />
-      </AdminPage>
-    )
-  }
+  if (loading) return (
+    <AdminPage>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 
+                        border-b-2 border-green-700" />
+        <span className="ml-3 text-gray-500">
+          Loading customer...
+        </span>
+      </div>
+    </AdminPage>
+  )
 
-  if (!customer) {
-    return (
-      <AdminPage>
-        <div className="text-center py-20 bg-white rounded-[16px] border border-admin-border/60 p-5">
-          <span className="material-symbols-outlined text-admin-text-sub mb-4" style={{ fontSize: '48px' }}>person_off</span>
-          <p className="text-admin-text-sub font-medium">Customer not found.</p>
-          <AdminBtn className="mt-4" onClick={() => navigate('/admin/customers')}>Back to Customers</AdminBtn>
+  if (error || !customer) return (
+    <AdminPage>
+      <div className="text-center py-16 px-4 bg-white rounded-[16px] border border-admin-border/60">
+        <div className="w-16 h-16 bg-red-100 rounded-full 
+                        flex items-center justify-center 
+                        mx-auto mb-4">
+          <span className="text-2xl">⚠️</span>
         </div>
-      </AdminPage>
-    )
-  }
+        <h3 className="font-bold text-gray-900 mb-2">
+          {error || 'Customer not found'}
+        </h3>
+        <p className="text-sm text-gray-400 mb-6">
+          Customer ID: {customerId}
+        </p>
+        <button
+          onClick={() => navigate('/admin/customers')}
+          className="bg-green-700 text-white px-6 py-2.5 
+                     rounded-xl font-medium hover:bg-green-800"
+        >
+          ← Back to Customers
+        </button>
+        <button
+          onClick={fetchCustomerDetail}
+          className="ml-3 border border-gray-200 text-gray-600 
+                     px-6 py-2.5 rounded-xl font-medium 
+                     hover:bg-gray-50"
+        >
+          Try Again
+        </button>
+      </div>
+    </AdminPage>
+  )
 
   return (
     <AdminPage
@@ -146,7 +193,7 @@ export default function CustomerDetail() {
                   {customer.email} &bull; {customer.phone || 'No phone'}
                 </p>
                 <p className="text-xs text-admin-text-sub mt-1">
-                  Joined: {formatDate(customer.joinedAt)}
+                  Joined: {customer.joinedAt || formatDate(customer.created_at)}
                 </p>
               </div>
             </div>
@@ -172,11 +219,11 @@ export default function CustomerDetail() {
         {/* Stats Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white rounded-[14px] border border-admin-border/60 p-4 text-center">
-            <p className="text-2xl font-bold text-admin-navy">{stats?.total_orders || 0}</p>
+            <p className="text-2xl font-bold text-admin-navy">{customer?.order_count || 0}</p>
             <p className="text-[11px] text-admin-text-sub mt-0.5">Total Orders</p>
           </div>
           <div className="bg-white rounded-[14px] border border-admin-border/60 p-4 text-center">
-            <p className="text-2xl font-bold text-admin-navy">{formatCurrency(stats?.total_spent || 0)}</p>
+            <p className="text-2xl font-bold text-admin-navy">{formatCurrency(customer?.total_spent || 0)}</p>
             <p className="text-[11px] text-admin-text-sub mt-0.5">Total Spent</p>
           </div>
           <div className="bg-white rounded-[14px] border border-admin-border/60 p-4 text-center">
@@ -202,22 +249,22 @@ export default function CustomerDetail() {
           ) : (
             <div className="space-y-4">
               {orders.map((order) => {
-                const isExpanded = !!expandedOrders[order.dbId]
+                const isExpanded = !!expandedOrders[order.id]
                 return (
                   <div
-                    key={order.dbId}
+                    key={order.id}
                     className="bg-white rounded-[16px] border border-admin-border/60 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-100"
                   >
                     {/* Header */}
                     <div 
-                      onClick={() => toggleOrderExpand(order.dbId)}
+                      onClick={() => toggleOrderExpand(order.id)}
                       className="p-4 md:p-5 flex flex-wrap items-center justify-between gap-3 cursor-pointer bg-admin-seafoam/10 hover:bg-admin-seafoam/30 transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        <span className="font-bold text-admin-navy text-sm font-mono">{order.id}</span>
+                        <span className="font-bold text-admin-navy text-sm font-mono">{order.order_ref || order.id}</span>
                         <StatusBadge status={order.status} />
                         <span className="text-xs text-admin-text-sub">
-                          {formatDate(order.placedAt)}
+                          {formatDate(order.placed_at || order.placedAt)}
                         </span>
                       </div>
                       <div className="flex items-center gap-4">
@@ -273,19 +320,19 @@ export default function CustomerDetail() {
                           <div className="space-y-1">
                             <p>
                               <strong className="text-admin-navy">Payment:</strong>{' '}
-                              <span className="capitalize">{order.paymentMethod === 'razorpay' ? 'Razorpay ✅' : 'COD 💵'}</span>{' '}
-                              &bull; <span className="capitalize font-medium">{order.paymentStatus}</span>
+                              <span className="capitalize">{order.payment_method === 'razorpay' ? 'Razorpay ✅' : 'COD 💵'}</span>{' '}
+                              &bull; <span className="capitalize font-medium">{order.status}</span>
                             </p>
                             <p>
-                              <strong className="text-admin-navy">Delivery Slot:</strong> {order.address?.slot || order.deliverySlot || 'Standard Delivery'}
+                              <strong className="text-admin-navy">Delivery Slot:</strong> {order.delivery_address?.slot || order.delivery_slot || 'Standard Delivery'}
                             </p>
                           </div>
                           <div className="space-y-0.5">
                             <p className="strong text-admin-navy font-bold">Delivery Address:</p>
                             <p className="text-admin-text-sub leading-relaxed">
-                              {order.address?.name && <span>{order.address.name}<br /></span>}
-                              {order.address?.line1 || order.address?.address || ''}, {order.address?.city || ''} - {order.address?.pincode || ''}
-                              {order.address?.phone && <span><br />Phone: {order.address.phone}</span>}
+                              {order.delivery_address?.name && <span>{order.delivery_address.name}<br /></span>}
+                              {order.delivery_address?.line1 || order.delivery_address?.address || ''}, {order.delivery_address?.city || ''} - {order.delivery_address?.pincode || ''}
+                              {order.delivery_address?.phone && <span><br />Phone: {order.delivery_address.phone}</span>}
                             </p>
                           </div>
                         </div>
@@ -295,9 +342,10 @@ export default function CustomerDetail() {
                           <span className="text-admin-text-sub font-medium">Update Status</span>
                           <select
                             value={order.status}
-                            onChange={(e) => handleStatusChange(order.dbId, e.target.value)}
+                            onChange={(e) => handleStatusChange(order.id, e.target.value)}
                             className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white text-admin-navy font-medium shadow-sm focus:outline-none focus:ring-1 focus:ring-green-600 focus:border-green-600"
                           >
+                            <option value="pending">Pending</option>
                             <option value="confirmed">Confirmed</option>
                             <option value="accepted">Accepted</option>
                             <option value="packed">Packed on Ice</option>

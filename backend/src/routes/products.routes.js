@@ -187,7 +187,7 @@ router.get('/products/:idOrSlug', asyncHandler(async (req, res) => {
 // ── GET /api/reviews (Public approved site/homepage reviews) ─────────────────────
 router.get('/reviews', asyncHandler(async (req, res) => {
   const result = await pool.query(
-    "SELECT id, user_name as author, title as role, rating, comment as quote, created_at as date FROM reviews WHERE status = 'approved' ORDER BY created_at DESC LIMIT 10"
+    "SELECT id, user_name as author, title as role, rating, comment as quote, created_at as date, admin_reply, reply_at FROM reviews WHERE status = 'approved' ORDER BY created_at DESC LIMIT 10"
   )
   res.json({ success: true, reviews: result.rows })
 }))
@@ -223,7 +223,7 @@ router.get('/products/:id/reviews', asyncHandler(async (req, res) => {
   const { id } = req.params
 
   const result = await pool.query(
-    "SELECT id, user_name as author, rating, title, comment, created_at as date, status FROM reviews WHERE product_id = $1 AND status = 'approved' ORDER BY created_at DESC",
+    "SELECT id, user_name as author, rating, title, comment, created_at as date, status, admin_reply, reply_at FROM reviews WHERE product_id = $1 AND status = 'approved' ORDER BY created_at DESC",
     [id]
   )
   
@@ -362,6 +362,7 @@ router.get('/admin/reviews', requireAdmin, asyncHandler(async (req, res) => {
   const result = await pool.query(
     `SELECT r.id, r.user_name as author, p.name as product, r.rating, TO_CHAR(r.created_at, 'YYYY-MM-DD') as date, r.title, r.comment as body,
             (CASE WHEN r.status = 'approved' THEN 'published' WHEN r.status = 'rejected' THEN 'flagged' ELSE 'pending' END) as status,
+            r.admin_reply, r.reply_at,
             true as verified
      FROM reviews r
      JOIN products p ON r.product_id = p.id
@@ -388,6 +389,23 @@ router.put('/admin/reviews/:id', requireAdmin, asyncHandler(async (req, res) => 
     return res.status(404).json({ success: false, message: 'Review not found' })
   }
 
+  // Recalculate product rating
+  const review = result.rows[0];
+  await pool.query(`
+    UPDATE products SET
+      rating = (
+        SELECT COALESCE(ROUND(AVG(rating)::numeric, 1), 0)
+        FROM reviews 
+        WHERE product_id = $1 AND status = 'approved'
+      ),
+      review_count = (
+        SELECT COUNT(*) 
+        FROM reviews 
+        WHERE product_id = $1 AND status = 'approved'
+      )
+    WHERE id = $1
+  `, [review.product_id]);
+
   res.json({ success: true })
 }))
 
@@ -401,6 +419,31 @@ router.delete('/admin/reviews/:id', requireAdmin, asyncHandler(async (req, res) 
   }
 
   res.json({ success: true })
+}))
+
+// POST /api/admin/reviews/:id/reply
+router.post('/admin/reviews/:id/reply', requireAdmin, asyncHandler(async (req, res) => {
+  const { id } = req.params
+  const { reply } = req.body
+  
+  if (!reply?.trim()) {
+    return res.status(400).json({ success: false, error: 'Reply text is required' })
+  }
+  
+  const result = await pool.query(`
+    UPDATE reviews 
+    SET admin_reply = $1,
+        reply_at = NOW(),
+        updated_at = NOW()
+    WHERE id = $2
+    RETURNING *
+  `, [reply.trim(), id])
+  
+  if (!result.rows.length) {
+    return res.status(404).json({ success: false, error: 'Review not found' })
+  }
+  
+  res.json({ success: true, review: result.rows[0] })
 }))
 
 export default router

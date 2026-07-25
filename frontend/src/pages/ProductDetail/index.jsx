@@ -56,7 +56,7 @@ export default function ProductDetail() {
     })
   }, [productId])
 
-  const currentWeight = product?.weights?.[selectedWeight] || { label: '500g', price: product?.basePrice }
+  const currentWeight = product?.variants?.[selectedWeight] || product?.weights?.[selectedWeight] || { label: '500g', price: product?.basePrice }
   const cartItem = product ? getItem(product.id, currentWeight.label) : null
   const wishlisted = product ? isWishlisted(product.id) : false
 
@@ -250,12 +250,12 @@ export default function ProductDetail() {
               />
             )}
 
-            {/* Weight selector - horizontal scroll on mobile */}
-            {product.weights?.length > 0 && (
+            {/* Variant selector - horizontal scroll on mobile */}
+            {(product.variants || product.weights)?.length > 0 && (
               <div>
-                <p className="text-label-md font-semibold text-on-surface mb-3">Select Weight</p>
+                <p className="text-label-md font-semibold text-on-surface mb-3">Select Size / Weight</p>
                 <div className="flex gap-2 overflow-x-auto scrollbar-hide py-2 flex-nowrap">
-                  {product.weights.map((w, i) => (
+                  {(product.variants || product.weights).map((w, i) => (
                     <button
                       key={w.label}
                       onClick={() => setSelectedWeight(i)}
@@ -516,9 +516,29 @@ export default function ProductDetail() {
                             ))}
                           </div>
                           <p className="text-label-md font-semibold text-on-surface mb-1">{review.title}</p>
-                          <p className="text-body-md text-on-surface-variant">{review.body}</p>
+                          <p className="text-body-md text-on-surface-variant">{review.body || review.comment}</p>
                         </div>
                       </div>
+
+                      {/* Admin reply — shown BELOW the review */}
+                      {review.admin_reply && (
+                        <div className="mt-4 ml-12 p-4 bg-green-50 rounded-xl border border-green-100">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-6 h-6 rounded-full bg-green-700 flex items-center justify-center">
+                              <span className="text-white text-xs font-bold">NH</span>
+                            </div>
+                            <span className="text-xs font-bold text-green-800">
+                              NH Salem Sea Foods
+                            </span>
+                            <span className="text-xs text-green-500">
+                              · Official Response
+                            </span>
+                          </div>
+                          <p className="text-sm text-green-800 leading-relaxed">
+                            {review.admin_reply}
+                          </p>
+                        </div>
+                      )}
                     </motion.div>
                   ))}
                 </div>

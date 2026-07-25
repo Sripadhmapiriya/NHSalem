@@ -437,6 +437,16 @@ export default function Home() {
                       ))}
                     </div>
                     <p className="text-slate-700 text-body-md leading-relaxed italic mb-6">"{t.quote || t.comment}"</p>
+                    
+                    {t.admin_reply && (
+                      <div className="mb-6 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="material-symbols-outlined text-primary text-sm">support_agent</span>
+                          <span className="font-bold text-xs text-[#000516] uppercase tracking-wider">Response from NH Salem Sea Foods</span>
+                        </div>
+                        <p className="text-sm text-slate-600 italic">"{t.admin_reply}"</p>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="pt-4 border-t border-slate-100 flex items-center gap-3">
