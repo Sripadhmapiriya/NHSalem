@@ -11,6 +11,12 @@ export default class ErrorBoundary extends React.Component {
   }
 
   static getDerivedStateFromError(error) {
+    // Check if the error is a Vite/Webpack chunk load error
+    if (error && error.message && error.message.includes('Failed to fetch dynamically imported module')) {
+      // Force a full page reload to grab the new assets
+      window.location.reload()
+      return { hasError: true, error } // UI will briefy show error or block while reloading
+    }
     return { hasError: true, error }
   }
 

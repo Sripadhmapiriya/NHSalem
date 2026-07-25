@@ -33,6 +33,7 @@ export default function ProductCard({ product }) {
     rating,
     reviewCount,
     unit,
+    catchTime,
   } = product
 
   const finalVariants = (variants && variants.length > 0)
@@ -153,6 +154,34 @@ export default function ProductCard({ product }) {
           </Link>
           {tagline && (
             <p className="text-on-surface-variant mt-0.5 line-clamp-1 text-[11px]">{tagline}</p>
+          )}
+        </div>
+
+        {/* Weight & Catch Time */}
+        <div className="flex flex-col gap-1.5 min-h-[32px] justify-center mt-0.5">
+          {catchTime && (
+            <div className="flex items-center gap-1 text-[10px] font-medium text-success mb-0.5">
+              <span className="material-symbols-outlined text-[12px]" aria-hidden="true">schedule</span>
+              Caught: {catchTime}
+            </div>
+          )}
+          {finalVariants.length > 0 && (
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 flex-nowrap">
+              {finalVariants.map((v, i) => (
+                <button
+                  key={v.label}
+                  onClick={() => setSelectedVariant(i)}
+                  aria-pressed={selectedVariant === i}
+                  className={`px-2.5 py-0.5 rounded-full text-[11px] border transition-all flex-shrink-0 ${
+                    selectedVariant === i
+                      ? 'bg-secondary-container text-on-secondary-container border-secondary-container font-semibold'
+                      : 'bg-surface-container-low text-on-surface-variant border-outline-variant hover:border-primary'
+                  }`}
+                >
+                  {v.label}
+                </button>
+              ))}
+            </div>
           )}
         </div>
 

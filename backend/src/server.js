@@ -192,6 +192,8 @@ async function verifyDatabase(pool) {
 
     // Safe schema additions — these use IF NOT EXISTS / IF NOT EXISTS so they are idempotent
     await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS variants JSONB NOT NULL DEFAULT '[]'`)
+    await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS how_to_cook TEXT`)
+    await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS catch_time VARCHAR(100)`)
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS status VARCHAR(50) NOT NULL DEFAULT 'active'`)
     
     // Ensure wishlists table exists
