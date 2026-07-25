@@ -471,25 +471,23 @@ router.get('/customers/:id', requireAdmin, asyncHandler(async (req, res) => {
     }
 
     // Step 2: Get customer orders separately
-    let ordersQuery
+    let ordersRows = []
     if (isUuid) {
-      ordersQuery = `
-        SELECT id, order_number as order_ref, status, address as delivery_address,
-               estimated_delivery as delivery_slot, payment_method, placed_at,
-               subtotal, discount, total, 
-               (SELECT json_agg(json_build_object('name', product_name, 'quantity', quantity, 'price', price, 'weight', weight)) FROM order_items WHERE order_id = orders.id) as items
-        FROM orders WHERE user_id = $1 ORDER BY placed_at DESC
-      `
+      const ordersRes = await pool.query(
+        `SELECT * FROM orders WHERE user_id = $1 ORDER BY placed_at DESC`,
+        [id]
+      )
+      ordersRows = ordersRes.rows
     } else {
-      ordersQuery = `
-        SELECT id, order_number as order_ref, status, address as delivery_address,
-               estimated_delivery as delivery_slot, payment_method, placed_at,
-               subtotal, discount, total, 
-               (SELECT json_agg(json_build_object('name', product_name, 'quantity', quantity, 'price', price, 'weight', weight)) FROM order_items WHERE order_id = orders.id) as items
-        FROM orders WHERE 'guest-' || md5(COALESCE(address->>'email', address->>'name', '')) = $1 ORDER BY placed_at DESC
-      `
+      const ordersRes = await pool.query(
+        `SELECT * FROM orders WHERE 'guest-' || md5(COALESCE(address->>'email', address->>'name', '')) = $1 ORDER BY placed_at DESC`,
+        [id]
+      )
+      ordersRows = ordersRes.rows
     }
-    const ordersRes = await pool.query(ordersQuery, [id])
+    
+    const orders = await getCustomerOrdersDetailed(ordersRows)
+    console.log(`Customer ${id} - ordersRows length: ${ordersRows.length}, processed orders length: ${orders.length}`)
 
     // Step 3: Get order stats
     let statsQuery
@@ -500,6 +498,8 @@ router.get('/customers/:id', requireAdmin, asyncHandler(async (req, res) => {
     }
     const statsRes = await pool.query(statsQuery, [id])
     const stats = statsRes.rows[0]
+    
+    console.log(`Customer ${id} - stats:`, stats)
 
     res.json({
       customer: {
@@ -508,7 +508,7 @@ router.get('/customers/:id', requireAdmin, asyncHandler(async (req, res) => {
         total_spent: stats.total_spent,
         last_order_date: stats.last_order_date,
       },
-      orders: ordersRes.rows,
+      orders,
     })
     
   } catch (err) {

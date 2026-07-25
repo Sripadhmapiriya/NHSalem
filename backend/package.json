@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node src/server.js",
+    "dev": "npx nodemon src/server.js",
     "migrate": "node src/db/migrate.js",
     "seed": "node src/db/seed.js"
   },
