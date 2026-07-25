@@ -163,7 +163,7 @@ export default function AdminReviews() {
       await replyToAdminReview(replyTarget.id, replyText)
       setReviews((prev) =>
         prev.map((r) =>
-          r.id === replyTarget.id ? { ...r, adminReply: replyText } : r
+          r.id === replyTarget.id ? { ...r, admin_reply: replyText } : r
         )
       )
       addToast({ message: 'Reply sent successfully.', type: 'success' })
@@ -256,9 +256,9 @@ export default function AdminReviews() {
                     <div className="max-w-[280px]">
                       <p className="font-bold text-[12px] text-admin-navy">{r.title}</p>
                       <p className="text-[11px] text-admin-text-sub leading-relaxed mt-0.5">{r.body}</p>
-                      {r.adminReply && (
+                      {r.admin_reply && (
                         <div className="mt-2 pl-2.5 border-l-2 border-admin-gold text-[10px] text-admin-navy bg-admin-seafoam/40 py-1 rounded-r">
-                          <span className="font-bold">Official Response:</span> "{r.adminReply}"
+                          <span className="font-bold">Official Response:</span> "{r.admin_reply}"
                         </div>
                       )}
                     </div>
