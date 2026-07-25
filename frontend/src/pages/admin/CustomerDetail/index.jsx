@@ -20,6 +20,7 @@ export default function CustomerDetail() {
 
   const [customer, setCustomer] = useState(null)
   const [orders, setOrders] = useState([])
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [updatingStatus, setUpdatingStatus] = useState(false)
   const [expandedOrders, setExpandedOrders] = useState({})
