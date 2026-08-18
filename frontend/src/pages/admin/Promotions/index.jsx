@@ -133,7 +133,7 @@ export default function AdminPromotions() {
     setFormValue(promo.value)
     setFormMinOrder(promo.minOrder)
     setFormDesc(promo.description)
-    setFormStartDate('')
+    setFormStartDate(promo.startDate || '')
     setFormExpires(promo.expiresAt || '')
     setFormLimit(promo.limit || '')
     setFormProducts(promo.applicableProductIds || [])
@@ -180,6 +180,7 @@ export default function AdminPromotions() {
       min_order: Number(formMinOrder),
       description: formDesc.trim(),
       status: editingPromo ? editingPromo.status : 'active',
+      start_date: formStartDate || null,
       expires_at: formExpires || null,
       usage_limit: formLimit ? Number(formLimit) : null,
       applicable_product_ids: formProducts
@@ -299,6 +300,19 @@ export default function AdminPromotions() {
                   placeholder="Unlimited if empty"
                   value={formLimit}
                   onChange={(e) => setFormLimit(e.target.value)}
+                  className="w-full px-3 py-2 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] focus:outline-none focus:border-admin-navy"
+                />
+              </div>
+
+              {/* Start Date */}
+              <div>
+                <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={formStartDate}
+                  onChange={(e) => { setFormStartDate(e.target.value); setErrors((prev) => ({ ...prev, expires: '' })) }}
                   className="w-full px-3 py-2 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] focus:outline-none focus:border-admin-navy"
                 />
               </div>

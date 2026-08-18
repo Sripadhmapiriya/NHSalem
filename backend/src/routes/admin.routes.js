@@ -102,7 +102,9 @@ router.get('/dashboard/stats', requireAdmin, asyncHandler(async (req, res) => {
       ORDER BY sales DESC
       LIMIT 5
     `),
-    pool.query("SELECT status, COUNT(*) as count FROM orders GROUP BY status")
+    pool.query("SELECT status, COUNT(*) as count FROM orders GROUP BY status"),
+    pool.query("SELECT COALESCE(cancelled_by, 'unknown') as actor, COALESCE(SUM(total), 0) as value, COUNT(*) as count FROM orders WHERE status = 'cancelled' GROUP BY cancelled_by"),
+    pool.query("SELECT COALESCE(cancel_reason, 'No Reason given') as reason, COUNT(*) as count FROM orders WHERE status = 'cancelled' GROUP BY cancel_reason")
   ]
 
   // Add the 7 weekly stats queries (Today is index 0 in this loop when i=0, but pushed last)
@@ -119,7 +121,7 @@ router.get('/dashboard/stats', requireAdmin, asyncHandler(async (req, res) => {
     )
   }
 
-  // Run all 10 queries concurrently
+  // Run all 12 queries concurrently
   const results = await Promise.all(kpiPromises)
 
   const activeCustomers = Number(results[0].rows[0].count)
@@ -148,8 +150,22 @@ router.get('/dashboard/stats', requireAdmin, asyncHandler(async (req, res) => {
   // Calculate pending orders derived directly from the breakdown sum
   const pendingOrders = orderStatusBreakdown.confirmed + orderStatusBreakdown.accepted + orderStatusBreakdown.packed + orderStatusBreakdown.out_for_delivery
 
-  // Extract weekly results (indexes 3 to 9)
-  const weeklyResults = results.slice(3)
+  const cancelledByActor = results[3].rows.map(r => ({
+    actor: r.actor,
+    count: Number(r.count),
+    value: Number(r.value)
+  }))
+
+  const cancelledCount = cancelledByActor.reduce((sum, row) => sum + row.count, 0)
+  const cancelledValue = cancelledByActor.reduce((sum, row) => sum + row.value, 0)
+  
+  const cancelReasons = results[4].rows.map(r => ({
+    reason: r.reason,
+    count: Number(r.count)
+  }))
+
+  // Extract weekly results (indexes 5 to 11)
+  const weeklyResults = results.slice(5)
   const weeklyRevenue = weeklyResults.map(res => Number(res.rows[0].total))
   const weeklyOrders = weeklyResults.map(res => Number(res.rows[0].count))
 
@@ -170,7 +186,13 @@ router.get('/dashboard/stats', requireAdmin, asyncHandler(async (req, res) => {
     weeklyRevenue,
     weeklyOrders,
     topProducts,
-    orderStatusBreakdown
+    orderStatusBreakdown,
+    cancelledOrders: {
+      count: cancelledCount,
+      value: cancelledValue,
+      byActor: cancelledByActor,
+      reasons: cancelReasons
+    }
   })
 }))
 

@@ -37,6 +37,22 @@ export const submitContactMessage = async (data) => {
   return handleResponse(res)
 }
 
+// ── Categories ────────────────────────────────────────────────────────────────
+
+export async function getCategories() {
+  const response = await fetch(`${API_URL}/api/categories`)
+  return handleResponse(response)
+}
+
+export async function updateCategoryThumbnail(id, category_thumbnail) {
+  const res = await fetch(`${API_URL}/api/categories/${id}/thumbnail`, {
+    method: 'PATCH',
+    headers: { ...getHeaders(true) }, // Requires Admin auth
+    body: JSON.stringify({ category_thumbnail })
+  })
+  return handleResponse(res)
+}
+
 // ── Products ──────────────────────────────────────────────────────────────────
 
 export async function getProducts(opts = {}) {

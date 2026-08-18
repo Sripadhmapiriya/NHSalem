@@ -426,7 +426,18 @@ router.put('/admin/orders/:id/status', requireAdmin, asyncHandler(async (req, re
     paymentStatusUpdate = ", payment_status = 'paid'"
   }
   
-  await pool.query(`UPDATE orders SET status = $1 ${paymentStatusUpdate} WHERE id = $2`, [status, id])
+  let cancelledByUpdate = ''
+  let queryParams = [status, id]
+  
+  if (status === 'cancelled') {
+    cancelledByUpdate = ", cancelled_by = 'admin'"
+    if (cancelReason) {
+      cancelledByUpdate += ", cancel_reason = $3"
+      queryParams.push(cancelReason)
+    }
+  }
+  
+  await pool.query(`UPDATE orders SET status = $1 ${paymentStatusUpdate} ${cancelledByUpdate} WHERE id = $2`, queryParams)
 
   const now = new Date()
   if (status === 'packed') {
@@ -436,7 +447,7 @@ router.put('/admin/orders/:id/status', requireAdmin, asyncHandler(async (req, re
   } else if (status === 'delivered') {
     await pool.query("UPDATE order_stages SET completed_at = $1 WHERE order_id = $2", [now, id])
   } else if (status === 'cancelled') {
-    await pool.query("UPDATE order_stages SET completed_at = NULL WHERE order_id = $2 AND stage_key != 'confirmed'", [id])
+    await pool.query("UPDATE order_stages SET completed_at = NULL WHERE order_id = $1 AND stage_key != 'confirmed'", [id])
   }
 
   const updatedOrder = await pool.query('SELECT * FROM orders WHERE id = $1', [id])

@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { to: '/admin/dashboard',      icon: 'space_dashboard',   label: 'Dashboard' },
   { to: '/admin/orders',         icon: 'receipt_long',      label: 'Orders' },
   { to: '/admin/products',       icon: 'inventory_2',       label: 'Products' },
+  { to: '/admin/categories',     icon: 'category',          label: 'Categories' },
   { to: '/admin/customers',      icon: 'group',             label: 'Customers' },
   { to: '/admin/promotions',     icon: 'local_offer',       label: 'Promotions' },
   { to: '/admin/reviews',        icon: 'star_rate',         label: 'Reviews' },
@@ -19,6 +20,7 @@ const PAGE_TITLES = {
   '/admin/dashboard':     'Dashboard',
   '/admin/orders':        'Orders',
   '/admin/products':      'Products',
+  '/admin/categories':    'Categories',
   '/admin/customers':     'Customers',
   '/admin/promotions':    'Promotions',
   '/admin/reviews':       'Reviews',
@@ -125,11 +127,11 @@ export default function AdminLayout() {
   }, [location.pathname])
 
   return (
-    <div className="flex h-screen overflow-hidden bg-admin-seafoam">
+    <div className="grid h-screen overflow-hidden bg-admin-seafoam grid-cols-1 md:grid-cols-[240px_1fr]">
 
-      {/* ── Desktop Sidebar (fixed, 260px) ─────────────────────── */}
+      {/* ── Desktop Sidebar (grid column 1, 240px) ─────────────────────── */}
       <aside
-        className="hidden md:flex flex-col w-[260px] flex-shrink-0 h-screen overflow-hidden"
+        className="hidden md:flex flex-col h-screen overflow-hidden sticky top-0"
         style={{ background: '#0B1E3D' }}
         aria-label="Admin sidebar"
       >
@@ -154,7 +156,7 @@ export default function AdminLayout() {
               animate={{ x: 0 }}
               exit={{ x: -260 }}
               transition={{ type: 'tween', duration: 0.22 }}
-              className="fixed inset-y-0 left-0 w-[260px] z-50 md:hidden flex flex-col overflow-hidden"
+              className="fixed inset-y-0 left-0 w-[240px] z-50 md:hidden flex flex-col overflow-hidden"
               style={{ background: '#0B1E3D' }}
             >
               {sidebarHtml}
@@ -163,11 +165,11 @@ export default function AdminLayout() {
         )}
       </AnimatePresence>
 
-      {/* ── Right column: topbar + scrollable content ──────────── */}
-      <div className="flex flex-col flex-1 min-w-0 h-screen overflow-hidden">
+      {/* ── Right column (grid column 2, 1fr) ──────────── */}
+      <div className="flex flex-col w-full min-w-0 h-screen overflow-x-hidden">
 
-        {/* Topbar (fixed height 64px) */}
-        <header className="flex-shrink-0 h-16 bg-white border-b border-admin-border/60 flex items-center justify-between px-4 md:px-6 z-30">
+        {/* Topbar (fixed height 64px) - aligned padding with AdminPage (px-5 md:px-7) */}
+        <header className="flex-shrink-0 h-16 bg-white border-b border-admin-border/60 flex items-center justify-between px-5 md:px-7 z-30">
           <div className="flex items-center gap-3">
             {/* Mobile hamburger */}
             <button
@@ -188,7 +190,7 @@ export default function AdminLayout() {
         </header>
 
         {/* Main scrollable content */}
-        <main ref={mainRef} className="flex-1 overflow-y-auto">
+        <main ref={mainRef} className="flex-1 overflow-y-auto overflow-x-hidden w-full">
           <Suspense fallback={
             <div className="h-full w-full flex items-center justify-center">
               <div className="flex flex-col items-center gap-4">

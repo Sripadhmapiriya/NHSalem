@@ -59,6 +59,7 @@ export default function ProductDetail() {
   const currentWeight = product?.variants?.[selectedWeight] || product?.weights?.[selectedWeight] || { label: '500g', price: product?.basePrice }
   const cartItem = product ? getItem(product.id, currentWeight.label) : null
   const wishlisted = product ? isWishlisted(product.id) : false
+  const allImages = product ? (product.images?.length > 1 ? product.images : [product.image, product.gallery_image_1, product.gallery_image_2].filter(Boolean)) : []
 
   const handleAddToCart = useCallback(() => {
     if (!product) return
@@ -169,7 +170,7 @@ export default function ProductDetail() {
               <AnimatePresence mode="wait">
                 <motion.img
                   key={selectedImage}
-                  src={product.images?.[selectedImage] || product.image}
+                  src={allImages[selectedImage] || product.image}
                   alt={product.name}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -186,9 +187,9 @@ export default function ProductDetail() {
               </div>
             </div>
             {/* Thumbnail strip */}
-            {product.images?.length > 1 && (
+            {allImages.length > 1 && (
               <div className="flex gap-3">
-                {product.images.map((img, i) => (
+                {allImages.map((img, i) => (
                   <button
                     key={i}
                     onClick={() => setSelectedImage(i)}
@@ -249,6 +250,12 @@ export default function ProductDetail() {
                 ]}
               />
             )}
+
+            {/* Storage Info */}
+            <div className="flex items-center gap-3 p-4 bg-blue-50 text-blue-900 rounded-[16px] border border-blue-100">
+              <span className="material-symbols-outlined text-blue-600">ac_unit</span>
+              <p className="text-sm font-semibold tracking-wide">Frozen & stored at -18°C for maximum freshness</p>
+            </div>
 
             {/* Variant selector - horizontal scroll on mobile */}
             {(product.variants || product.weights)?.length > 0 && (
@@ -378,6 +385,9 @@ export default function ProductDetail() {
                   Check
                 </Button>
               </div>
+              <p className="text-xs text-on-surface-variant mt-2 italic">
+                * We deliver within an 8km radius of our store.
+              </p>
               {deliveryResult && (
                 <motion.div
                   initial={{ opacity: 0, y: -4 }}

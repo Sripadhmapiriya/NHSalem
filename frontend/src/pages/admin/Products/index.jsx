@@ -80,45 +80,57 @@ export default function AdminProducts() {
       </div>
 
       <AdminCard subtitle={`${sorted.length} products`}>
-        <AdminTable headers={[
-          'Product', 
-          'Category', 
-          'Base Price', 
-          'Variants',
-          'Rating', 
-          'Freshness (0-100)', 
-          'Badges', 
-          'Actions'
-        ]}>
+        <AdminTable
+          className="table-fixed"
+          headers={[
+            { label: 'Product', className: 'w-[28%] min-w-[200px]' },
+            { label: 'Category', className: 'w-[10%] min-w-[100px] hidden xl:table-cell' },
+            { label: 'Base Price', className: 'w-[10%] min-w-[90px]' },
+            { label: 'Variants', className: 'w-[12%] min-w-[120px]' },
+            { label: 'Rating', className: 'w-[10%] min-w-[100px] hidden xl:table-cell' },
+            { label: 'Freshness', className: 'w-[15%] min-w-[130px]' },
+            { label: 'Badges', className: 'w-[10%] min-w-[90px]' },
+            { label: 'Actions', className: 'w-[100px] sticky right-0 bg-white z-10 text-center shadow-[-4px_0_10px_rgba(0,0,0,0.02)]' }
+          ]}
+        >
           {paginated.map((p) => (
-            <Tr key={p.id} onClick={() => navigate(`/admin/products/${p.id}/edit`)}>
+            <Tr key={p.id} className="h-[72px]" onClick={() => navigate(`/admin/products/${p.id}/edit`)}>
               <Td className="p-0">
-                <div className="flex items-center gap-3 px-4 py-2.5">
+                <div className="flex items-center gap-3 px-4 py-2">
                   {p.image
                     ? <img src={p.image} alt={p.name} className="w-10 h-10 rounded-[8px] object-cover border border-admin-border/50 shrink-0" />
                     : <div className="w-10 h-10 rounded-[8px] bg-admin-seafoam border border-admin-border/50 flex items-center justify-center shrink-0"><span className="material-symbols-outlined text-admin-text-sub" style={{ fontSize: '20px' }}>image</span></div>
                   }
-                  <p className="font-semibold text-admin-navy truncate max-w-[150px] md:max-w-[200px]" title={p.name}>{p.name}</p>
+                  <div className="flex flex-col overflow-hidden">
+                    <p className="font-semibold text-admin-navy truncate max-w-[180px]" title={p.name}>{p.name}</p>
+                    {/* Fallback for category/rating on narrow screens */}
+                    <div className="flex items-center gap-1.5 xl:hidden mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis">
+                      <span className="text-[10px] text-admin-text-sub capitalize">{CATEGORY_MAP[p.category] || p.category}</span>
+                      {p.reviewCount > 0 && (
+                        <span className="text-[10px] text-admin-text-sub flex items-center gap-0.5">
+                           • <span className="material-symbols-outlined text-admin-gold" style={{ fontSize: '10px', fontVariationSettings: "'FILL' 1" }}>star</span> {p.rating}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </Td>
-              <Td className="capitalize">{CATEGORY_MAP[p.category] || p.category}</Td>
+              <Td className="capitalize hidden xl:table-cell">{CATEGORY_MAP[p.category] || p.category}</Td>
               <Td><span className="font-bold">{formatCurrency(p.basePrice)}</span></Td>
               <Td>
                 {p.variants?.length > 0 ? (
-                  <div className="flex flex-wrap gap-1">
-                    {p.variants.map((v, i) => (
-                      <span key={i} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                        {v.label}
-                      </span>
-                    ))}
+                  <div className="flex items-center gap-1 overflow-hidden whitespace-nowrap">
+                    <span className="text-[11px] text-admin-text truncate max-w-[110px]" title={p.variants.map(v => v.label).join(', ')}>
+                      {p.variants.map(v => v.label).join(', ')}
+                    </span>
                   </div>
                 ) : (
-                  <span className="text-xs text-gray-400">
+                  <span className="text-[11px] text-admin-text-sub">
                     {p.unit || '500g'}
                   </span>
                 )}
               </Td>
-              <Td>
+              <Td className="hidden xl:table-cell">
                 <div className="flex items-center gap-1.5 whitespace-nowrap">
                   {p.reviewCount > 0 ? (
                     <>
@@ -126,26 +138,28 @@ export default function AdminProducts() {
                       <span>{p.rating} <span className="text-admin-text-sub text-[11px]">({p.reviewCount?.toLocaleString()})</span></span>
                     </>
                   ) : (
-                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">New</span>
+                    <span className="text-[11px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">New</span>
                   )}
                 </div>
               </Td>
               <Td>
                 <div className="flex items-center gap-2 whitespace-nowrap">
-                  <div className="h-1.5 w-20 bg-admin-border rounded-full overflow-hidden shrink-0">
+                  <div className="h-1.5 w-[80px] bg-admin-border rounded-full overflow-hidden shrink-0">
                     <div className="h-full bg-admin-success rounded-full" style={{ width: `${Math.max(0, Math.min(100, p.freshnessScore ?? 0))}%` }} />
                   </div>
-                  <span className="text-[11px] font-semibold min-w-[24px]">{p.freshnessScore ?? '—'}</span>
+                  <span className="text-[11px] font-semibold w-[24px] text-right">{p.freshnessScore ?? '—'}</span>
                 </div>
               </Td>
               <Td>
-                <div className="flex flex-wrap gap-1 min-w-[100px]">
-                  {p.badges?.map((b) => {
-                    const isFlagged = b.type === 'hot'
+                <div className="flex flex-col gap-1 max-h-[44px] overflow-hidden justify-center items-start">
+                  {p.badges?.slice(0, 2).map((b) => {
                     const isPaid = b.type === 'paid' || b.label?.toLowerCase() === 'paid'
                     const isNew = b.type === 'new'
-                    const status = isFlagged ? 'flagged' : isPaid ? 'paid' : isNew ? 'new' : 'active'
-                    const tooltip = isFlagged ? 'Flagged products can remain active pending review.' : isPaid ? 'Paid Promotion' : ''
+                    
+                    // Default to the badge's type, or 'active' if none exists
+                    const status = isPaid ? 'paid' : isNew ? 'new' : b.type || 'active'
+                    const tooltip = isPaid ? 'Paid Promotion' : ''
+                    
                     return (
                       <span key={b.type} title={tooltip}>
                         <StatusBadge status={status} />
@@ -154,29 +168,27 @@ export default function AdminProducts() {
                   })}
                 </div>
               </Td>
-              <Td className="w-auto">
-                <div className="flex gap-2 justify-end">
-                  <AdminBtn
-                    size="sm"
-                    variant="secondary"
-                    icon="edit"
+              <Td className="w-[100px] sticky right-0 bg-white z-10 shadow-[-4px_0_10px_rgba(0,0,0,0.02)] p-0 border-l border-admin-border/30">
+                <div className="flex items-center justify-center gap-2 h-full px-2">
+                  <button
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-admin-navy hover:bg-admin-seafoam border border-transparent hover:border-admin-border transition-all"
                     onClick={(e) => { e.stopPropagation(); navigate(`/admin/products/${p.id}/edit`) }}
+                    title="Edit"
                   >
-                    Edit
-                  </AdminBtn>
-                  <AdminBtn
-                    size="sm"
-                    variant="danger"
-                    icon="delete"
+                    <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>edit</span>
+                  </button>
+                  <button
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-admin-coral hover:bg-red-50 border border-transparent hover:border-red-100 transition-all"
                     onClick={(e) => {
                       e.stopPropagation();
                       if (window.confirm('Are you sure you want to delete this product?')) {
                         useProductStore.getState().deleteProduct(p.id)
                       }
                     }}
+                    title="Delete"
                   >
-                    Delete
-                  </AdminBtn>
+                    <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>delete</span>
+                  </button>
                 </div>
               </Td>
             </Tr>

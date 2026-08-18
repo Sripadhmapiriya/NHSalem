@@ -34,6 +34,7 @@ export default function ProductCard({ product }) {
     reviewCount,
     unit,
     catchTime,
+    categoryThumbnail,
   } = product
 
   const finalVariants = (variants && variants.length > 0)
@@ -71,7 +72,7 @@ export default function ProductCard({ product }) {
         payload: {
           id,
           name,
-          image,
+          image: categoryThumbnail || image,
           weight: currentVariant.label,
           price: currentVariant.price,
           quantity: 1,
@@ -83,7 +84,7 @@ export default function ProductCard({ product }) {
     addItem({
       id,
       name,
-      image,
+      image: categoryThumbnail || image,
       weight: currentVariant.label,
       price: currentVariant.price,
       quantity: 1,
@@ -103,27 +104,43 @@ export default function ProductCard({ product }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.4 }}
-      className="bg-white rounded-2xl shadow-card overflow-hidden group flex flex-col"
+      className="bg-white rounded-2xl shadow-sm hover:shadow-md border border-slate-100 hover:border-slate-200 overflow-hidden group flex flex-col transition-all"
     >
       {/* Image */}
-      <div className="relative overflow-hidden aspect-[5/4] w-full">
+      <div className="relative overflow-hidden aspect-[4/3] w-full bg-slate-50">
         <Link to={`/product/${id}`} aria-label={`View ${name}`}>
           <img
-            src={image}
+            src={categoryThumbnail || image}
             alt={name}
             loading="lazy"
-            className="w-full h-full object-cover transition-transform duration-[2500ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-110"
+            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-90" />
         </Link>
 
-        {/* Badges */}
-        <div className="absolute top-2.5 left-2.5 flex flex-col gap-1 max-w-[50%]">
-          {badges.map((badge) => (
-            <Badge key={badge.type} variant={badge.type}>
-              {badge.label}
-            </Badge>
-          ))}
+        {/* Badges (Max 2) */}
+        <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start pointer-events-none">
+          {badges.slice(0, 2).map((badge) => {
+            let icon = 'sell';
+            let colorClass = 'bg-slate-900 text-white';
+            
+            if (badge.type === 'fresh') { icon = 'eco'; colorClass = 'bg-emerald-500 text-white'; }
+            else if (badge.type === 'deal') { icon = 'bolt'; colorClass = 'bg-amber-500 text-white'; }
+            else if (badge.type === 'limited') { icon = 'lens'; colorClass = 'bg-blue-500 text-white'; }
+            else if (badge.type === 'new') { icon = 'stars'; colorClass = 'bg-purple-500 text-white'; }
+
+            return (
+              <div key={badge.type} className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase shadow-sm ${colorClass}`}>
+                <span className="material-symbols-outlined text-[12px]">{icon}</span>
+                {badge.label}
+              </div>
+            );
+          })}
+          {/* -18°C Frozen Badge */}
+          <div className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase shadow-sm bg-blue-100 text-blue-800 border border-blue-200 mt-1">
+            <span className="material-symbols-outlined text-[12px]">ac_unit</span>
+            -18°C
+          </div>
         </div>
 
         {/* Wishlist */}
@@ -131,10 +148,10 @@ export default function ProductCard({ product }) {
           whileTap={{ scale: 0.85 }}
           onClick={handleWishlistToggle}
           aria-label={wishlisted ? `Remove ${name} from wishlist` : `Add ${name} to wishlist`}
-          className="absolute top-2.5 right-2.5 w-8 h-8 bg-[#0b1e3d]/35 backdrop-blur-md border border-white/25 rounded-full flex items-center justify-center shadow-sm hover:bg-[#0b1e3d]/50 transition-colors"
+          className="absolute top-3 right-3 w-8 h-8 bg-black/30 backdrop-blur-md rounded-full flex items-center justify-center transition-colors hover:bg-black/50 border border-white/20"
         >
           <span
-            className={`material-symbols-outlined ${wishlisted ? 'filled text-[#FB7185]' : 'text-white'} transition-all`}
+            className={`material-symbols-outlined ${wishlisted ? 'filled text-white' : 'text-white'} transition-all`}
             style={{ fontSize: '18px' }}
             aria-hidden="true"
           >
@@ -144,89 +161,70 @@ export default function ProductCard({ product }) {
       </div>
 
       {/* Content */}
-      <div className="p-2.5 flex flex-col gap-1.5 flex-1">
-        {/* Name + tagline */}
+      <div className="p-4 flex flex-col gap-3 flex-1">
+        {/* Title & Subtitle */}
         <div>
           <Link to={`/product/${id}`}>
-            <h3 className="text-on-surface font-semibold line-clamp-2 hover:text-primary transition-colors text-sm leading-snug">
+            <h3 className="text-[17px] font-bold text-slate-900 tracking-tight line-clamp-1 hover:text-amber-600 transition-colors">
               {name}
             </h3>
           </Link>
           {tagline && (
-            <p className="text-on-surface-variant mt-0.5 line-clamp-1 text-[11px]">{tagline}</p>
+            <p className="text-[13px] text-slate-500 mt-0.5 line-clamp-1 font-medium">{tagline}</p>
           )}
         </div>
 
-        {/* Weight & Catch Time */}
-        <div className="flex flex-col gap-1.5 min-h-[32px] justify-center mt-0.5">
-          {catchTime && (
-            <div className="flex items-center gap-1 text-[10px] font-medium text-success mb-0.5">
-              <span className="material-symbols-outlined text-[12px]" aria-hidden="true">schedule</span>
-              Caught: {catchTime}
+        {/* Meta row: Catch Time & Rating */}
+        <div className="flex items-center justify-between mt-0.5 min-h-[24px]">
+          {catchTime ? (
+            <div className="flex items-center gap-1 px-2 py-1 bg-slate-100 rounded-md text-[11px] font-semibold text-slate-600 whitespace-nowrap">
+              <span className="material-symbols-outlined text-[13px]" aria-hidden="true">schedule</span>
+              Caught {catchTime} ago
             </div>
-          )}
-          {finalVariants.length > 0 && (
-            <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 flex-nowrap">
-              {finalVariants.map((v, i) => (
-                <button
-                  key={v.label}
-                  onClick={() => setSelectedVariant(i)}
-                  aria-pressed={selectedVariant === i}
-                  className={`px-2.5 py-0.5 rounded-full text-[11px] border transition-all flex-shrink-0 ${
-                    selectedVariant === i
-                      ? 'bg-secondary-container text-on-secondary-container border-secondary-container font-semibold'
-                      : 'bg-surface-container-low text-on-surface-variant border-outline-variant hover:border-primary'
-                  }`}
-                >
-                  {v.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Rating */}
-        <div className="flex items-center gap-1.5">
-          {reviewCount > 0 ? (
-            <>
-              <div className="flex gap-0.5">
-                {[1, 2, 3, 4, 5].map((star) => {
-                  const isFilled = rating > 0 && star <= Math.round(rating)
-                  return (
-                    <span
-                      key={star}
-                      className={`material-symbols-outlined ${isFilled ? 'filled' : ''} text-secondary-container`}
-                      style={{ fontSize: '12px' }}
-                      aria-hidden="true"
-                    >
-                      star
-                    </span>
-                  )
-                })}
-              </div>
-              <span className="text-[11px] text-on-surface-variant">
-                {rating} ({reviewCount?.toLocaleString()})
+          ) : <div />}
+          
+          <div className="flex items-center gap-1 whitespace-nowrap">
+            {reviewCount > 0 ? (
+              <>
+                <div className="flex">
+                  {[1, 2, 3, 4, 5].map((star) => {
+                    const isFilled = rating > 0 && star <= Math.round(rating)
+                    return (
+                      <span
+                        key={star}
+                        className={`material-symbols-outlined ${isFilled ? 'filled text-amber-400' : 'text-slate-200'}`}
+                        style={{ fontSize: '14px' }}
+                        aria-hidden="true"
+                      >
+                        star
+                      </span>
+                    )
+                  })}
+                </div>
+                <span className="text-xs font-medium text-slate-500 ml-0.5">
+                  ({reviewCount})
+                </span>
+              </>
+            ) : (
+              <span className="text-[11px] font-medium text-slate-400 italic">
+                No reviews yet
               </span>
-            </>
-          ) : (
-            <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-medium flex items-center gap-1 w-fit">
-              ✨ New Arrival
-            </span>
-          )}
+            )}
+          </div>
         </div>
 
-        {/* Variant chips - scrollable on mobile */}
+        {/* Weight/Quantity Selector */}
         {finalVariants.length > 0 && (
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 flex-nowrap">
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide py-1 flex-nowrap mt-1">
             {finalVariants.map((v, i) => (
               <button
                 key={v.label}
                 onClick={() => setSelectedVariant(i)}
                 aria-pressed={selectedVariant === i}
-                className={`px-2.5 py-0.5 rounded-full text-[11px] border transition-all flex-shrink-0 ${
+                className={`px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all flex-shrink-0 ${
                   selectedVariant === i
-                    ? 'bg-secondary-container text-on-secondary-container border-secondary-container font-semibold'
-                    : 'bg-surface-container-low text-on-surface-variant border-outline-variant hover:border-primary'
+                    ? 'bg-slate-900 text-white shadow-sm'
+                    : 'bg-white text-slate-500 border border-slate-200 hover:border-slate-400 hover:bg-slate-50'
                 }`}
               >
                 {v.label}
@@ -235,16 +233,24 @@ export default function ProductCard({ product }) {
           </div>
         )}
 
-        {/* Price + CTA */}
-        <div className="flex items-center justify-between mt-auto pt-1">
-          <div>
-            <p className="text-sm font-bold text-on-surface">
-              ₹{currentVariant.price.toLocaleString()}
+        {/* Spacer to push price and CTA to bottom */}
+        <div className="flex-1" />
+
+        {/* Price & CTA Block */}
+        <div className="pt-3 border-t border-slate-100 mt-2">
+          <div className="flex items-center gap-2 mb-3">
+            <p className="text-lg font-black text-slate-900">
+              ₹{currentVariant.price?.toLocaleString()}
             </p>
-            {currentVariant.originalPrice && (
-              <p className="text-label-sm text-outline line-through">
-                ₹{currentVariant.originalPrice.toLocaleString()}
-              </p>
+            {currentVariant.originalPrice && currentVariant.originalPrice > currentVariant.price && (
+              <div className="flex items-center gap-1.5">
+                <p className="text-sm text-slate-400 line-through font-medium">
+                  ₹{currentVariant.originalPrice.toLocaleString()}
+                </p>
+                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">
+                  {Math.round(((currentVariant.originalPrice - currentVariant.price) / currentVariant.originalPrice) * 100)}% OFF
+                </span>
+              </div>
             )}
           </div>
 
@@ -252,46 +258,46 @@ export default function ProductCard({ product }) {
             {!cartItem ? (
               <motion.button
                 key="add"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.15 }}
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5 }}
+                transition={{ duration: 0.2 }}
                 onClick={handleAdd}
-                className="flex items-center gap-1 bg-primary text-on-primary px-3 py-1.5 rounded-full text-[12px] font-semibold hover:bg-primary-container transition-colors"
+                className="w-full flex items-center justify-center gap-2 bg-[#0a192f] text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-800 active:scale-[0.98] transition-all shadow-sm"
                 aria-label={`Add ${name} to cart`}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: '15px' }} aria-hidden="true">
-                  add_shopping_cart
+                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                  shopping_cart
                 </span>
-                Add
+                Add to Cart
               </motion.button>
             ) : (
               <motion.div
                 key="stepper"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.15 }}
-                className="flex items-center gap-0 bg-primary rounded-full overflow-hidden"
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5 }}
+                transition={{ duration: 0.2 }}
+                className="w-full flex items-center justify-between bg-[#0a192f] rounded-xl overflow-hidden p-1 shadow-inner"
               >
                 <button
                   onClick={handleDecrease}
                   aria-label="Decrease quantity"
-                  className="w-8 h-8 flex items-center justify-center text-on-primary hover:bg-primary-container transition-colors"
+                  className="w-10 h-8 flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }} aria-hidden="true">
+                  <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
                     remove
                   </span>
                 </button>
-                <span className="px-1.5 min-w-[1.5rem] text-center text-on-primary text-[12px] font-bold">
+                <span className="px-2 text-center text-white text-sm font-bold">
                   {cartItem.quantity}
                 </span>
                 <button
                   onClick={handleIncrease}
                   aria-label="Increase quantity"
-                  className="w-8 h-8 flex items-center justify-center text-on-primary hover:bg-primary-container transition-colors"
+                  className="w-10 h-8 flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }} aria-hidden="true">
+                  <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
                     add
                   </span>
                 </button>

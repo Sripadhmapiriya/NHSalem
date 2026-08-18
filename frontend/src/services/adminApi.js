@@ -24,11 +24,29 @@ async function handleResponse(response) {
 }
 
 // ==========================================
-// Contact Messages
+// Contact Messages (Web Form)
 // ==========================================
 
 export const getAdminMessages = async () => {
   const res = await fetch(`${API_URL}/api/admin/messages`, { headers: getHeaders(true) })
+  return handleResponse(res)
+}
+
+// ==========================================
+// WhatsApp Messages (Direct Messages)
+// ==========================================
+
+export const getWhatsappMessages = async () => {
+  const res = await fetch(`${API_URL}/api/whatsapp/messages`, { headers: getHeaders(true) })
+  return handleResponse(res)
+}
+
+export const sendWhatsappMessage = async (toPhone, text) => {
+  const res = await fetch(`${API_URL}/api/whatsapp/messages`, {
+    method: 'POST',
+    headers: getHeaders(true),
+    body: JSON.stringify({ toPhone, text })
+  })
   return handleResponse(res)
 }
 

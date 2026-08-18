@@ -18,6 +18,8 @@ const productSchema = z.object({
   catchTime: z.string().optional().nullable(),
   image: z.string().optional().nullable(),
   images: z.array(z.string()).optional().default([]),
+  gallery_image_1: z.string().optional().nullable(),
+  gallery_image_2: z.string().optional().nullable(),
   badges: z.array(z.any()).optional().default([]),
   weights: z.array(z.object({
     label: z.string(),
@@ -60,6 +62,9 @@ function formatProduct(p) {
     howToCook: p.how_to_cook,
     image: p.image,
     images: typeof p.images === 'string' ? JSON.parse(p.images) : p.images,
+    gallery_image_1: p.gallery_image_1,
+    gallery_image_2: p.gallery_image_2,
+    categoryThumbnail: p.category_thumbnail,
     badges: typeof p.badges === 'string' ? JSON.parse(p.badges) : p.badges,
     weights: finalWeights,
     variants: finalVariants.length > 0 ? finalVariants : finalWeights,
@@ -105,53 +110,53 @@ async function generateUniqueSlug(name, productId = null) {
 router.get('/products', asyncHandler(async (req, res) => {
   const { category, search, minPrice, maxPrice, sort, badges } = req.query
 
-  let sql = 'SELECT * FROM products WHERE is_active = true'
+  let sql = 'SELECT p.*, c.category_thumbnail FROM products p LEFT JOIN categories c ON p.category = c.slug WHERE p.is_active = true'
   const params = []
   let paramCount = 0
 
   if (category) {
     paramCount++
     if (category === 'dried-fish') {
-      sql += ` AND (category = $${paramCount} OR category = 'dry-fish')`
+      sql += ` AND (p.category = $${paramCount} OR p.category = 'dry-fish')`
     } else if (category === 'dry-fish') {
-      sql += ` AND (category = $${paramCount} OR category = 'dried-fish')`
+      sql += ` AND (p.category = $${paramCount} OR p.category = 'dried-fish')`
     } else {
-      sql += ` AND category = $${paramCount}`
+      sql += ` AND p.category = $${paramCount}`
     }
     params.push(category)
   }
 
   if (search) {
     paramCount++
-    sql += ` AND (LOWER(name) LIKE $${paramCount} OR LOWER(tagline) LIKE $${paramCount} OR LOWER(description) LIKE $${paramCount})`
+    sql += ` AND (LOWER(p.name) LIKE $${paramCount} OR LOWER(p.tagline) LIKE $${paramCount} OR LOWER(p.description) LIKE $${paramCount})`
     params.push(`%${search.toLowerCase()}%`)
   }
 
   if (minPrice) {
     paramCount++
-    sql += ` AND base_price >= $${paramCount}`
+    sql += ` AND p.base_price >= $${paramCount}`
     params.push(Number(minPrice))
   }
 
   if (maxPrice) {
     paramCount++
-    sql += ` AND base_price <= $${paramCount}`
+    sql += ` AND p.base_price <= $${paramCount}`
     params.push(Number(maxPrice))
   }
 
   if (sort === 'za') {
-    sql += ' ORDER BY name DESC'
+    sql += ' ORDER BY p.name DESC'
   } else if (sort === 'price_asc') {
-    sql += ' ORDER BY base_price ASC'
+    sql += ' ORDER BY p.base_price ASC'
   } else if (sort === 'price_desc') {
-    sql += ' ORDER BY base_price DESC'
+    sql += ' ORDER BY p.base_price DESC'
   } else if (sort === 'rating') {
-    sql += ' ORDER BY rating DESC'
+    sql += ' ORDER BY p.rating DESC'
   } else if (sort === 'newest') {
-    sql += ' ORDER BY created_at DESC'
+    sql += ' ORDER BY p.created_at DESC'
   } else {
     // Default is 'az' (ORDER BY name ASC)
-    sql += ' ORDER BY name ASC'
+    sql += ' ORDER BY p.name ASC'
   }
 
   const result = await pool.query(sql, params)
@@ -172,8 +177,8 @@ router.get('/products/:idOrSlug', asyncHandler(async (req, res) => {
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug)
 
   const sql = isUuid 
-    ? 'SELECT * FROM products WHERE id = $1' 
-    : 'SELECT * FROM products WHERE slug = $1'
+    ? 'SELECT p.*, c.category_thumbnail FROM products p LEFT JOIN categories c ON p.category = c.slug WHERE p.id = $1' 
+    : 'SELECT p.*, c.category_thumbnail FROM products p LEFT JOIN categories c ON p.category = c.slug WHERE p.slug = $1'
 
   const result = await pool.query(sql, [idOrSlug])
   
@@ -257,8 +262,8 @@ router.post('/admin/products', requireAdmin, asyncHandler(async (req, res) => {
 
   const result = await pool.query(
     `INSERT INTO products (
-      slug, category, name, local_name, tagline, description, how_to_cook, image, images, badges, weights, base_price, freshness_score, catch_time, nutrition, unit, stock_qty, stock_status, is_active, variants
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+      slug, category, name, local_name, tagline, description, how_to_cook, image, images, gallery_image_1, gallery_image_2, badges, weights, base_price, freshness_score, catch_time, nutrition, unit, stock_qty, stock_status, is_active, variants
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
      RETURNING *`,
     [
       slug,
@@ -270,6 +275,8 @@ router.post('/admin/products', requireAdmin, asyncHandler(async (req, res) => {
       p.howToCook,
       p.image,
       JSON.stringify(p.images),
+      p.gallery_image_1,
+      p.gallery_image_2,
       JSON.stringify(p.badges),
       JSON.stringify(p.weights || p.variants || []),
       p.basePrice,
@@ -314,8 +321,8 @@ router.put('/admin/products/:id', requireAdmin, asyncHandler(async (req, res) =>
 
   const result = await pool.query(
     `UPDATE products SET
-      slug = $1, category = $2, name = $3, local_name = $4, tagline = $5, description = $6, how_to_cook = $7, image = $8, images = $9, badges = $10, weights = $11, base_price = $12, freshness_score = $13, catch_time = $14, nutrition = $15, unit = $16, stock_qty = $17, stock_status = $18, is_active = $19, variants = $20, updated_at = NOW()
-     WHERE id = $21
+      slug = $1, category = $2, name = $3, local_name = $4, tagline = $5, description = $6, how_to_cook = $7, image = $8, images = $9, gallery_image_1 = $10, gallery_image_2 = $11, badges = $12, weights = $13, base_price = $14, freshness_score = $15, catch_time = $16, nutrition = $17, unit = $18, stock_qty = $19, stock_status = $20, is_active = $21, variants = $22, updated_at = NOW()
+     WHERE id = $23
      RETURNING *`,
     [
       newSlug,
@@ -327,6 +334,8 @@ router.put('/admin/products/:id', requireAdmin, asyncHandler(async (req, res) =>
       p.howToCook,
       p.image,
       JSON.stringify(p.images),
+      p.gallery_image_1,
+      p.gallery_image_2,
       JSON.stringify(p.badges),
       JSON.stringify(p.weights || p.variants || []),
       p.basePrice,

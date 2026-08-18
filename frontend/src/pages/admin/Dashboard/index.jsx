@@ -42,11 +42,12 @@ export default function AdminDashboard() {
   return (
     <AdminPage>
       {/* KPI Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
         <KpiCard title="Today's Revenue"    value={formatCurrency(kpi.todayRevenue)}    icon="payments"        iconColor="text-admin-gold"    trend={kpi.revenueGrowth}   sub="vs yesterday" />
         <KpiCard title="Orders Today"       value={kpi.todayOrders}                     icon="receipt_long"    iconColor="text-blue-500"      trend={kpi.orderGrowth}     sub="vs yesterday" />
         <KpiCard title="Active Customers"   value={kpi.activeCustomers.toLocaleString()}icon="group"           iconColor="text-admin-success"  trend={kpi.customerGrowth}  sub="this month" />
         <KpiCard title="Pending Orders"     value={kpi.pendingOrders}                   icon="pending_actions" iconColor="text-admin-coral"    trend={kpi.pendingChange}    sub="need attention" />
+        <KpiCard title="Cancelled Orders"   value={kpi.cancelledOrders?.count || 0}     icon="cancel"          iconColor="text-red-500"        trend={`-${formatCurrency(kpi.cancelledOrders?.value || 0)}`} sub="value lost" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
@@ -104,6 +105,36 @@ export default function AdminDashboard() {
                 </div>
               )
             })}
+            
+            {kpi.cancelledOrders?.reasons?.length > 0 && (
+              <div className="pt-4 mt-2 border-t border-admin-border/50">
+                
+                {/* Break down by actor */}
+                {kpi.cancelledOrders.byActor && kpi.cancelledOrders.byActor.length > 0 && (
+                  <div className="mb-4">
+                    <h4 className="text-[11px] font-bold text-admin-text-sub uppercase tracking-wider mb-2">Cancelled By</h4>
+                    <div className="flex gap-2">
+                      {kpi.cancelledOrders.byActor.map(actor => (
+                        <div key={actor.actor} className="flex-1 bg-admin-seafoam rounded-md p-2 flex justify-between items-center">
+                          <span className="text-[11px] text-admin-text font-medium capitalize">{actor.actor === 'unknown' ? 'Unknown' : actor.actor}</span>
+                          <span className="text-[11px] font-bold text-admin-navy">{actor.count}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <h4 className="text-[11px] font-bold text-admin-text-sub uppercase tracking-wider mb-3">Cancellation Reasons</h4>
+                <div className="space-y-2">
+                  {kpi.cancelledOrders.reasons.map((r, i) => (
+                    <div key={i} className="flex justify-between items-center text-[12px]">
+                      <span className="text-admin-text truncate pr-2">{r.reason}</span>
+                      <span className="font-bold text-admin-navy bg-admin-seafoam px-2 py-0.5 rounded-full">{r.count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </AdminCard>
       </div>

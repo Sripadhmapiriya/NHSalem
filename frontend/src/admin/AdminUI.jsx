@@ -133,17 +133,17 @@ export function AdminCard({ title, subtitle, children, className = '', action })
 // ── Table ──────────────────────────────────────────────────────────────────────
 export function AdminTable({ headers, children, emptyMessage = 'No data available.', className = '' }) {
   return (
-    <div className={`overflow-y-auto overflow-x-hidden max-h-[calc(100vh-260px)] ${className}`}>
+    <div className={`overflow-y-auto overflow-x-hidden max-w-full max-h-[calc(100vh-260px)] ${className}`}>
       <table className="w-full text-sm relative">
         <thead className="sticky top-0 z-20">
-          <tr className="border-b border-admin-border/40">
+          <tr className="border-b border-admin-border/40 bg-white">
             {headers.map((h, i) => {
               const label = typeof h === 'string' ? h : h.label
               const cls = typeof h === 'string' ? '' : h.className || ''
               return (
                 <th
                   key={`${label}-${i}`}
-                  className={`text-left px-4 py-2.5 text-[10px] font-bold text-admin-text-sub uppercase tracking-[0.1em] bg-white ${cls}`}
+                  className={`text-left px-4 py-2.5 text-[10px] font-bold text-admin-text-sub uppercase tracking-[0.1em] ${cls}`}
                 >
                   {label}
                 </th>

@@ -22,6 +22,8 @@ import addressRoutes from './routes/addresses.routes.js'
 import newsletterRoutes from './routes/newsletter.routes.js'
 import wishlistsRoutes from './routes/wishlists.routes.js'
 import contactRoutes from './routes/contact.routes.js'
+import categoriesRoutes from './routes/categories.routes.js'
+import whatsappRoutes from './routes/whatsapp.routes.js'
 
 import pool from './db/pool.js'
 
@@ -33,8 +35,16 @@ CREATE TABLE IF NOT EXISTS contact_messages (
   message TEXT NOT NULL,
   status VARCHAR(50) DEFAULT 'unread',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-`).then(() => console.log('✅ Contact messages table ready')).catch(console.error)
+`
+).then(() => console.log('✅ Contact messages table ready')).catch(console.error)
+
+pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS cancel_reason VARCHAR(255);`)
+  .then(() => console.log('✅ Orders table updated (cancel_reason)'))
+  .catch(console.error)
+
+pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS cancelled_by VARCHAR(50);`)
+  .then(() => console.log('✅ Orders table updated (cancelled_by)'))
+  .catch(console.error)
 
 import fs from 'fs';
 import path from 'path';
@@ -179,6 +189,8 @@ app.use('/api/addresses', addressRoutes)   // handles /addresses
 app.use('/api/newsletter', newsletterRoutes) // handles /api/newsletter
 app.use('/api', wishlistsRoutes)           // handles /api/wishlist
 app.use('/api', contactRoutes)             // handles /api/contact and /api/admin/messages
+app.use('/api/categories', categoriesRoutes) // handles /api/categories
+app.use('/api/whatsapp', whatsappRoutes)     // handles /api/whatsapp webhook and messages
 app.use('/api/admin/reviews', productRoutes)
 
 // 3. Centralized error handling
