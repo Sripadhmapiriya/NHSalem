@@ -178,7 +178,7 @@ export default function Home() {
   return (
     <div className="bg-slate-50/50 min-h-screen">
       {/* ── 1. Hero Carousel (#hero) ────────────────────────────────────────────── */}
-      <section id="hero" className="relative h-[70vh] min-h-[520px] max-h-[720px] overflow-hidden bg-[#000516]">
+      <section id="hero" className="relative w-full min-h-[750px] lg:min-h-[800px] flex overflow-hidden bg-[#000516]">
         <AnimatePresence mode="wait">
           {HERO_SLIDES.map((slide, i) =>
             i === currentSlide ? (
@@ -190,13 +190,21 @@ export default function Home() {
                 transition={{ duration: 0.7 }}
                 className="absolute inset-0 group"
               >
+                {/* 
+                  Use background-position: right bottom to prevent the crab/lobster on the right 
+                  and the icon row at the bottom from being cropped out.
+                  Changed bg-cover to a responsive bg-contain on large screens or a right-aligned cover. 
+                */}
                 <div
-                  className="absolute inset-0 bg-cover bg-center scale-105 group-hover:scale-100 transition-transform duration-[8000ms] ease-out"
+                  className="absolute inset-0 bg-[position:right_bottom] lg:bg-contain bg-cover bg-no-repeat scale-100 transition-transform duration-[8000ms] ease-out"
                   style={{ backgroundImage: `url(${slide.bg})` }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-[#000516]/95 via-[#000516]/75 to-transparent" />
+                
+                {/* Strengthened gradient pushed further to the right to completely mask the watermark text */}
+                <div className="absolute inset-0 bg-gradient-to-r from-[#000516] via-[#000516]/98 via-50% to-transparent/30 lg:via-60%" />
 
-                <div className="container-max relative h-full flex flex-col justify-center text-left text-white z-10">
+                {/* Pushed content towards the top using justify-start and padding to avoid overlapping the bottom icons */}
+                <div className="container-max relative h-full flex flex-col justify-start pt-24 md:pt-32 pb-32 text-left text-white z-10">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -230,6 +238,18 @@ export default function Home() {
                           <span className="material-symbols-outlined text-lg">arrow_forward</span>
                         </button>
                       </Link>
+                    </div>
+
+                    {/* Trust Badges Row (Glassmorphism) */}
+                    <div className="flex flex-wrap items-center gap-3 mt-6">
+                      <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[11px] font-bold tracking-wide uppercase text-white bg-[rgba(255,255,255,0.15)] backdrop-blur-[10px] border border-[rgba(255,255,255,0.25)] shadow-[0_4px_12px_rgba(0,0,0,0.1)] [text-shadow:0_1px_2px_rgba(0,0,0,0.8)]">
+                        <span className="material-symbols-outlined text-[14px]">ac_unit</span>
+                        Flash Frozen at -18°C
+                      </div>
+                      <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[11px] font-bold tracking-wide uppercase text-white bg-[rgba(255,255,255,0.15)] backdrop-blur-[10px] border border-[rgba(255,255,255,0.25)] shadow-[0_4px_12px_rgba(0,0,0,0.1)] [text-shadow:0_1px_2px_rgba(0,0,0,0.8)]">
+                        <span className="material-symbols-outlined text-[14px]">local_shipping</span>
+                        Free Delivery within 8km
+                      </div>
                     </div>
                   </motion.div>
                 </div>

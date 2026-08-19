@@ -313,16 +313,6 @@ export default function AdminAddEditProduct() {
                       className="w-full px-3 py-2.5 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] focus:outline-none focus:border-admin-navy"
                     />
                   </div>
-
-                  {/* Catch Time */}
-                  <div>
-                    <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">Catch Time</label>
-                    <input
-                      {...register('catchTime')}
-                      placeholder="e.g. 4h ago"
-                      className="w-full px-3 py-2.5 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] focus:outline-none focus:border-admin-navy"
-                    />
-                  </div>
                 </div>
 
                 {/* Description */}

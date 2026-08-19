@@ -119,28 +119,27 @@ export default function ProductCard({ product }) {
         </Link>
 
         {/* Badges (Max 2) */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start pointer-events-none">
+        {/* Badges (Max 2) */}
+        <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start pointer-events-none z-10">
           {badges.slice(0, 2).map((badge) => {
             let icon = 'sell';
-            let colorClass = 'bg-slate-900 text-white';
+            let bgClass = 'bg-[rgba(255,255,255,0.15)]';
             
-            if (badge.type === 'fresh') { icon = 'eco'; colorClass = 'bg-emerald-500 text-white'; }
-            else if (badge.type === 'deal') { icon = 'bolt'; colorClass = 'bg-amber-500 text-white'; }
-            else if (badge.type === 'limited') { icon = 'lens'; colorClass = 'bg-blue-500 text-white'; }
-            else if (badge.type === 'new') { icon = 'stars'; colorClass = 'bg-purple-500 text-white'; }
+            if (badge.type === 'fresh') { icon = 'eco'; bgClass = 'bg-[rgba(16,185,129,0.25)]'; }
+            else if (badge.type === 'deal') { icon = 'bolt'; bgClass = 'bg-[rgba(245,158,11,0.25)]'; }
+            else if (badge.type === 'limited') { icon = 'lens'; bgClass = 'bg-[rgba(59,130,246,0.25)]'; }
+            else if (badge.type === 'new') { icon = 'stars'; bgClass = 'bg-[rgba(168,85,247,0.25)]'; }
 
             return (
-              <div key={badge.type} className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase shadow-sm ${colorClass}`}>
+              <div 
+                key={badge.type} 
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase text-white backdrop-blur-[10px] border border-[rgba(255,255,255,0.25)] shadow-[0_4px_12px_rgba(0,0,0,0.1)] [text-shadow:0_1px_2px_rgba(0,0,0,0.8)] ${bgClass}`}
+              >
                 <span className="material-symbols-outlined text-[12px]">{icon}</span>
                 {badge.label}
               </div>
             );
           })}
-          {/* -18°C Frozen Badge */}
-          <div className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase shadow-sm bg-blue-100 text-blue-800 border border-blue-200 mt-1">
-            <span className="material-symbols-outlined text-[12px]">ac_unit</span>
-            -18°C
-          </div>
         </div>
 
         {/* Wishlist */}
@@ -148,10 +147,10 @@ export default function ProductCard({ product }) {
           whileTap={{ scale: 0.85 }}
           onClick={handleWishlistToggle}
           aria-label={wishlisted ? `Remove ${name} from wishlist` : `Add ${name} to wishlist`}
-          className="absolute top-3 right-3 w-8 h-8 bg-black/30 backdrop-blur-md rounded-full flex items-center justify-center transition-colors hover:bg-black/50 border border-white/20"
+          className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-[rgba(255,255,255,0.15)] hover:bg-[rgba(255,255,255,0.25)] backdrop-blur-[10px] border border-[rgba(255,255,255,0.25)] shadow-[0_4px_12px_rgba(0,0,0,0.1)] z-10"
         >
           <span
-            className={`material-symbols-outlined ${wishlisted ? 'filled text-white' : 'text-white'} transition-all`}
+            className={`material-symbols-outlined ${wishlisted ? 'filled text-white' : 'text-white'} transition-all [text-shadow:0_1px_2px_rgba(0,0,0,0.5)]`}
             style={{ fontSize: '18px' }}
             aria-hidden="true"
           >
@@ -172,45 +171,6 @@ export default function ProductCard({ product }) {
           {tagline && (
             <p className="text-[13px] text-slate-500 mt-0.5 line-clamp-1 font-medium">{tagline}</p>
           )}
-        </div>
-
-        {/* Meta row: Catch Time & Rating */}
-        <div className="flex items-center justify-between mt-0.5 min-h-[24px]">
-          {catchTime ? (
-            <div className="flex items-center gap-1 px-2 py-1 bg-slate-100 rounded-md text-[11px] font-semibold text-slate-600 whitespace-nowrap">
-              <span className="material-symbols-outlined text-[13px]" aria-hidden="true">schedule</span>
-              Caught {catchTime} ago
-            </div>
-          ) : <div />}
-          
-          <div className="flex items-center gap-1 whitespace-nowrap">
-            {reviewCount > 0 ? (
-              <>
-                <div className="flex">
-                  {[1, 2, 3, 4, 5].map((star) => {
-                    const isFilled = rating > 0 && star <= Math.round(rating)
-                    return (
-                      <span
-                        key={star}
-                        className={`material-symbols-outlined ${isFilled ? 'filled text-amber-400' : 'text-slate-200'}`}
-                        style={{ fontSize: '14px' }}
-                        aria-hidden="true"
-                      >
-                        star
-                      </span>
-                    )
-                  })}
-                </div>
-                <span className="text-xs font-medium text-slate-500 ml-0.5">
-                  ({reviewCount})
-                </span>
-              </>
-            ) : (
-              <span className="text-[11px] font-medium text-slate-400 italic">
-                No reviews yet
-              </span>
-            )}
-          </div>
         </div>
 
         {/* Weight/Quantity Selector */}
@@ -237,8 +197,8 @@ export default function ProductCard({ product }) {
         <div className="flex-1" />
 
         {/* Price & CTA Block */}
-        <div className="pt-3 border-t border-slate-100 mt-2">
-          <div className="flex items-center gap-2 mb-3">
+        <div className="pt-2 border-t border-slate-100 mt-1">
+          <div className="flex items-center gap-2 mb-2">
             <p className="text-lg font-black text-slate-900">
               ₹{currentVariant.price?.toLocaleString()}
             </p>
