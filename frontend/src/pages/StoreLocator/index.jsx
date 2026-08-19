@@ -1,207 +1,119 @@
-import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import Button from '@/components/ui/Button'
-import Chip from '@/components/ui/Chip'
-import useToastStore from '@/store/toastStore'
-import { getCities, registerCityNotification } from '@/services/api'
-import useDebounce from '@/hooks/useDebounce'
-
-const notifySchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-})
 
 export default function StoreLocator() {
-  const [cities, setCities] = useState([])
-  const [search, setSearch] = useState('')
-  const [selectedCity, setSelectedCity] = useState(null)
-  const [notifyCity, setNotifyCity] = useState('')
-  const { addToast } = useToastStore()
-  const debouncedSearch = useDebounce(search, 250)
-
-  const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm({
-    resolver: zodResolver(notifySchema),
-  })
-
-  useEffect(() => {
-    getCities().then(setCities)
-  }, [])
-
-  const liveCities = useMemo(() => cities.filter((c) => c.status === 'live'), [cities])
-  const comingSoonCities = useMemo(() => cities.filter((c) => c.status === 'coming_soon'), [cities])
-
-
-
-  const filteredLive = useMemo(() => {
-    if (!debouncedSearch) return liveCities
-    const q = debouncedSearch.toLowerCase()
-    return liveCities.filter((c) => c.name.toLowerCase().includes(q) || c.pincode?.includes(q))
-  }, [liveCities, debouncedSearch])
-
-  const onNotifySubmit = async ({ email }) => {
-    if (!notifyCity) {
-      addToast({ message: 'Please select a city first!', type: 'warning' })
-      return
-    }
-    const city = comingSoonCities.find((c) => c.name === notifyCity)
-    if (!city) return
-
-    try {
-      const res = await registerCityNotification(email, city.id)
-      if (res.success) {
-        addToast({ message: `We'll notify ${email} when we arrive in ${notifyCity}! 📍`, type: 'success' })
-        reset()
-        setNotifyCity('')
-      }
-    } catch (err) {
-      addToast({ message: err.message || 'Failed to register notification interest.', type: 'error' })
-    }
-  }
+  const storeAddress = "4/174/F, Cheran Nagar / Kavery Nagar, Kondappanaickenpatti, Salem – 636008, Tamil Nadu"
+  const mapQuery = "NH Salem Sea Foods, 4/174/F, Cheran Nagar, Kondappanaickenpatti, Salem"
+  const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(storeAddress)}`
 
   return (
-    <div className="bg-background min-h-screen">
-      {/* Hero */}
-      <section className="py-16 bg-primary text-white text-center" aria-labelledby="stores-heading">
-        <div className="container-max">
-          <p className="text-label-md text-secondary-container font-semibold tracking-widest uppercase mb-3">
-            Delivery Network
-          </p>
-          <h1 id="stores-heading" className="text-display-lg-mobile md:text-display-lg mb-4">
-            Find Your Nearest Freshness Hub
-          </h1>
-          <p className="text-body-lg text-white/70 max-w-xl mx-auto">
-            We currently serve 8 cities across South India, with rapid expansion underway.
+    <div className="bg-slate-50 min-h-screen pt-12 pb-24">
+      <div className="container-max">
+        <div className="text-center mb-12">
+          <p className="text-[#fed255] font-bold tracking-widest uppercase text-sm mb-2">Our Location</p>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-[#000516] mb-4">Visit Our Store</h1>
+          <p className="text-slate-600 text-lg max-w-2xl mx-auto">
+            Drop by our Salem store to experience the freshest seafood in town.
           </p>
         </div>
-      </section>
 
-      {/* Search */}
-      <div className="container-max py-8">
-        <div className="max-w-lg mx-auto relative mb-10">
-          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline pointer-events-none" style={{ fontSize: '20px' }} aria-hidden="true">search</span>
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by city or pincode…"
-            aria-label="Search cities"
-            className="w-full rounded-lg border border-outline-variant bg-white pl-11 pr-5 py-3.5 text-body-md text-on-surface placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary/15 outline-none shadow-card"
-          />
-        </div>
-
-        {/* Live Cities Grid */}
-        <div className="mb-12">
-          <h2 className="text-headline-md text-on-surface mb-2">Currently Serviceable Cities</h2>
-          <p className="text-body-md text-on-surface-variant mb-6">
-            {filteredLive.length} {filteredLive.length === 1 ? 'city' : 'cities'} live
-          </p>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {filteredLive.map((city, i) => (
-              <motion.button
-                key={city.id}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.35, delay: i * 0.06 }}
-                onClick={() => setSelectedCity(selectedCity?.id === city.id ? null : city)}
-                aria-pressed={selectedCity?.id === city.id}
-                className={`flex flex-col items-start p-5 bg-white rounded-[20px] shadow-card border-2 transition-all text-left ${
-                  selectedCity?.id === city.id ? 'border-primary shadow-stat' : 'border-transparent hover:border-outline-variant'
-                }`}
-              >
-                <div className="flex items-center justify-between w-full mb-3">
-                  <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                    <span className="material-symbols-outlined text-secondary-container" style={{ fontSize: '20px' }} aria-hidden="true">location_city</span>
-                  </div>
-                  <span className="text-label-sm text-success bg-success/10 px-2.5 py-1 rounded-full font-semibold flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 bg-success rounded-full" aria-hidden="true" />
-                    Live Now
-                  </span>
+        <div className="grid md:grid-cols-2 gap-8 lg:gap-12 max-w-6xl mx-auto">
+          {/* Store Details Card */}
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+            className="bg-white rounded-[28px] p-8 lg:p-10 shadow-xl border border-slate-100 flex flex-col justify-center"
+          >
+            <h2 className="text-3xl font-extrabold text-[#000516] mb-8">NH Salem Sea Foods</h2>
+            
+            <div className="space-y-6 mb-10">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-blue-600">location_on</span>
                 </div>
-                <p className="text-headline-sm text-on-surface font-bold">{city.name}</p>
-                <p className="text-label-sm text-on-surface-variant">{city.stores} store{city.stores !== 1 ? 's' : ''}</p>
-              </motion.button>
-            ))}
-
-            {filteredLive.length === 0 && (
-              <div className="col-span-full text-center py-12">
-                <p className="text-body-lg text-on-surface-variant">No cities found for "{search}"</p>
+                <div>
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Address</h3>
+                  <p className="text-slate-700 leading-relaxed font-medium">{storeAddress}</p>
+                </div>
               </div>
-            )}
-          </div>
-        </div>
 
-        {/* Selected city delivery slots */}
-        {selectedCity && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-primary rounded-[28px] p-6 text-white mb-12"
-            aria-live="polite"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-headline-sm text-white">Delivery Slots in {selectedCity.name}</h3>
-              <button onClick={() => setSelectedCity(null)} aria-label="Close" className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors">
-                <span className="material-symbols-outlined text-white" style={{ fontSize: '18px' }} aria-hidden="true">close</span>
-              </button>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {selectedCity.slots.map((slot) => (
-                <span key={slot} className="px-3 py-1.5 bg-white/15 rounded-lg text-label-md font-semibold text-white border border-white/20">
-                  {slot}
-                </span>
-              ))}
-            </div>
-          </motion.div>
-        )}
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-green-600">call</span>
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Phone</h3>
+                  <a href="tel:+919500829167" className="text-slate-700 font-medium hover:text-[#000516] hover:underline transition-colors block">
+                    +91 95008 29167
+                  </a>
+                </div>
+              </div>
 
-        {/* Coming Soon */}
-        <div className="bg-surface-container-low rounded-[28px] p-8">
-          <h2 className="text-headline-md text-on-surface mb-2">Coming Soon to Your Neighborhood</h2>
-          <p className="text-body-lg text-on-surface-variant mb-6">
-            We're expanding rapidly. Get notified when NH Salem launches in your city.
-          </p>
-          <div className="flex flex-wrap gap-2 mb-8">
-            {comingSoonCities.map((city) => (
-              <button
-                key={city.id}
-                onClick={() => setNotifyCity(city.name)}
-                className={`px-4 py-2 rounded-full border text-label-md font-semibold transition-all ${
-                  notifyCity === city.name
-                    ? 'bg-primary text-on-primary border-primary'
-                    : 'bg-white text-on-surface border-outline-variant hover:border-primary'
-                }`}
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-amber-600">mail</span>
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Email</h3>
+                  <a href="mailto:carenhsalem@gmail.com" className="text-slate-700 font-medium hover:text-[#000516] hover:underline transition-colors block">
+                    carenhsalem@gmail.com
+                  </a>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-purple-600">schedule</span>
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Store Hours</h3>
+                  <p className="text-slate-700 font-medium">Open 7 days a week, 9:00 AM – 8:00 PM</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-4 pt-2">
+                <div className="w-12 h-12 rounded-full bg-teal-50 flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-teal-600">moped</span>
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Delivery</h3>
+                  <p className="text-teal-800 font-bold bg-teal-50 inline-block px-3.5 py-1.5 rounded-xl border border-teal-100 text-sm">
+                    We deliver within an 8km radius from this location
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <a href={directionsUrl} target="_blank" rel="noreferrer" className="block w-full">
+              <button 
+                type="button" 
+                className="w-full bg-[#000516] hover:bg-[#0b1e3d] text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex justify-center items-center gap-2 active:scale-[0.98]"
               >
-                {city.name}
+                <span className="material-symbols-outlined">directions</span>
+                Get Directions
               </button>
-            ))}
-          </div>
-          <form
-            onSubmit={handleSubmit(onNotifySubmit)}
-            className="flex flex-col sm:flex-row gap-3 max-w-md"
-            noValidate
-            aria-label="City notification signup"
+            </a>
+          </motion.div>
+
+          {/* Map Section */}
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="rounded-[28px] overflow-hidden shadow-xl border border-slate-100 min-h-[400px] md:min-h-full h-full w-full"
           >
-            <div className="flex-1">
-              <input
-                type="email"
-                placeholder="Enter your email address"
-                aria-label="Email for city launch notification"
-                aria-invalid={!!errors.email}
-                required
-                {...register('email')}
-                className="w-full rounded-lg border border-outline-variant bg-white px-5 py-3 text-body-md text-on-surface placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary/15 outline-none"
-              />
-              {errors.email && (
-                <p role="alert" className="text-label-sm text-error mt-1 pl-2">{errors.email.message}</p>
-              )}
-            </div>
-            <Button type="submit" variant="primary" loading={isSubmitting}>
-              Notify Me
-            </Button>
-          </form>
+            <iframe 
+              src={`https://maps.google.com/maps?q=${encodeURIComponent(mapQuery)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+              width="100%" 
+              height="100%" 
+              style={{ border: 0, minHeight: '400px', height: '100%' }} 
+              allowFullScreen="" 
+              loading="lazy" 
+              referrerPolicy="no-referrer-when-downgrade"
+              title="NH Salem Sea Foods Location Map"
+            ></iframe>
+          </motion.div>
         </div>
       </div>
     </div>

@@ -518,7 +518,7 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
                     <span className="material-symbols-outlined text-[18px] opacity-60">chevron_right</span>
                   </button>
 
-                  <NavLink to="/quality" onClick={() => setMobileMenuOpen(false)} className="px-4 py-2.5 rounded-[12px] text-label-md text-on-surface-variant hover:bg-surface-container transition-colors min-h-[44px] flex items-center">Quality Promise</NavLink>
+
                   <NavLink to="/stores" onClick={() => setMobileMenuOpen(false)} className="px-4 py-2.5 rounded-[12px] text-label-md text-on-surface-variant hover:bg-surface-container transition-colors min-h-[44px] flex items-center">Store Locator</NavLink>
                   <NavLink to="/bulk-orders" onClick={() => setMobileMenuOpen(false)} className="px-4 py-2.5 rounded-[12px] text-label-md text-on-surface-variant hover:bg-surface-container transition-colors min-h-[44px] flex items-center">B2B / Bulk</NavLink>
                 </div>

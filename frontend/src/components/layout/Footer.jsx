@@ -4,7 +4,7 @@ const FOOTER_LINKS = {
   'Quick Links': [
     { label: 'Home', to: '/' },
     { label: 'About Us', to: '/#about' },
-    { label: 'Quality Promise', to: '/quality' },
+
     { label: 'Store Locator', to: '/stores' },
     { label: 'Wholesale / B2B', to: '/bulk-orders' },
     { label: 'Special Offers', to: '/category/combos' },

@@ -250,6 +250,10 @@ export default function Home() {
                         <span className="material-symbols-outlined text-[14px]">local_shipping</span>
                         Delivery within 8km
                       </div>
+                      <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[11px] font-bold tracking-wide uppercase text-white bg-[rgba(255,255,255,0.15)] backdrop-blur-[10px] border border-[rgba(255,255,255,0.25)] shadow-[0_4px_12px_rgba(0,0,0,0.1)] [text-shadow:0_1px_2px_rgba(0,0,0,0.8)]">
+                        <span className="material-symbols-outlined text-[14px]">price_change</span>
+                        Market Price Applies
+                      </div>
                     </div>
                   </motion.div>
                 </div>
