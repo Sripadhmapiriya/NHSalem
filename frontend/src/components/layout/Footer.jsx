@@ -105,7 +105,7 @@ export default function Footer() {
               <div className="flex items-start gap-2">
                 <span className="material-symbols-outlined text-[#fed255] text-sm shrink-0 select-none leading-none pt-0.5" aria-hidden="true">storefront</span>
                 <div className="leading-normal text-xs text-slate-200 flex-1">
-                  <span className="text-white font-semibold">Marketed & Distributed by:</span> NH Salem
+                  <span className="text-white font-semibold">Marketed & Distributed by:</span> NH Salem and Snacks
                 </div>
               </div>
 

@@ -491,13 +491,21 @@ export default function Home() {
                 <div>
                   <h3 className="font-bold text-[#000516] text-sm mb-0.5">Customer Support Phone</h3>
                   <p className="text-xs text-slate-500 mb-1">Direct support & order enquiries</p>
-                  <a href="tel:+919500829167" className="text-primary font-bold text-base hover:underline block">
-                    +91 95008 29167
+                  <div className="mt-0.5">
+                    <a href="tel:+919500829167" className="text-primary font-bold text-base hover:underline block leading-none m-0 p-0" title="Call Us">
+                      +91 95008 29167
+                    </a>
+                    <a href="https://wa.me/919500829167?text=Hi,%20I'd%20like%20to%20know%20more%20about%20your%20products" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[11px] text-[#25D366] hover:underline font-bold transition-colors leading-none m-0 p-0 mt-0.5" title="Chat on WhatsApp">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2.05 22l5.25-1.38a9.87 9.87 0 0 0 4.74 1.21h.01c5.46 0 9.9-4.45 9.9-9.92 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.22 8.22 0 0 1-1.26-4.38c0-4.55 3.7-8.25 8.26-8.25a8.2 8.2 0 0 1 5.84 2.42 8.19 8.19 0 0 1 2.42 5.84c0 4.55-3.71 8.23-8.27 8.23Zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.17.24-.64.8-.78.97-.14.17-.29.19-.53.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.14-.24-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.15.16-.25.25-.42.08-.16.04-.31-.02-.43-.06-.12-.56-1.35-.77-1.84-.2-.48-.4-.42-.56-.42-.14-.01-.31-.01-.47-.01a.9.9 0 0 0-.65.3c-.23.24-.85.83-.85 2.03s.87 2.36.99 2.52c.12.17 1.71 2.6 4.14 3.65.58.25 1.03.4 1.38.51.58.18 1.11.16 1.53.1.47-.07 1.47-.6 1.67-1.18.21-.58.21-1.08.15-1.18-.06-.1-.22-.16-.47-.28Z" />
+                    </svg>
+                    Chat on WhatsApp
                   </a>
                 </div>
               </div>
+            </div>
 
-              {/* Email */}
+            {/* Email */}
               <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-start gap-4">
                 <div className="w-11 h-11 bg-primary/10 rounded-xl flex items-center justify-center shrink-0 text-primary">
                   <span className="material-symbols-outlined text-xl">mail</span>
