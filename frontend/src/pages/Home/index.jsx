@@ -39,23 +39,7 @@ const HERO_SLIDES = [
     sub: 'Committed to delivering premium quality frozen seafood that preserves natural freshness, authentic taste, and rich nutritional value.',
     cta: 'Shop Fresh Catch',
     badge: 'Premium Quality',
-    bg: 'https://images.unsplash.com/photo-1534604973900-c43ab4c2e0ab?w=1600&q=85',
-  },
-  {
-    id: 2,
-    headline: 'Ocean Freshness Guaranteed',
-    sub: 'Sourced from clean & rich ocean waters, blast-frozen within hours to lock in natural texture and taste.',
-    cta: 'Shop Fresh Catch',
-    badge: '100% Ocean Fresh',
-    bg: 'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?w=1600&q=85',
-  },
-  {
-    id: 3,
-    headline: 'Hygienically Packed & Delivered',
-    sub: 'Maintained under strict cold-chain conditions right from ocean processing to your doorstep or retail business.',
-    cta: 'Shop Fresh Catch',
-    badge: 'Cold-Chain Certified',
-    bg: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=1600&q=85',
+    bg: '/images/banners/nh-salem-hero-banner.png',
   },
 ]
 
@@ -78,19 +62,20 @@ export default function Home() {
   const [testimonials, setTestimonials] = useState([])
   const [loading, setLoading] = useState(true)
   const [reviewModalOpen, setReviewModalOpen] = useState(false)
-  
+
   // Newsletter state
   const [newsletterEmail, setNewsletterEmail] = useState('')
   const [newsletterSubmitting, setNewsletterSubmitting] = useState(false)
-  
+
   // Contact state
   const [contactSubmitting, setContactSubmitting] = useState(false)
 
   const { addToast } = useToastStore()
   const navigate = useNavigate()
 
-  // Auto-advance carousel
+  // Auto-advance carousel (no-op when there's only one slide)
   useEffect(() => {
+    if (HERO_SLIDES.length <= 1) return
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length)
     }, 5000)
@@ -131,10 +116,10 @@ export default function Home() {
   const onReviewSubmit = async (data) => {
     try {
       const res = await submitSiteReview(data)
-      addToast({ 
-        message: res.message || 'Thanks! Your review is being reviewed and will appear once approved.', 
-        type: 'success', 
-        duration: 5000 
+      addToast({
+        message: res.message || 'Thanks! Your review is being reviewed and will appear once approved.',
+        type: 'success',
+        duration: 5000
       })
       resetReview()
       setReviewModalOpen(false)
@@ -203,8 +188,7 @@ export default function Home() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.7 }}
-                className="absolute inset-0 cursor-pointer group"
-                onClick={() => setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length)}
+                className="absolute inset-0 group"
               >
                 <div
                   className="absolute inset-0 bg-cover bg-center scale-105 group-hover:scale-100 transition-transform duration-[8000ms] ease-out"
@@ -254,35 +238,37 @@ export default function Home() {
           )}
         </AnimatePresence>
 
-        {/* Very small, subtle 6px micro-dots */}
-        <div className="absolute bottom-6 left-0 right-0 z-20 flex justify-center items-center gap-2 pointer-events-auto">
-          {HERO_SLIDES.map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => setCurrentSlide(i)}
-              aria-label={`Go to slide ${i + 1}`}
-              className="transition-all duration-300 cursor-pointer flex-shrink-0"
-              style={{
-                width: i === currentSlide ? '20px' : '6px',
-                height: '6px',
-                minWidth: i === currentSlide ? '20px' : '6px',
-                minHeight: '6px',
-                maxWidth: i === currentSlide ? '20px' : '6px',
-                maxHeight: '6px',
-                borderRadius: '9999px',
-                backgroundColor: i === currentSlide ? '#ffffff' : 'rgba(255, 255, 255, 0.45)',
-                boxShadow: i === currentSlide ? '0 1px 4px rgba(0,0,0,0.4)' : 'none',
-                padding: 0,
-                margin: 0,
-                border: 'none',
-                outline: 'none',
-                appearance: 'none',
-                WebkitAppearance: 'none'
-              }}
-            />
-          ))}
-        </div>
+        {/* Very small, subtle 6px micro-dots (only shown when there's more than one slide) */}
+        {HERO_SLIDES.length > 1 && (
+          <div className="absolute bottom-6 left-0 right-0 z-20 flex justify-center items-center gap-2 pointer-events-auto">
+            {HERO_SLIDES.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setCurrentSlide(i)}
+                aria-label={`Go to slide ${i + 1}`}
+                className="transition-all duration-300 cursor-pointer flex-shrink-0"
+                style={{
+                  width: i === currentSlide ? '20px' : '6px',
+                  height: '6px',
+                  minWidth: i === currentSlide ? '20px' : '6px',
+                  minHeight: '6px',
+                  maxWidth: i === currentSlide ? '20px' : '6px',
+                  maxHeight: '6px',
+                  borderRadius: '9999px',
+                  backgroundColor: i === currentSlide ? '#ffffff' : 'rgba(255, 255, 255, 0.45)',
+                  boxShadow: i === currentSlide ? '0 1px 4px rgba(0,0,0,0.4)' : 'none',
+                  padding: 0,
+                  margin: 0,
+                  border: 'none',
+                  outline: 'none',
+                  appearance: 'none',
+                  WebkitAppearance: 'none'
+                }}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* ── 2. Featured Best Sellers (#bestsellers) — Core Conversion Content First ── */}
@@ -378,7 +364,7 @@ export default function Home() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.3, delay: i * 0.07 }}
               >
-                <Card 
+                <Card
                   icon={item.icon}
                   title={item.title}
                   desc={item.desc}
@@ -412,7 +398,7 @@ export default function Home() {
               <h2 className="text-headline-lg md:text-display-sm font-extrabold text-[#000516]">Loved by Seafood Enthusiasts</h2>
               <p className="text-slate-600 text-body-lg mt-1">Authentic reviews from verified retail and commercial buyers.</p>
             </div>
-            
+
             <Button
               variant="ghost"
               icon="arrow_forward"
@@ -426,8 +412,8 @@ export default function Home() {
           {testimonials.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {testimonials.map((t, i) => (
-                <motion.div 
-                  key={i} 
+                <motion.div
+                  key={i}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -441,7 +427,7 @@ export default function Home() {
                       ))}
                     </div>
                     <p className="text-slate-700 text-body-md leading-relaxed italic mb-6">"{t.quote || t.comment}"</p>
-                    
+
                     {t.admin_reply && (
                       <div className="mb-6 p-4 bg-slate-50 rounded-xl border border-slate-200">
                         <div className="flex items-center gap-2 mb-2">
@@ -452,7 +438,7 @@ export default function Home() {
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="pt-4 border-t border-slate-100 flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full font-bold text-xs flex items-center justify-center shrink-0 bg-[#000516]/5 text-[#000516]">
                       {(t.author || 'Customer').substring(0, 2).toUpperCase()}
@@ -504,7 +490,7 @@ export default function Home() {
                 </div>
                 <div>
                   <h3 className="font-bold text-[#000516] text-sm mb-0.5">Customer Support Phone</h3>
-                  <p className="text-xs text-slate-500 mb-1">Direct support & order inquiries</p>
+                  <p className="text-xs text-slate-500 mb-1">Direct support & order enquiries</p>
                   <a href="tel:+919500829167" className="text-primary font-bold text-base hover:underline block">
                     +91 95008 29167
                   </a>
@@ -518,7 +504,7 @@ export default function Home() {
                 </div>
                 <div>
                   <h3 className="font-bold text-[#000516] text-sm mb-0.5">Email Support</h3>
-                  <p className="text-xs text-slate-500 mb-1">General inquiries & feedback</p>
+                  <p className="text-xs text-slate-500 mb-1">General enquiries & feedback</p>
                   <a href="mailto:carenhsalem@gmail.com" className="text-primary font-bold text-sm hover:underline block">
                     carenhsalem@gmail.com
                   </a>
@@ -531,10 +517,19 @@ export default function Home() {
                   <span className="material-symbols-outlined text-xl">location_on</span>
                 </div>
                 <div>
-                  <h3 className="font-bold text-[#000516] text-sm mb-0.5">Store & Processing Unit</h3>
+                  <h3 className="font-bold text-[#000516] text-sm mb-0.5">Visit Our Store</h3>
                   <p className="text-xs text-slate-600 leading-relaxed">
-                    NH Salem Sea Foods, Main Road, Salem, Tamil Nadu - 636001
+                    4/174/F, Cheran Nagar / Kavery Nagar, Kondappanaickenpatti, Salem – 636008, Tamil Nadu
                   </p>
+                  <a
+                    href="https://maps.app.goo.gl/whSWam4pfC6ecYC39?g_st=iw"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary text-xs font-bold hover:underline inline-flex items-center gap-1 mt-1"
+                  >
+                    <span className="material-symbols-outlined text-sm">directions</span>
+                    Get Directions
+                  </a>
                 </div>
               </div>
 
@@ -545,7 +540,8 @@ export default function Home() {
                 </div>
                 <div>
                   <h3 className="font-bold text-[#000516] text-sm mb-0.5">Operating Hours</h3>
-                  <p className="text-xs text-slate-700 font-medium">Monday – Sunday: 6:00 AM – 9:00 PM IST</p>
+                  <p className="text-xs text-slate-700 font-medium">Monday – Friday: 10:00 AM – 6:00 PM</p>
+                  <p className="text-xs text-slate-700 font-medium">Saturday – Sunday: 6:00 AM – 6:00 PM</p>
                 </div>
               </div>
             </div>

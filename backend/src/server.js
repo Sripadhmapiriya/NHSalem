@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS contact_messages (
   message TEXT NOT NULL,
   status VARCHAR(50) DEFAULT 'unread',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)
 `
 ).then(() => console.log('✅ Contact messages table ready')).catch(console.error)
 
@@ -207,6 +208,8 @@ async function verifyDatabase(pool) {
     await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS how_to_cook TEXT`)
     await pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS catch_time VARCHAR(100)`)
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS status VARCHAR(50) NOT NULL DEFAULT 'active'`)
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255)`)
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expiry BIGINT`)
     
     // Ensure wishlists table exists
     await pool.query(`

@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import useAuthStore from '@/store/authStore'
 import useToastStore from '@/store/toastStore'
-import { loginWithEmail, loginWithPhone, registerUser } from '@/services/api'
+import { loginWithEmail, loginWithPhone, registerUser, forgotPassword, resetPassword } from '@/services/api'
 
 // ── Validation schemas ────────────────────────────────────────────────────────
 
@@ -62,14 +62,14 @@ function FieldError({ message }) {
 
 // ── Email + Password form ─────────────────────────────────────────────────────
 
-function EmailForm({ onSuccess }) {
+function EmailForm({ onSuccess, setMode }) {
   const [showPassword, setShowPassword] = useState(false)
   const [serverError, setServerError] = useState('')
   const [loading, setLoading] = useState(false)
   const { setUser } = useAuthStore()
   const { addToast } = useToastStore()
 
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm({
     resolver: zodResolver(emailSchema),
     defaultValues: { email: '', password: '' },
   })
@@ -85,6 +85,16 @@ function EmailForm({ onSuccess }) {
       onSuccess?.()
     } else {
       setServerError(result.message)
+    }
+  }
+
+  const fillDemo = (role) => {
+    if (role === 'admin') {
+      setValue('email', 'admin@nhsalem.com')
+      setValue('password', 'admin123')
+    } else {
+      setValue('email', 'user@nhsalem.com')
+      setValue('password', 'password123')
     }
   }
 
@@ -128,9 +138,9 @@ function EmailForm({ onSuccess }) {
           <label htmlFor="email-login-password" className="text-[11px] font-bold text-on-surface">
             Password <span className="text-red-500">*</span>
           </label>
-          <a href="/help" className="text-[10px] text-primary hover:underline font-semibold">
+          <button type="button" onClick={() => setMode('forgot_password')} className="text-[10px] text-primary hover:underline font-semibold">
             Forgot?
-          </a>
+          </button>
         </div>
         <div className={wrapCls(!!errors.password)}>
           <span className="material-symbols-outlined text-outline flex-shrink-0 leading-none" style={{ fontSize: '16px' }}>
@@ -194,24 +204,38 @@ function EmailForm({ onSuccess }) {
         )}
       </button>
 
-      {/* Demo hint */}
-      <p className="text-center text-[11px] text-on-surface-variant bg-surface-container-low rounded-[10px] py-1.5 px-2.5">
-        <span className="font-semibold">Demo:</span> user@nhsalem.com / password123
-      </p>
+      {/* Demo Credentials */}
+      <div className="flex gap-2 mt-3">
+        <button
+          type="button"
+          onClick={() => fillDemo('admin')}
+          className="flex-1 py-1.5 px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold rounded-full transition-colors flex items-center justify-center gap-1"
+        >
+          <span className="material-symbols-outlined text-[14px]">admin_panel_settings</span>
+          Demo Admin
+        </button>
+        <button
+          type="button"
+          onClick={() => fillDemo('user')}
+          className="flex-1 py-1.5 px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold rounded-full transition-colors flex items-center justify-center gap-1"
+        >
+          <span className="material-symbols-outlined text-[14px]">person</span>
+          Demo User
+        </button>
+      </div>
     </form>
   )
 }
 
 // ── Phone + Password form ─────────────────────────────────────────────────────
-
-function PhoneForm({ onSuccess }) {
+function PhoneForm({ onSuccess, setMode }) {
   const [showPassword, setShowPassword] = useState(false)
   const [serverError, setServerError] = useState('')
   const [loading, setLoading] = useState(false)
   const { setUser } = useAuthStore()
   const { addToast } = useToastStore()
 
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm({
     resolver: zodResolver(phoneSchema),
     defaultValues: { phone: '', password: '' },
   })
@@ -227,6 +251,16 @@ function PhoneForm({ onSuccess }) {
       onSuccess?.()
     } else {
       setServerError(result.message)
+    }
+  }
+
+  const fillDemo = (role) => {
+    if (role === 'admin') {
+      setValue('phone', '9876543211') // Admin doesn't have a specific phone usually, let's keep text hint
+      setValue('password', 'admin123')
+    } else {
+      setValue('phone', '9876543210')
+      setValue('password', 'password123')
     }
   }
 
@@ -276,9 +310,9 @@ function PhoneForm({ onSuccess }) {
           <label htmlFor="phone-login-password" className="text-[11px] font-bold text-on-surface">
             Password <span className="text-red-500">*</span>
           </label>
-          <a href="/help" className="text-[10px] text-primary hover:underline font-semibold">
+          <button type="button" onClick={() => setMode('forgot_password')} className="text-[10px] text-primary hover:underline font-semibold">
             Forgot?
-          </a>
+          </button>
         </div>
         <div className={wrapCls(!!errors.password)}>
           <span className="material-symbols-outlined text-outline flex-shrink-0 leading-none" style={{ fontSize: '16px' }}>
@@ -342,10 +376,17 @@ function PhoneForm({ onSuccess }) {
         )}
       </button>
 
-      {/* Demo hint */}
-      <p className="text-center text-[11px] text-on-surface-variant bg-surface-container-low rounded-[10px] py-1.5 px-2.5">
-        <span className="font-semibold">Demo:</span> phone 9876543210 / password123
-      </p>
+      {/* Demo Credentials */}
+      <div className="flex justify-center mt-3">
+        <button
+          type="button"
+          onClick={() => fillDemo('user')}
+          className="w-full py-1.5 px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold rounded-full transition-colors flex items-center justify-center gap-1"
+        >
+          <span className="material-symbols-outlined text-[14px]">person</span>
+          Demo User (Phone)
+        </button>
+      </div>
     </form>
   )
 }
@@ -567,6 +608,182 @@ function RegisterForm({ onSuccess }) {
   )
 }
 
+// ── Forgot Password Form ──────────────────────────────────────────────────────
+
+function ForgotPasswordForm({ setMode }) {
+  const [step, setStep] = useState(1) // 1: request otp, 2: verify otp & reset
+  const [loading, setLoading] = useState(false)
+  const [serverError, setServerError] = useState('')
+  const [serverSuccess, setServerSuccess] = useState('')
+  const { addToast } = useToastStore()
+  
+  // Step 1 values
+  const [email, setEmail] = useState('')
+  
+  // Step 2 values
+  const [otp, setOtp] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+
+  const handleRequestOtp = async (e) => {
+    e.preventDefault()
+    if (!email) return setServerError('Email is required')
+    
+    setLoading(true)
+    setServerError('')
+    const result = await forgotPassword(email)
+    setLoading(false)
+    
+    if (result.success) {
+      setServerSuccess('Reset code sent! Please check your email inbox.')
+      setStep(2)
+    } else {
+      setServerError(result.message)
+    }
+  }
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault()
+    if (!otp || !newPassword) return setServerError('OTP and new password are required')
+    if (newPassword.length < 8) return setServerError('Password must be at least 8 characters')
+    
+    setLoading(true)
+    setServerError('')
+    const result = await resetPassword(email, otp, newPassword)
+    setLoading(false)
+    
+    if (result.success) {
+      addToast({ message: 'Password reset successful! You can now log in.', type: 'success' })
+      setMode('login')
+    } else {
+      setServerError(result.message)
+    }
+  }
+
+  const inputCls = (hasError) =>
+    `flex-1 bg-transparent text-sm font-medium text-on-surface placeholder:text-outline/70 focus:outline-none disabled:opacity-60 ${hasError ? 'text-red-700' : ''}`
+
+  const wrapCls = (hasError) =>
+    `flex items-center gap-2 px-3 py-2 rounded-full border bg-surface-container-low transition-all duration-150 ${
+      hasError
+        ? 'border-red-400 ring-2 ring-red-400/20'
+        : 'border-outline-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15'
+    }`
+
+  return (
+    <div className="space-y-4">
+      {step === 1 ? (
+        <form onSubmit={handleRequestOtp} className="space-y-3">
+          <div>
+            <label className="block text-[11px] font-bold text-on-surface mb-0.5">
+              Email Address
+            </label>
+            <div className={wrapCls(false)}>
+              <span className="material-symbols-outlined text-outline" style={{ fontSize: '15px' }}>alternate_email</span>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="Enter your registered email"
+                disabled={loading}
+                className={inputCls(false)}
+              />
+            </div>
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full flex justify-center py-2.5 rounded-full font-bold text-sm text-white bg-primary hover:bg-primary/90 disabled:opacity-70"
+          >
+            {loading ? 'Sending...' : 'Send Reset Link'}
+          </button>
+        </form>
+      ) : (
+        <form onSubmit={handleResetPassword} className="space-y-3">
+          <div>
+            <label className="block text-[11px] font-bold text-on-surface mb-0.5">
+              6-Digit Verification Code
+            </label>
+            <div className={wrapCls(false)}>
+              <span className="material-symbols-outlined text-outline" style={{ fontSize: '15px' }}>pin</span>
+              <input
+                type="text"
+                required
+                maxLength={6}
+                value={otp}
+                onChange={e => setOtp(e.target.value)}
+                placeholder="123456"
+                disabled={loading}
+                className={inputCls(false)}
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-[11px] font-bold text-on-surface mb-0.5">
+              New Password
+            </label>
+            <div className={wrapCls(false)}>
+              <span className="material-symbols-outlined text-outline" style={{ fontSize: '15px' }}>lock</span>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+                placeholder="New strong password"
+                disabled={loading}
+                className={inputCls(false)}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(v => !v)}
+                className="text-outline hover:text-on-surface transition-colors"
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
+                  {showPassword ? 'visibility_off' : 'visibility'}
+                </span>
+              </button>
+            </div>
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full flex justify-center py-2.5 rounded-full font-bold text-sm text-white bg-primary hover:bg-primary/90 disabled:opacity-70"
+          >
+            {loading ? 'Resetting...' : 'Reset Password'}
+          </button>
+        </form>
+      )}
+
+      {/* Messages */}
+      <AnimatePresence>
+        {serverError && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-start gap-2.5 px-3 py-2 rounded-[12px] bg-red-50 border border-red-200">
+            <span className="material-symbols-outlined text-red-500" style={{ fontSize: '14px' }}>warning</span>
+            <p className="text-[11px] font-medium text-red-700">{serverError}</p>
+          </motion.div>
+        )}
+        {serverSuccess && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-start gap-2.5 px-3 py-2 rounded-[12px] bg-green-50 border border-green-200">
+            <span className="material-symbols-outlined text-green-500" style={{ fontSize: '14px' }}>check_circle</span>
+            <p className="text-[11px] font-medium text-green-700">{serverSuccess}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="text-center pt-2">
+        <button
+          type="button"
+          onClick={() => setMode('login')}
+          className="text-xs font-semibold text-primary hover:underline"
+        >
+          Back to Login
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ── Main Login Page ───────────────────────────────────────────────────────────
 
 /**
@@ -612,11 +829,11 @@ export default function LoginPage({ isModal = false, initialMode = 'login', onSu
           className="w-8 h-8 object-contain"
         />
         <h2 className="text-base font-extrabold text-gray-900 leading-none">
-          Welcome to NH Salem
+          {mode === 'forgot_password' ? 'Reset Password' : 'Welcome to NH Salem'}
         </h2>
       </div>
       <p className="text-[11px] text-center text-gray-500 mb-1.5">
-        {mode === 'login' ? 'Sign in to continue' : 'Create an account to continue'}
+        {mode === 'login' ? 'Sign in to continue' : mode === 'register' ? 'Create an account to continue' : 'We will send you a reset link'}
       </p>
 
       {/* Tab switcher */}
@@ -655,7 +872,7 @@ export default function LoginPage({ isModal = false, initialMode = 'login', onSu
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.15 }}
               >
-                <EmailForm onSuccess={handleSuccess} />
+                <EmailForm onSuccess={handleSuccess} setMode={setMode} />
               </motion.div>
             ) : (
               <motion.div
@@ -665,10 +882,10 @@ export default function LoginPage({ isModal = false, initialMode = 'login', onSu
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.15 }}
               >
-                <PhoneForm onSuccess={handleSuccess} />
+                <PhoneForm onSuccess={handleSuccess} setMode={setMode} />
               </motion.div>
             )
-          ) : (
+          ) : mode === 'register' ? (
             <motion.div
               key="register-tab"
               initial={{ opacity: 0, y: 10 }}
@@ -677,6 +894,16 @@ export default function LoginPage({ isModal = false, initialMode = 'login', onSu
               transition={{ duration: 0.15 }}
             >
               <RegisterForm onSuccess={handleSuccess} />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="forgot-password-tab"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.15 }}
+            >
+              <ForgotPasswordForm setMode={setMode} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -692,7 +919,7 @@ export default function LoginPage({ isModal = false, initialMode = 'login', onSu
           >
             Don't have an account? Sign Up
           </button>
-        ) : (
+        ) : mode === 'register' ? (
           <button
             type="button"
             onClick={() => setMode('login')}
@@ -700,7 +927,7 @@ export default function LoginPage({ isModal = false, initialMode = 'login', onSu
           >
             Already have an account? Sign In
           </button>
-        )}
+        ) : null}
       </div>
       {/* Footer links */}
       <p className="text-[10px] text-on-surface-variant text-center mt-1">

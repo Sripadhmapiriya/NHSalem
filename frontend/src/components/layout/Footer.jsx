@@ -84,23 +84,28 @@ export default function Footer() {
                 <span className="material-symbols-outlined text-[#fed255] text-sm shrink-0 select-none leading-none pt-0.5" aria-hidden="true">call</span>
                 <a href="tel:+919500829167" className="text-[#fed255] underline hover:text-white transition-colors font-semibold text-xs leading-normal flex-1">+91 9500829167</a>
               </div>
-              
+
               <div className="flex items-start gap-2">
                 <span className="material-symbols-outlined text-[#fed255] text-sm shrink-0 select-none leading-none pt-0.5" aria-hidden="true">mail</span>
                 <a href="mailto:carenhsalem@gmail.com" className="text-[#fed255] underline hover:text-white transition-colors font-semibold text-xs leading-normal flex-1">carenhsalem@gmail.com</a>
               </div>
 
-              <div className="flex items-start gap-2">
+              <a
+                href="https://maps.app.goo.gl/whSWam4pfC6ecYC39?g_st=iw"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-start gap-2 group"
+              >
                 <span className="material-symbols-outlined text-[#fed255] text-sm shrink-0 select-none leading-none pt-0.5" aria-hidden="true">location_on</span>
-                <div className="leading-normal text-xs text-slate-200 flex-1">
-                  <span className="text-white font-semibold">Registered Office:</span> No: 4/174/F, Cheran Nagar, Kondappanaickenpatti, Salem – 636008
+                <div className="leading-normal text-xs text-slate-200 flex-1 group-hover:text-[#fed255] group-hover:underline transition-colors">
+                  <span className="text-white font-semibold group-hover:text-[#fed255]">Registered Office:</span> No: 4/174/F, Cheran Nagar, Kondappanaickenpatti, Salem – 636008
                 </div>
-              </div>
+              </a>
 
-              <div className="flex items-start gap-2 mb-2">
+              <div className="flex items-start gap-2">
                 <span className="material-symbols-outlined text-[#fed255] text-sm shrink-0 select-none leading-none pt-0.5" aria-hidden="true">storefront</span>
                 <div className="leading-normal text-xs text-slate-200 flex-1">
-                  <span className="text-white font-semibold">Marketed & Distributed by:</span> NH Salem Sea Foods
+                  <span className="text-white font-semibold">Marketed & Distributed by:</span> NH Salem
                 </div>
               </div>
 
@@ -112,12 +117,22 @@ export default function Footer() {
               </div>
             </div>
 
-            {/* Single Compact FSSAI Badge */}
-            <div className="inline-flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 py-1.5 shadow-sm">
-              <span className="material-symbols-outlined text-[#16a34a] text-xl shrink-0">verified</span>
-              <div className="flex flex-col justify-center text-left">
-                <p className="text-[9px] font-bold text-[#fed255] uppercase tracking-wider leading-none mb-0.5">FSSAI Registered</p>
-                <p className="text-xs font-bold text-white leading-none">License No. 22426188000206</p>
+            {/* Compact FSSAI + GST Badges */}
+            <div className="flex flex-col gap-2">
+              <div className="inline-flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 py-1.5 shadow-sm">
+                <span className="material-symbols-outlined text-[#16a34a] text-xl shrink-0">verified</span>
+                <div className="flex flex-col justify-center text-left">
+                  <p className="text-[9px] font-bold text-[#fed255] uppercase tracking-wider leading-none mb-0.5">FSSAI Registered</p>
+                  <p className="text-xs font-bold text-white leading-none">License No. 22426188000206</p>
+                </div>
+              </div>
+
+              <div className="inline-flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 py-1.5 shadow-sm">
+                <span className="material-symbols-outlined text-[#16a34a] text-xl shrink-0">receipt_long</span>
+                <div className="flex flex-col justify-center text-left">
+                  <p className="text-[9px] font-bold text-[#fed255] uppercase tracking-wider leading-none mb-0.5">GST Registered</p>
+                  <p className="text-xs font-bold text-white leading-none">GST No. 33CKVPN4299M1Z3</p>
+                </div>
               </div>
             </div>
           </div>
@@ -151,7 +166,7 @@ export default function Footer() {
               © {new Date().getFullYear()} NH Salem Sea Foods. All rights reserved.
             </p>
           </div>
-          
+
           {/* 2. Privacy Policy & Terms Links */}
           <div className="h-8 flex items-center gap-5">
             <Link to="/help" className="text-xs text-slate-200 hover:text-[#fed255] transition-colors font-medium leading-none flex items-center">
@@ -165,8 +180,8 @@ export default function Footer() {
           {/* 3. Social Buttons */}
           <div className="h-8 flex items-center gap-2.5">
             {[
-              { id: 'instagram', icon: 'photo_camera', label: 'Instagram', href: 'https://instagram.com' },
-              { id: 'facebook', icon: 'thumb_up', label: 'Facebook', href: 'https://facebook.com' },
+              { id: 'instagram', label: 'Instagram', href: 'https://www.instagram.com/nh_salem_official?igsh=OWgxbWczdGpqcWIz&igsi=OWgxbWczdGpqcWIz&utm_source=qr' },
+              { id: 'location', icon: 'location_on', label: 'Location on Google Maps', href: 'https://maps.app.goo.gl/whSWam4pfC6ecYC39?g_st=iw' },
               { id: 'whatsapp', icon: 'chat', label: 'WhatsApp', href: 'https://wa.me/919500829167' },
             ].map((social) => (
               <a
@@ -177,9 +192,35 @@ export default function Footer() {
                 aria-label={`Visit our ${social.label}`}
                 className="w-8 h-8 rounded-full bg-white/10 border border-white/20 text-[#fed255] hover:bg-[#fed255] hover:text-[#000516] flex items-center justify-center transition-all duration-200 shadow-sm shrink-0"
               >
-                <span className="material-symbols-outlined text-sm leading-none flex items-center justify-center pt-[1px]" aria-hidden="true">
-                  {social.icon}
-                </span>
+                {social.id === 'instagram' ? (
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" strokeWidth="2" />
+                    <circle cx="12" cy="12" r="4.5" stroke="currentColor" strokeWidth="2" />
+                    <circle cx="17.2" cy="6.8" r="1.2" fill="currentColor" />
+                  </svg>
+                ) : social.id === 'whatsapp' ? (
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2.05 22l5.25-1.38a9.87 9.87 0 0 0 4.74 1.21h.01c5.46 0 9.9-4.45 9.9-9.92 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.22 8.22 0 0 1-1.26-4.38c0-4.55 3.7-8.25 8.26-8.25a8.2 8.2 0 0 1 5.84 2.42 8.19 8.19 0 0 1 2.42 5.84c0 4.55-3.71 8.23-8.27 8.23Zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.17.24-.64.8-.78.97-.14.17-.29.19-.53.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.14-.24-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.15.16-.25.25-.42.08-.16.04-.31-.02-.43-.06-.12-.56-1.35-.77-1.84-.2-.48-.4-.42-.56-.42-.14-.01-.31-.01-.47-.01a.9.9 0 0 0-.65.3c-.23.24-.85.83-.85 2.03s.87 2.36.99 2.52c.12.17 1.71 2.6 4.14 3.65.58.25 1.03.4 1.38.51.58.18 1.11.16 1.53.1.47-.07 1.47-.6 1.67-1.18.21-.58.21-1.08.15-1.18-.06-.1-.22-.16-.47-.28Z" />
+                  </svg>
+                ) : (
+                  <span className="material-symbols-outlined text-sm leading-none flex items-center justify-center pt-[1px]" aria-hidden="true">
+                    {social.icon}
+                  </span>
+                )}
               </a>
             ))}
           </div>

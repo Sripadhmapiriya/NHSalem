@@ -630,3 +630,27 @@ export function orderCancelledCustomer({ orderRef, customerName, items, total, a
   `
   return baseLayout(`Order Cancelled - #${orderRef}`, contentHtml)
 }
+
+// 9. PASSWORD RESET (Customer Template)
+export function passwordResetCustomer({ customerName, otp }) {
+  const formattedName = toTitleCase(customerName || 'Customer')
+  const contentHtml = `
+    <h2>🔒 Password Reset Request</h2>
+    <p>Hi <strong>${formattedName}</strong>,</p>
+    <p>We received a request to reset your password for your NH Salem Sea Foods account. Enter the OTP below to proceed:</p>
+    
+    <div style="background-color: #f8fafc; border: 2px dashed #94a3b8; border-radius: 8px; padding: 20px; text-align: center; margin: 24px 0;">
+      <p style="margin: 0; font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Your Verification Code</p>
+      <p style="margin: 8px 0 0; font-size: 36px; font-weight: 900; color: #0f172a; letter-spacing: 8px;">${otp}</p>
+    </div>
+
+    <p style="font-size: 13px; color: #64748b; background: #fffbeb; padding: 12px; border-left: 4px solid #f59e0b; border-radius: 4px;">
+      ⚠️ <strong>Note:</strong> This code will expire in 15 minutes. If you did not request a password reset, please ignore this email or contact support.
+    </p>
+
+    <div style="text-align: center; margin-top: 30px;">
+      <a href="${BASE_URL}/login" class="btn">Go to Login Page</a>
+    </div>
+  `
+  return baseLayout('Reset Your Password - NH Salem Sea Foods', contentHtml)
+}

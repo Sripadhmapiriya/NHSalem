@@ -72,8 +72,8 @@ export default function Layout({ children }) {
   return (
     <div className="flex flex-col min-h-screen bg-[#000516] relative">
       <Header
-        onLoginClick={(mode = 'login') => {
-          setLoginModalMode(mode)
+        onLoginClick={(mode) => {
+          setLoginModalMode(typeof mode === 'string' ? mode : 'login')
           setLoginModalOpen(true)
         }}
         mobileMenuOpen={mobileMenuOpen}

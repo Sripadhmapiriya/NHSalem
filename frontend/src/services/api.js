@@ -208,6 +208,24 @@ export async function verifyOTP(phone, otp) {
   }))
 }
 
+export async function forgotPassword(email) {
+  const response = await fetch(`${API_URL}/api/auth/forgot-password`, {
+    method: 'POST',
+    headers: getHeaders(false),
+    body: JSON.stringify({ email })
+  })
+  return handleResponse(response).catch((err) => ({ success: false, message: err.message }))
+}
+
+export async function resetPassword(email, otp, newPassword) {
+  const response = await fetch(`${API_URL}/api/auth/reset-password`, {
+    method: 'POST',
+    headers: getHeaders(false),
+    body: JSON.stringify({ email, otp, newPassword })
+  })
+  return handleResponse(response).catch((err) => ({ success: false, message: err.message }))
+}
+
 
 // ── Help ──────────────────────────────────────────────────────────────────────
 
