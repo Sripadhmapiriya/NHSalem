@@ -7,7 +7,7 @@ const NAV_ITEMS = [
   { to: '/admin/dashboard',      icon: 'space_dashboard',   label: 'Dashboard' },
   { to: '/admin/orders',         icon: 'receipt_long',      label: 'Orders' },
   { to: '/admin/products',       icon: 'inventory_2',       label: 'Products' },
-  { to: '/admin/categories',     icon: 'category',          label: 'Categories' },
+
   { to: '/admin/customers',      icon: 'group',             label: 'Customers' },
   { to: '/admin/promotions',     icon: 'local_offer',       label: 'Promotions' },
   { to: '/admin/reviews',        icon: 'star_rate',         label: 'Reviews' },
@@ -20,7 +20,7 @@ const PAGE_TITLES = {
   '/admin/dashboard':     'Dashboard',
   '/admin/orders':        'Orders',
   '/admin/products':      'Products',
-  '/admin/categories':    'Categories',
+
   '/admin/customers':     'Customers',
   '/admin/promotions':    'Promotions',
   '/admin/reviews':       'Reviews',

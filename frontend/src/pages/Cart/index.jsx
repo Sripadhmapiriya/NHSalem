@@ -2,11 +2,21 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import Button from '@/components/ui/Button'
+import ProductCard from '@/components/ui/ProductCard'
 import { QuantityStepper } from '@/components/ui/Stepper'
 import useCart, { useCartStore } from '@/store/cartStore'
 import useToastStore from '@/store/toastStore'
 import useAuthStore from '@/store/authStore'
-import { validateCoupon } from '@/services/api'
+import { validateCoupon, getProducts } from '@/services/api'
+
+const QUICK_CATEGORIES = [
+  { slug: 'fish', label: 'Fish', icon: 'set_meal' },
+  { slug: 'prawns-shrimp', label: 'Prawns & Shrimp', icon: 'water' },
+  { slug: 'crabs', label: 'Crabs', icon: 'bug_report' },
+  { slug: 'lobster', label: 'Lobster', icon: 'water' },
+  { slug: 'dried-fish', label: 'Dried Fish', icon: 'wb_sunny' },
+  { slug: 'combos', label: 'Combos', icon: 'inventory_2' },
+]
 
 export default function Cart() {
   const navigate = useNavigate()
@@ -23,12 +33,14 @@ export default function Cart() {
     addItem,
   } = useCart()
   const { addToast } = useToastStore()
+  const user = useAuthStore((s) => s.user)
 
   const [couponCode, setCouponCode] = useState('')
   const [couponLoading, setCouponLoading] = useState(false)
   const [couponError, setCouponError] = useState('')
   const [removedItem, setRemovedItem] = useState(null)
   const [recentOrder, setRecentOrder] = useState(null)
+  const [recommended, setRecommended] = useState([])
 
   useEffect(() => {
     if (items.length === 0) {
@@ -37,6 +49,21 @@ export default function Cart() {
         setRecentOrder(orderId)
         sessionStorage.removeItem('justCompletedOrderId')
       }
+    }
+  }, [items.length])
+
+  // When the basket is empty, pull a few products to help the customer
+  // start shopping again instead of staring at a blank page.
+  useEffect(() => {
+    if (items.length === 0) {
+      getProducts()
+        .then((productsData) => {
+          if (Array.isArray(productsData) && productsData.length > 0) {
+            const featured = productsData.filter((p) => p.isBestSeller)
+            setRecommended((featured.length > 0 ? featured : productsData).slice(0, 4))
+          }
+        })
+        .catch(() => setRecommended([]))
     }
   }, [items.length])
 
@@ -84,40 +111,117 @@ export default function Cart() {
   if (items.length === 0) {
     if (recentOrder) {
       return (
-        <div className="min-h-screen bg-background flex items-center justify-center">
-          <div className="text-center p-8">
-            <div className="w-24 h-24 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-6">
-              <span className="material-symbols-outlined text-success" style={{ fontSize: '48px' }} aria-hidden="true">
-                check_circle
-              </span>
+        <div className="min-h-screen bg-surface-container-low">
+          <div className="container-max py-12">
+            <div className="max-w-lg mx-auto bg-white rounded-[24px] shadow-card p-8 text-center mb-12">
+              <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-5">
+                <span className="material-symbols-outlined text-success" style={{ fontSize: '40px' }} aria-hidden="true">
+                  check_circle
+                </span>
+              </div>
+              <h1 className="text-headline-md text-on-surface mb-2">Order Placed Successfully!</h1>
+              <p className="text-body-md text-on-surface-variant mb-6">
+                Your order has been received and is being prepared for delivery.
+              </p>
+
+              {/* Order ID - copyable, so it never feels "lost" */}
+              <div className="bg-surface-container-low rounded-2xl px-4 py-3 flex items-center justify-between mb-6 border border-outline-variant/40">
+                <div className="text-left">
+                  <p className="text-[10px] uppercase font-bold text-on-surface-variant tracking-wider mb-0.5">Your Order ID</p>
+                  <p className="font-mono font-black text-lg text-primary">{recentOrder}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(recentOrder)
+                    addToast({ message: '📋 Order ID copied!', type: 'success' })
+                  }}
+                  className="text-primary hover:bg-primary/5 p-2 rounded-full transition-colors flex items-center"
+                  title="Copy Order ID"
+                  aria-label="Copy Order ID"
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '20px' }} aria-hidden="true">content_copy</span>
+                </button>
+              </div>
+
+              <div className="flex gap-3">
+                <Button variant="primary" className="flex-1" onClick={() => navigate(`/orders/${recentOrder}`)}>
+                  Track Order
+                </Button>
+                <Button variant="secondary" className="flex-1" onClick={() => navigate('/my-orders')}>
+                  My Orders
+                </Button>
+              </div>
             </div>
-            <h1 className="text-headline-md text-on-surface mb-2">Order Placed Successfully!</h1>
-            <p className="text-body-lg text-on-surface-variant mb-8">
-              Your order has been received and is being prepared. Track your delivery below.
-            </p>
-            <Button variant="primary" onClick={() => navigate(`/orders/${recentOrder}`)}>
-              Track Order
-            </Button>
+
+            {recommended.length > 0 && (
+              <div>
+                <h2 className="text-headline-sm text-on-surface mb-5 text-center">Popular With Your Order</h2>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  {recommended.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )
     }
 
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center p-8">
-          <div className="w-24 h-24 bg-surface-container rounded-full flex items-center justify-center mx-auto mb-6">
-            <span className="material-symbols-outlined text-outline" style={{ fontSize: '48px' }} aria-hidden="true">
-              shopping_cart
-            </span>
+      <div className="min-h-screen bg-surface-container-low">
+        <div className="container-max py-12">
+          <div className="text-center max-w-md mx-auto mb-10">
+            <div className="w-24 h-24 bg-surface-container rounded-full flex items-center justify-center mx-auto mb-6">
+              <span className="material-symbols-outlined text-outline" style={{ fontSize: '48px' }} aria-hidden="true">
+                shopping_cart
+              </span>
+            </div>
+            <h1 className="text-headline-md text-on-surface mb-2">Your Sea Basket is Empty</h1>
+            <p className="text-body-lg text-on-surface-variant mb-8">
+              Dive in and discover today's freshest catches!
+            </p>
+            <div className="flex items-center justify-center gap-3 flex-wrap">
+              <Button variant="primary" size="lg" onClick={() => navigate('/category/fish')}>
+                Shop Now
+              </Button>
+              {user && (
+                <Button variant="secondary" size="lg" onClick={() => navigate('/my-orders')}>
+                  My Orders
+                </Button>
+              )}
+            </div>
           </div>
-          <h1 className="text-headline-md text-on-surface mb-2">Your Sea Basket is Empty</h1>
-          <p className="text-body-lg text-on-surface-variant mb-8">
-            Dive in and discover today's freshest catches!
-          </p>
-          <Button variant="primary" onClick={() => navigate('/category/fish')}>
-            Shop Now
-          </Button>
+
+          {/* Quick category browsing so the page has something to do besides "go back" */}
+          <div className="max-w-3xl mx-auto mb-14">
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+              {QUICK_CATEGORIES.map((cat) => (
+                <Link
+                  key={cat.slug}
+                  to={`/category/${cat.slug}`}
+                  className="flex flex-col items-center gap-2 bg-white rounded-[16px] shadow-card p-4 hover:shadow-md hover:-translate-y-0.5 transition-all"
+                >
+                  <span className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                    <span className="material-symbols-outlined" style={{ fontSize: '20px' }} aria-hidden="true">{cat.icon}</span>
+                  </span>
+                  <span className="text-label-sm font-semibold text-on-surface text-center leading-tight">{cat.label}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Recommended products to nudge the customer toward their first item */}
+          {recommended.length > 0 && (
+            <div>
+              <h2 className="text-headline-sm text-on-surface mb-5 text-center">Today's Popular Catches</h2>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {recommended.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     )
@@ -130,10 +234,19 @@ export default function Cart() {
           <Link to="/" aria-label="Back to home">
             <span className="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors" style={{ fontSize: '24px' }} aria-hidden="true">arrow_back</span>
           </Link>
-          <h1 className="text-display-lg-mobile text-on-surface">
+          <h1 className="text-display-lg-mobile text-on-surface flex-1">
             Your Sea Basket
             <span className="ml-2 text-label-md text-on-surface-variant font-normal">({items.length} {items.length === 1 ? 'item' : 'items'})</span>
           </h1>
+          {user && (
+            <Link
+              to="/my-orders"
+              className="hidden sm:flex items-center gap-1.5 text-label-md font-semibold text-primary hover:underline flex-shrink-0"
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '18px' }} aria-hidden="true">receipt_long</span>
+              My Orders
+            </Link>
+          )}
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">

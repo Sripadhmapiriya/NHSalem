@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useForm, useWatch } from 'react-hook-form'
+import { useForm, useWatch, Controller } from 'react-hook-form'
 import useProductStore from '@/store/productStore'
 import useToastStore from '@/store/toastStore'
 import { AdminPage, AdminCard, AdminBtn } from '@/admin/AdminUI'
@@ -24,6 +24,141 @@ const ALL_BADGES = [
   { type: 'premium', label: 'Premium' },
   { type: 'limited', label: 'LIMITED TIME' },
 ]
+
+const PREDEFINED_PRODUCTS = [
+  { en: "Leather Jacket", ta: "கிளாத்தி" },
+  { en: "Koduvai (Boneless) / Barramundi", ta: "கொடுவா (Boneless)" },
+  { en: "Vanjaram - Round Cut / Seer Fish", ta: "வஞ்சிரம் - ரவுண்ட் கட்" },
+  { en: "Anchovy", ta: "நெத்திலி" },
+  { en: "Grouper", ta: "கலவை" },
+  { en: "Squid Rings", ta: "கணவா" },
+  { en: "Basa Fillet", ta: "பாசா ஃபில்லெட்" },
+  { en: "Sardine", ta: "மத்தி" },
+  { en: "Red Snapper", ta: "சங்கரா" },
+  { en: "Tiger Prawn", ta: "டைகர் இறால்" },
+  { en: "Prawn", ta: "இறால்" },
+  { en: "Crab", ta: "நண்டு" },
+  { en: "Lobster", ta: "லாப்ஸ்டர்" }
+]
+
+const CustomComboBox = ({ label, placeholder, options, value, onChange, error, required }) => {
+  const [open, setOpen] = useState(false)
+  const [inputValue, setInputValue] = useState(value || '')
+  const wrapperRef = useRef(null)
+
+  useEffect(() => {
+    if (value !== inputValue) {
+      setInputValue(value || '')
+    }
+  }, [value])
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const filtered = options.filter(o => o.toLowerCase().includes(inputValue.toLowerCase()))
+
+  return (
+    <div className="relative" ref={wrapperRef}>
+      <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">
+        {label} {required && <span className="text-admin-coral">*</span>}
+      </label>
+      <div className="relative">
+        <input
+          value={inputValue}
+          onChange={(e) => {
+            setInputValue(e.target.value)
+            onChange(e.target.value)
+            setOpen(true)
+          }}
+          onFocus={() => setOpen(true)}
+          placeholder={placeholder}
+          className={`w-full px-3 py-2.5 rounded-[10px] border bg-admin-seafoam text-[13px] text-admin-text focus:outline-none focus:ring-2 focus:ring-admin-navy/10 pr-10 ${error ? 'border-admin-coral' : 'border-admin-border focus:border-admin-navy'}`}
+        />
+        <button type="button" onClick={() => setOpen(!open)} className="absolute right-3 top-1/2 -translate-y-1/2 text-admin-text-sub focus:outline-none flex items-center justify-center">
+          <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>arrow_drop_down</span>
+        </button>
+      </div>
+      {open && filtered.length > 0 && (
+        <div className="absolute z-50 w-full mt-2 bg-white border border-admin-border/50 rounded-[12px] shadow-[0_8px_30px_rgb(0,0,0,0.12)] max-h-60 overflow-y-auto py-2">
+          {filtered.map(opt => (
+            <div
+              key={opt}
+              className="px-4 py-2.5 text-[13px] text-admin-text hover:bg-admin-seafoam hover:text-admin-navy font-medium cursor-pointer transition-colors"
+              onClick={() => {
+                setInputValue(opt)
+                onChange(opt)
+                setOpen(false)
+              }}
+            >
+              {opt}
+            </div>
+          ))}
+        </div>
+      )}
+      {error && <p className="text-[11px] text-admin-coral mt-1.5">{error.message}</p>}
+    </div>
+  )
+}
+
+const CustomSelect = ({ label, options, value, onChange, error, required }) => {
+  const [open, setOpen] = useState(false)
+  const wrapperRef = useRef(null)
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const currentOption = options.find(o => o.value === value)
+
+  return (
+    <div className="relative" ref={wrapperRef}>
+      <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">
+        {label} {required && <span className="text-admin-coral">*</span>}
+      </label>
+      <div 
+        className={`relative w-full px-3 py-2.5 rounded-[10px] border bg-admin-seafoam text-[13px] text-admin-text focus:outline-none focus:ring-2 focus:ring-admin-navy/10 pr-10 cursor-pointer select-none ${error ? 'border-admin-coral' : 'border-admin-border hover:border-admin-navy'}`}
+        onClick={() => setOpen(!open)}
+      >
+        <span className={currentOption ? '' : 'text-admin-text-sub'}>
+          {currentOption ? currentOption.label : 'Select...'}
+        </span>
+        <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-admin-text-sub focus:outline-none flex items-center justify-center">
+          <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>arrow_drop_down</span>
+        </button>
+      </div>
+      {open && (
+        <div className="absolute z-50 w-full mt-2 bg-white border border-admin-border/50 rounded-[12px] shadow-[0_8px_30px_rgb(0,0,0,0.12)] max-h-60 overflow-y-auto py-2">
+          {options.map(opt => (
+            <div
+              key={opt.value}
+              className={`px-4 py-2.5 text-[13px] hover:bg-admin-seafoam hover:text-admin-navy font-medium cursor-pointer transition-colors ${value === opt.value ? 'bg-admin-navy/5 text-admin-navy' : 'text-admin-text'}`}
+              onClick={() => {
+                onChange(opt.value)
+                setOpen(false)
+              }}
+            >
+              {opt.label}
+            </div>
+          ))}
+        </div>
+      )}
+      {error && <p className="text-[11px] text-admin-coral mt-1.5">{error.message}</p>}
+    </div>
+  )
+}
 
 export default function AdminAddEditProduct() {
   const { id } = useParams()
@@ -127,6 +262,17 @@ export default function AdminAddEditProduct() {
   useEffect(() => { setImageError1(false) }, [displayImage1])
   useEffect(() => { setImageError2(false) }, [displayImage2])
 
+  // Auto-fill Tamil name if English name matches predefined list
+  const watchedName = useWatch({ control, name: 'name' })
+  useEffect(() => {
+    if (watchedName) {
+      const match = PREDEFINED_PRODUCTS.find(p => p.en === watchedName)
+      if (match) {
+        setValue('localName', match.ta, { shouldDirty: true })
+      }
+    }
+  }, [watchedName, setValue])
+
   // Re-run setSelectedBadges when existing changes/loads
   useEffect(() => {
     if (existing?.badges) {
@@ -219,42 +365,63 @@ export default function AdminAddEditProduct() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   {/* Name */}
                   <div className="col-span-2">
-                    <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">
-                      Product Name <span className="text-admin-coral">*</span>
-                    </label>
-                    <input
-                      {...register('name', { required: 'Product name is required' })}
-                      placeholder="e.g. Jumbo Tiger Prawns"
-                      className={`w-full px-3 py-2.5 rounded-[10px] border bg-admin-seafoam text-[13px] text-admin-text focus:outline-none focus:ring-2 focus:ring-admin-navy/10 ${errors.name ? 'border-admin-coral' : 'border-admin-border focus:border-admin-navy'}`}
+                    <Controller
+                      name="name"
+                      control={control}
+                      rules={{ required: 'Product name is required' }}
+                      render={({ field }) => (
+                        <CustomComboBox
+                          label="Product Name"
+                          required
+                          placeholder="e.g. Jumbo Tiger Prawns"
+                          options={PREDEFINED_PRODUCTS.map(p => p.en)}
+                          value={field.value}
+                          onChange={field.onChange}
+                          error={errors.name}
+                        />
+                      )}
                     />
-                    {errors.name && <p className="text-[11px] text-admin-coral mt-1">{errors.name.message}</p>}
                   </div>
 
                   {/* Local/Regional Name */}
                   <div className="col-span-2 md:col-span-1">
-                    <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">
-                      Local/Regional Name
-                    </label>
-                    <input
-                      {...register('localName')}
-                      placeholder="e.g. Vanjaram"
-                      className="w-full px-3 py-2.5 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] text-admin-text focus:outline-none focus:border-admin-navy"
+                    <Controller
+                      name="localName"
+                      control={control}
+                      render={({ field }) => (
+                        <CustomComboBox
+                          label="Local/Regional Name"
+                          placeholder="e.g. Vanjaram"
+                          options={PREDEFINED_PRODUCTS.map(p => p.ta)}
+                          value={field.value}
+                          onChange={field.onChange}
+                          error={errors.localName}
+                        />
+                      )}
                     />
                   </div>
 
                   {/* Stock Status */}
                   <div className="col-span-2 md:col-span-1">
-                    <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">
-                      Stock Status <span className="text-admin-coral">*</span>
-                    </label>
-                    <select
-                      {...register('stockStatus', { required: true })}
-                      className="w-full px-3 py-2.5 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] text-admin-text focus:outline-none focus:border-admin-navy"
-                    >
-                      <option value="in_stock">In Stock</option>
-                      <option value="low_stock">Low Stock</option>
-                      <option value="out_of_stock">Out of Stock</option>
-                    </select>
+                    <Controller
+                      name="stockStatus"
+                      control={control}
+                      rules={{ required: 'Stock status is required' }}
+                      render={({ field }) => (
+                        <CustomSelect
+                          label="Stock Status"
+                          required
+                          options={[
+                            { label: 'In Stock', value: 'in_stock' },
+                            { label: 'Low Stock', value: 'low_stock' },
+                            { label: 'Out of Stock', value: 'out_of_stock' }
+                          ]}
+                          value={field.value}
+                          onChange={field.onChange}
+                          error={errors.stockStatus}
+                        />
+                      )}
+                    />
                   </div>
 
                   {/* Tagline */}
@@ -269,17 +436,21 @@ export default function AdminAddEditProduct() {
 
                   {/* Category */}
                   <div>
-                    <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">
-                      Category <span className="text-admin-coral">*</span>
-                    </label>
-                    <select
-                      {...register('category', { required: true })}
-                      className="w-full px-3 py-2.5 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] text-admin-text focus:outline-none focus:border-admin-navy capitalize"
-                    >
-                      {CATEGORIES.map((c) => (
-                        <option key={c} value={c}>{CATEGORY_LABELS[c] || c}</option>
-                      ))}
-                    </select>
+                    <Controller
+                      name="category"
+                      control={control}
+                      rules={{ required: 'Category is required' }}
+                      render={({ field }) => (
+                        <CustomSelect
+                          label="Category"
+                          required
+                          options={CATEGORIES.map(c => ({ label: CATEGORY_LABELS[c] || c, value: c }))}
+                          value={field.value}
+                          onChange={field.onChange}
+                          error={errors.category}
+                        />
+                      )}
+                    />
                   </div>
 
                   {/* Base Price */}
@@ -326,17 +497,7 @@ export default function AdminAddEditProduct() {
                   />
                 </div>
 
-                {/* How to Cook */}
-                <div>
-                  <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">How to Cook</label>
-                  <textarea
-                    {...register('howToCook')}
-                    rows={3}
-                    placeholder="Cooking instructions…"
-                    className="w-full px-3 py-2.5 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] text-admin-text focus:outline-none focus:border-admin-navy resize-none"
-                  />
                 </div>
-              </div>
             </AdminCard>
 
             {/* Product Variants */}

@@ -12,7 +12,7 @@ const AdminProducts     = lazy(() => import('@/pages/admin/Products'))
 const AdminAddEditProduct = lazy(() => import('@/pages/admin/AddEditProduct'))
 const AdminCustomers    = lazy(() => import('@/pages/admin/Customers'))
 const CustomerDetail    = lazy(() => import('@/pages/admin/CustomerDetail'))
-const AdminCategories   = lazy(() => import('@/pages/admin/Categories'))
+
 const AdminPromotions   = lazy(() => import('@/pages/admin/Promotions'))
 const AdminReviews      = lazy(() => import('@/pages/admin/Reviews'))
 const AdminStoreLocator = lazy(() => import('@/pages/admin/StoreLocator'))
@@ -52,7 +52,7 @@ export default function AdminRoutes() {
             <Route path="products"                  element={<AdminProducts />} />
             <Route path="products/new"              element={<AdminAddEditProduct />} />
             <Route path="products/:id/edit"         element={<AdminAddEditProduct />} />
-            <Route path="categories"                element={<AdminCategories />} />
+
             <Route path="customers"                 element={<AdminCustomers />} />
             <Route path="customers/:customerId"        element={<CustomerDetail />} />
             <Route path="promotions"                element={<AdminPromotions />} />

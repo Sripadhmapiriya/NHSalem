@@ -13,11 +13,10 @@ import useCartStore from '@/store/cartStore'
 import useWishlistStore from '@/store/wishlistStore'
 import useToastStore from '@/store/toastStore'
 import useAuthStore from '@/store/authStore'
-import { getProductById, getProducts, checkDelivery } from '@/services/api'
+import { getProductById, getProducts } from '@/services/api'
 
 const PRODUCT_TABS = [
   { id: 'description', label: 'Description', icon: 'article' },
-  { id: 'how-to-cook', label: 'How to Cook', icon: 'soup_kitchen' },
   { id: 'nutrition', label: 'Nutritional Info', icon: 'nutrition' },
   { id: 'reviews', label: 'Reviews', icon: 'star' },
 ]
@@ -31,9 +30,6 @@ export default function ProductDetail() {
   const [activeTab, setActiveTab] = useState('description')
   const [selectedImage, setSelectedImage] = useState(0)
   const [selectedWeight, setSelectedWeight] = useState(0)
-  const [pincode, setPincode] = useState('')
-  const [deliveryResult, setDeliveryResult] = useState(null)
-  const [checkingDelivery, setCheckingDelivery] = useState(false)
   const [certModalOpen, setCertModalOpen] = useState(false)
 
   const { addItem, getItem, updateQuantity, removeItem } = useCartStore()
@@ -45,7 +41,6 @@ export default function ProductDetail() {
     setSelectedImage(0)
     setSelectedWeight(0)
     setActiveTab('description')
-    setDeliveryResult(null)
     Promise.all([
       getProductById(productId),
       getProducts(),
@@ -89,14 +84,6 @@ export default function ProductDetail() {
     })
     addToast({ message: `${product.name} added to cart!`, type: 'success' })
   }, [product, currentWeight, addItem, addToast])
-
-  const handleCheckDelivery = async () => {
-    if (pincode.length !== 6) return
-    setCheckingDelivery(true)
-    const result = await checkDelivery(pincode)
-    setDeliveryResult(result)
-    setCheckingDelivery(false)
-  }
 
   const handleAddPairItem = (item) => {
     const { user, setCartLoginPopupOpen, setPendingAction } = useAuthStore.getState()
@@ -195,9 +182,8 @@ export default function ProductDetail() {
                     onClick={() => setSelectedImage(i)}
                     aria-label={`View image ${i + 1}`}
                     aria-pressed={selectedImage === i}
-                    className={`w-20 h-16 rounded-[12px] overflow-hidden border-2 transition-all ${
-                      selectedImage === i ? 'border-primary' : 'border-transparent hover:border-outline-variant'
-                    }`}
+                    className={`w-20 h-16 rounded-[12px] overflow-hidden border-2 transition-all ${selectedImage === i ? 'border-primary' : 'border-transparent hover:border-outline-variant'
+                      }`}
                   >
                     <img src={img} alt="" className="w-full h-full object-cover" />
                   </button>
@@ -242,11 +228,9 @@ export default function ProductDetail() {
             {product.freshnessScore && (
               <FreshnessScoreCard
                 score={product.freshnessScore}
-                catchTime={product.catchTime}
                 batchFreshness={product.freshnessScore >= 95 ? 'Excellent' : product.freshnessScore >= 88 ? 'Very Good' : 'Good'}
                 metrics={[
                   { icon: 'scale', label: 'Weight Integrity', value: 'Verified' },
-                  { icon: 'water', label: 'Cold Chain', value: '2–4°C' },
                 ]}
               />
             )}
@@ -267,11 +251,10 @@ export default function ProductDetail() {
                       key={w.label}
                       onClick={() => setSelectedWeight(i)}
                       aria-pressed={selectedWeight === i}
-                      className={`px-4 py-2.5 rounded-md border-2 text-label-md font-semibold transition-all flex-shrink-0 ${
-                        selectedWeight === i
+                      className={`px-4 py-2.5 rounded-md border-2 text-label-md font-semibold transition-all flex-shrink-0 ${selectedWeight === i
                           ? 'bg-secondary-container text-on-secondary-container border-secondary-container'
                           : 'bg-white text-on-surface-variant border-outline-variant hover:border-primary'
-                      }`}
+                        }`}
                     >
                       {w.label}
                     </button>
@@ -284,12 +267,7 @@ export default function ProductDetail() {
             <div className="hidden md:flex items-baseline gap-3">
               <p className="text-4xl font-black text-on-surface">₹{currentWeight?.price?.toLocaleString()}</p>
               {currentWeight?.originalPrice && (
-                <>
-                  <p className="text-xl text-outline line-through">₹{currentWeight.originalPrice.toLocaleString()}</p>
-                  <Badge variant="hot" className="whitespace-nowrap">
-                    {Math.round(((currentWeight.originalPrice - currentWeight.price) / currentWeight.originalPrice) * 100)}% OFF
-                  </Badge>
-                </>
+                <p className="text-xl text-outline line-through">₹{currentWeight.originalPrice.toLocaleString()}</p>
               )}
             </div>
 
@@ -358,62 +336,6 @@ export default function ProductDetail() {
                 </button>
               </div>
             </div>
-
-            {/* Delivery check */}
-            <div className="bg-surface-container-low rounded-[16px] p-4">
-              <p className="text-label-md font-semibold text-on-surface mb-3 flex items-center gap-2">
-                <span className="material-symbols-outlined text-success" style={{ fontSize: '18px' }} aria-hidden="true">local_shipping</span>
-                Check Delivery Timelines
-              </p>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={pincode}
-                  onChange={(e) => setPincode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  placeholder="Enter pincode"
-                  maxLength={6}
-                  aria-label="Enter delivery pincode"
-                  className="flex-1 rounded-lg border border-outline-variant bg-white px-4 py-2.5 text-body-md text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/15 outline-none"
-                />
-                <Button
-                  variant="primary"
-                  size="sm"
-                  loading={checkingDelivery}
-                  disabled={pincode.length !== 6}
-                  onClick={handleCheckDelivery}
-                >
-                  Check
-                </Button>
-              </div>
-              <p className="text-xs text-on-surface-variant mt-2 italic">
-                * We deliver within an 8km radius of our store.
-              </p>
-              {deliveryResult && (
-                <motion.div
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className={`mt-3 flex items-start gap-2 text-label-md ${
-                    deliveryResult.available ? 'text-success' : 'text-error'
-                  }`}
-                >
-                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }} aria-hidden="true">
-                    {deliveryResult.available ? 'check_circle' : 'cancel'}
-                  </span>
-                  <div>
-                    <p>{deliveryResult.message}</p>
-                    {deliveryResult.slots && (
-                      <div className="flex flex-wrap gap-1.5 mt-2">
-                        {deliveryResult.slots.map((slot) => (
-                          <span key={slot} className="px-2.5 py-1 bg-success/10 text-success rounded-lg text-label-sm">
-                            {slot}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              )}
-            </div>
           </div>
         </div>
 
@@ -424,18 +346,6 @@ export default function ProductDetail() {
             <TabPanel id="description" activeTab={activeTab}>
               <div className="max-w-3xl text-body-lg text-on-surface-variant leading-relaxed">
                 <p>{product.description}</p>
-              </div>
-            </TabPanel>
-
-            <TabPanel id="how-to-cook" activeTab={activeTab}>
-              <div className="max-w-3xl">
-                <div className="bg-surface-container-low rounded-[20px] p-6 text-body-lg text-on-surface-variant leading-relaxed">
-                  <div className="flex items-center gap-2 text-primary mb-3">
-                    <span className="material-symbols-outlined" style={{ fontSize: '24px' }} aria-hidden="true">soup_kitchen</span>
-                    <p className="text-headline-sm font-semibold text-on-surface">Cooking Guide</p>
-                  </div>
-                  <p>{product.howToCook}</p>
-                </div>
               </div>
             </TabPanel>
 
@@ -468,14 +378,14 @@ export default function ProductDetail() {
                       <div className="text-center flex-shrink-0">
                         <p className="text-5xl font-black text-on-surface">{product.rating}</p>
                         <div className="flex gap-0.5 justify-center mt-1">
-                          {[1,2,3,4,5].map((s) => (
+                          {[1, 2, 3, 4, 5].map((s) => (
                             <span key={s} className={`material-symbols-outlined ${s <= Math.round(product.rating) ? 'filled' : ''} text-secondary-container`} style={{ fontSize: '16px' }} aria-hidden="true">star</span>
                           ))}
                         </div>
                         <p className="text-label-sm text-on-surface-variant mt-1">{product.reviewCount?.toLocaleString()} reviews</p>
                       </div>
                       <div className="flex-1 space-y-1.5">
-                        {[5,4,3,2,1].map((star) => {
+                        {[5, 4, 3, 2, 1].map((star) => {
                           const pct = product.starBreakdown[star] || 0
                           return (
                             <div key={star} className="flex items-center gap-3">
@@ -521,7 +431,7 @@ export default function ProductDetail() {
                             <span className="text-label-sm text-on-surface-variant ml-auto">{review.date}</span>
                           </div>
                           <div className="flex gap-0.5 mt-0.5 mb-2">
-                            {[1,2,3,4,5].map((s) => (
+                            {[1, 2, 3, 4, 5].map((s) => (
                               <span key={s} className={`material-symbols-outlined ${s <= review.rating ? 'filled' : ''} text-secondary-container`} style={{ fontSize: '14px' }} aria-hidden="true">star</span>
                             ))}
                           </div>

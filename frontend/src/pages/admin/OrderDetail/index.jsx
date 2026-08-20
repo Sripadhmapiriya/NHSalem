@@ -38,6 +38,11 @@ const getStepStyles = (done, active) => {
   }
 }
 
+const STAGE_ORDER = ['confirmed', 'packed', 'out_for_delivery', 'delivered']
+
+const formatStageLabel = (key) =>
+  key ? key.split('_').map((w) => w[0].toUpperCase() + w.slice(1)).join(' ') : ''
+
 export default function AdminOrderDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -143,7 +148,7 @@ export default function AdminOrderDetail() {
       <AnimatePresence>
         {cancelModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
@@ -152,10 +157,10 @@ export default function AdminOrderDetail() {
               <div className="p-6">
                 <h3 className="text-xl font-bold text-admin-navy mb-2">Cancel Order</h3>
                 <p className="text-sm text-admin-text-sub mb-6">Are you sure you want to cancel order <strong>{order.id}</strong>? The customer will be notified via email.</p>
-                
+
                 <div className="mb-6">
                   <label className="block text-sm font-semibold text-admin-navy mb-2">Cancellation Reason (Optional)</label>
-                  <textarea 
+                  <textarea
                     value={cancelReason}
                     onChange={(e) => setCancelReason(e.target.value)}
                     placeholder="e.g. Out of stock, Customer requested..."
@@ -285,6 +290,43 @@ export default function AdminOrderDetail() {
                     )
                   })}
                 </div>
+
+                {/* Advance-status action — this was previously missing, so nothing
+                    on this card was ever clickable even though the timeline updated
+                    from the backend correctly. */}
+                {order.status !== 'cancelled' && order.status !== 'delivered' && (
+                  <div className="mt-6 pt-5 border-t border-admin-border/40 flex items-center justify-between gap-4 flex-wrap">
+                    <p className="text-[13px] text-admin-text-sub">
+                      Next step: <span className="font-bold text-admin-navy">
+                        {formatStageLabel(STAGE_ORDER[currentStageIdx + 1])}
+                      </span>
+                    </p>
+                    <AdminBtn
+                      variant="primary"
+                      icon="arrow_forward"
+                      onClick={handleUpdateStatus}
+                      disabled={updating}
+                    >
+                      {updating
+                        ? 'Updating…'
+                        : `Mark as ${formatStageLabel(STAGE_ORDER[currentStageIdx + 1])}`}
+                    </AdminBtn>
+                  </div>
+                )}
+
+                {order.status === 'delivered' && (
+                  <div className="mt-6 pt-5 border-t border-admin-border/40 flex items-center gap-2 text-admin-success">
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>check_circle</span>
+                    <p className="text-[13px] font-bold">This order has been fully delivered.</p>
+                  </div>
+                )}
+
+                {order.status === 'cancelled' && (
+                  <div className="mt-6 pt-5 border-t border-admin-border/40 flex items-center gap-2 text-red-600">
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>cancel</span>
+                    <p className="text-[13px] font-bold">This order was cancelled and cannot be advanced further.</p>
+                  </div>
+                )}
               </div>
             </AdminCard>
           )}

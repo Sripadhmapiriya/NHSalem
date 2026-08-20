@@ -143,11 +143,9 @@ export default function Quality() {
             <h3 className="text-headline-sm text-on-surface text-center mb-4">Live Example</h3>
             <FreshnessScoreCard
               score={94}
-              catchTime="4h ago"
               batchFreshness="Excellent"
               metrics={[
                 { icon: 'scale', label: 'Weight Integrity', value: 'Verified' },
-                { icon: 'water', label: 'Cold Chain', value: '2–4°C' },
               ]}
             />
           </div>

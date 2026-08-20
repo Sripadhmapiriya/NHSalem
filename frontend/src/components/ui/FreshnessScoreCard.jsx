@@ -7,7 +7,6 @@ import ProgressRing from './ProgressRing'
  */
 export default function FreshnessScoreCard({
   score = 94,
-  catchTime = '4h ago',
   batchFreshness = 'Excellent',
   label = 'Freshness Score',
   metrics = [],
@@ -42,7 +41,6 @@ export default function FreshnessScoreCard({
           </h3>
 
           <div className="space-y-2">
-            <FreshnessRow icon="schedule" label="Catch Time" value={catchTime} />
             {metrics.map((m) => (
               <FreshnessRow key={m.label} icon={m.icon || 'verified'} label={m.label} value={m.value} />
             ))}

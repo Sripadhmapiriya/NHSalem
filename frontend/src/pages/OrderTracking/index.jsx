@@ -17,7 +17,7 @@ export default function OrderTracking() {
   useEffect(() => {
     let idToFetch = orderId
     if (!idToFetch && user) {
-       idToFetch = 'NHS-77421' // Simulate fetching the latest order for the logged-in user
+      idToFetch = 'NHS-77421' // Simulate fetching the latest order for the logged-in user
     }
 
     if (idToFetch) {
@@ -54,7 +54,7 @@ export default function OrderTracking() {
                 onChange={(e) => setInputOrderId(e.target.value)}
                 className="w-full px-5 py-3 border border-outline-variant rounded-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-center font-mono font-semibold"
               />
-              <button 
+              <button
                 onClick={() => { if (inputOrderId) navigate(`/track-order/${inputOrderId}`) }}
                 className="w-full px-6 py-3 bg-primary text-white rounded-md font-bold hover:bg-primary/90 transition-colors"
               >
@@ -111,22 +111,22 @@ export default function OrderTracking() {
         <div className="bg-gradient-to-r from-[#000516] via-[#0b1e3d] to-[#122b54] rounded-[28px] p-6 mb-8 shadow-card border border-white/10 flex flex-col sm:flex-row items-center gap-5 relative overflow-hidden">
           {/* Subtle glowing halo in the background */}
           <div className="absolute -right-16 -top-16 w-48 h-48 bg-primary-container/30 rounded-full blur-3xl pointer-events-none" />
-          
+
           <div className="relative">
             <div className="w-14 h-14 bg-secondary-container/20 rounded-2xl flex items-center justify-center flex-shrink-0 relative overflow-hidden border border-secondary-container/30">
               {/* Pulsing ring behind the shipping icon */}
               <span className="absolute inset-0 rounded-2xl bg-secondary-container/10 animate-pulse" />
-              <motion.span 
-                animate={{ 
+              <motion.span
+                animate={{
                   x: [-2, 2, -2],
-                  y: [0, -2, 0] 
+                  y: [0, -2, 0]
                 }}
-                transition={{ 
-                  repeat: Infinity, 
-                  duration: 2.5, 
-                  ease: 'easeInOut' 
+                transition={{
+                  repeat: Infinity,
+                  duration: 2.5,
+                  ease: 'easeInOut'
                 }}
-                className="material-symbols-outlined text-secondary-container flex items-center justify-center" 
+                className="material-symbols-outlined text-secondary-container flex items-center justify-center"
                 style={{ fontSize: '28px' }}
                 aria-hidden="true"
               >
@@ -160,8 +160,8 @@ export default function OrderTracking() {
           <div className="flex items-start justify-between relative pt-2">
             {/* Connector lines behind circles */}
             <div className="absolute top-7 left-12 right-12 h-[3px] bg-surface-container-high -z-10 rounded-full" />
-            <div 
-              className="absolute top-7 left-12 h-[3px] bg-success transition-all duration-500 -z-10 rounded-full" 
+            <div
+              className="absolute top-7 left-12 h-[3px] bg-success transition-all duration-500 -z-10 rounded-full"
               style={{ width: `${(currentStageIndex / (order.stages.length - 1)) * 74 + 3}%` }}
             />
 
@@ -177,13 +177,12 @@ export default function OrderTracking() {
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ delay: i * 0.1 }}
-                    className={`w-11 h-11 rounded-full flex items-center justify-center relative shadow-sm border transition-all ${
-                      completed 
-                        ? 'bg-success border-success text-white' 
-                        : active 
-                          ? 'bg-primary border-primary text-white ring-4 ring-primary/20' 
+                    className={`w-11 h-11 rounded-full flex items-center justify-center relative shadow-sm border transition-all ${completed
+                        ? 'bg-success border-success text-white'
+                        : active
+                          ? 'bg-primary border-primary text-white ring-4 ring-primary/20'
                           : 'bg-white border-outline-variant/50 text-outline'
-                    }`}
+                      }`}
                   >
                     {active && (
                       <span className="absolute inset-0 rounded-full bg-primary/20 animate-ping -z-10" />
@@ -233,13 +232,12 @@ export default function OrderTracking() {
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ delay: i * 0.1 }}
-                      className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 relative shadow-sm border transition-all ${
-                        completed 
-                          ? 'bg-success border-success text-white' 
-                          : active 
-                            ? 'bg-primary border-primary text-white ring-4 ring-primary/20' 
+                      className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 relative shadow-sm border transition-all ${completed
+                          ? 'bg-success border-success text-white'
+                          : active
+                            ? 'bg-primary border-primary text-white ring-4 ring-primary/20'
                             : 'bg-white border-outline-variant/50 text-outline'
-                      }`}
+                        }`}
                     >
                       {active && (
                         <span className="absolute inset-0 rounded-full bg-primary/20 animate-ping -z-10" />
@@ -288,10 +286,9 @@ export default function OrderTracking() {
           {/* Freshness Score */}
           <FreshnessScoreCard
             score={order.freshnessScore}
-            catchTime={order.catchTime}
             batchFreshness={order.freshnessScore >= 95 ? 'Excellent' : 'Very Good'}
             metrics={[
-              { icon: 'thermostat', label: 'Pack Temp', value: '2°C' },
+              { icon: 'ac_unit', label: 'Pack Temp', value: 'Frozen -18°C' },
               { icon: 'verified', label: 'QC Status', value: 'Passed' },
             ]}
           />

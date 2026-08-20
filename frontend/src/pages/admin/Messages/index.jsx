@@ -7,10 +7,10 @@ import { getAdminMessages, updateAdminMessageStatus, deleteAdminMessage, getWhat
 
 export default function AdminMessages() {
   const { addToast } = useToastStore()
-  
+
   // Tabs: 'web' | 'whatsapp'
   const [activeTab, setActiveTab] = useState('whatsapp')
-  
+
   // --- Web Messages State ---
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(true)
@@ -55,7 +55,7 @@ export default function AdminMessages() {
     try {
       await updateAdminMessageStatus(id, status)
       setMessages(prev => prev.map(m => m.id === id ? { ...m, status } : m))
-      addToast({ message: `Message marked as ${status}`, type: 'success' })
+      addToast({ message: `Message marked as \${status}`, type: 'success' })
     } catch (err) {
       addToast({ message: 'Failed to update status', type: 'error' })
     }
@@ -95,7 +95,7 @@ export default function AdminMessages() {
   const handleSendWaReply = async (e) => {
     e.preventDefault()
     if (!replyText.trim() || !activeWaPhone) return
-    
+
     setSendingReply(true)
     try {
       const sent = await sendWhatsappMessage(activeWaPhone, replyText)
@@ -114,7 +114,7 @@ export default function AdminMessages() {
     acc[m.customer_phone].push(m)
     return acc
   }, {})
-  
+
   // Sort conversations by latest message
   const sortedWaPhones = Object.keys(waConversations).sort((a, b) => {
     const latestA = new Date(waConversations[a][0].created_at).getTime()
@@ -131,18 +131,18 @@ export default function AdminMessages() {
           <h1 className="text-2xl font-bold text-admin-navy">Messages</h1>
           <p className="text-sm text-admin-text-sub mt-1">Manage customer inquiries</p>
         </div>
-        
+
         {/* Tab Switcher */}
         <div className="flex bg-white rounded-[10px] p-1 border border-admin-border/60 shadow-sm self-start">
           <button
             onClick={() => setActiveTab('whatsapp')}
-            className={`px-4 py-2 rounded-[8px] text-sm font-bold transition-all ${activeTab === 'whatsapp' ? 'bg-admin-seafoam text-admin-navy shadow-[0_2px_8px_rgba(0,0,0,0.04)]' : 'text-admin-text-sub hover:text-admin-navy'}`}
+            className={`px-4 py-2 rounded-[8px] text-sm font-bold transition-all \${activeTab === 'whatsapp' ? 'bg-admin-seafoam text-admin-navy shadow-[0_2px_8px_rgba(0,0,0,0.04)]' : 'text-admin-text-sub hover:text-admin-navy'}`}
           >
             WhatsApp
           </button>
           <button
             onClick={() => setActiveTab('web')}
-            className={`px-4 py-2 rounded-[8px] text-sm font-bold transition-all ${activeTab === 'web' ? 'bg-admin-seafoam text-admin-navy shadow-[0_2px_8px_rgba(0,0,0,0.04)]' : 'text-admin-text-sub hover:text-admin-navy'}`}
+            className={`px-4 py-2 rounded-[8px] text-sm font-bold transition-all \${activeTab === 'web' ? 'bg-admin-seafoam text-admin-navy shadow-[0_2px_8px_rgba(0,0,0,0.04)]' : 'text-admin-text-sub hover:text-admin-navy'}`}
           >
             Web Inquiries
           </button>
@@ -150,7 +150,7 @@ export default function AdminMessages() {
       </div>
 
       {activeTab === 'web' && (
-        <AdminCard subtitle={`${filtered.length} message${filtered.length !== 1 ? 's' : ''}`}>
+        <AdminCard subtitle={`\${filtered.length} message\${filtered.length !== 1 ? 's' : ''}`}>
           <div className="flex gap-1.5 flex-wrap px-5 pt-4 pb-2 border-b border-admin-border/40">
             {['all', 'unread', 'read', 'archived'].map((status) => {
               const count = status === 'all' ? messages.length : messages.filter(m => m.status === status).length
@@ -158,14 +158,14 @@ export default function AdminMessages() {
                 <button
                   key={status}
                   onClick={() => setStatusFilter(status)}
-                  className={`px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ${
+                  className={`px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all \${
                     statusFilter === status
                       ? 'bg-admin-navy border-admin-navy text-white shadow-sm'
                       : 'bg-white border-admin-border text-admin-text-sub hover:border-admin-navy/40'
                   }`}
                 >
                   <span className="capitalize">{status}</span>
-                  <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[9px] ${statusFilter === status ? 'bg-white/20 text-white' : 'bg-admin-seafoam text-admin-text'}`}>{count}</span>
+                  <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[9px] \${statusFilter === status ? 'bg-white/20 text-white' : 'bg-admin-seafoam text-admin-text'}`}>{count}</span>
                 </button>
               )
             })}
@@ -207,7 +207,7 @@ export default function AdminMessages() {
 
       {activeTab === 'whatsapp' && (
         <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] h-[calc(100vh-200px)] min-h-[500px] bg-white rounded-[16px] border border-admin-border/60 shadow-[0_2px_12px_rgba(11,30,61,0.06)] overflow-hidden">
-          
+
           {/* WA Sidebar (Conversations List) */}
           <div className="border-r border-admin-border/60 flex flex-col h-full bg-admin-seafoam/20">
             <div className="p-4 border-b border-admin-border/60 bg-white">
@@ -223,14 +223,14 @@ export default function AdminMessages() {
                   const msgs = waConversations[phone]
                   const latest = msgs[0]
                   return (
-                    <div 
-                      key={phone} 
+                    <div
+                      key={phone}
                       onClick={() => setActiveWaPhone(phone)}
-                      className={`p-4 border-b border-admin-border/40 cursor-pointer transition-colors ${activeWaPhone === phone ? 'bg-admin-seafoam' : 'hover:bg-admin-seafoam/50'}`}
+                      className={`p-4 border-b border-admin-border/40 cursor-pointer transition-colors \${activeWaPhone === phone ? 'bg-admin-seafoam' : 'hover:bg-admin-seafoam/50'}`}
                     >
                       <div className="flex justify-between items-center mb-1">
                         <span className="font-bold text-[13px] text-admin-navy">{phone}</span>
-                        <span className="text-[10px] text-admin-text-sub">{new Date(latest.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                        <span className="text-[10px] text-admin-text-sub">{new Date(latest.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                       </div>
                       <p className="text-[12px] text-admin-text-sub truncate">{latest.direction === 'outbound' ? 'You: ' : ''}{latest.message_text}</p>
                     </div>
@@ -261,12 +261,12 @@ export default function AdminMessages() {
                   {activeConversation?.map(m => {
                     const isOutbound = m.direction === 'outbound'
                     return (
-                      <div key={m.id} className={`flex flex-col max-w-[75%] ${isOutbound ? 'self-end' : 'self-start'}`}>
-                        <div className={`p-3 rounded-2xl shadow-sm text-[13px] ${isOutbound ? 'bg-[#D9FDD3] rounded-tr-none text-black' : 'bg-white rounded-tl-none text-black border border-admin-border/50'}`}>
+                      <div key={m.id} className={`flex flex-col max-w-[75%] \${isOutbound ? 'self-end' : 'self-start'}`}>
+                        <div className={`p-3 rounded-2xl shadow-sm text-[13px] \${isOutbound ? 'bg-[#D9FDD3] rounded-tr-none text-black' : 'bg-white rounded-tl-none text-black border border-admin-border/50'}`}>
                           {m.message_text}
                         </div>
-                        <span className={`text-[10px] text-admin-text-sub mt-1 ${isOutbound ? 'text-right' : 'text-left'}`}>
-                          {new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        <span className={`text-[10px] text-admin-text-sub mt-1 \${isOutbound ? 'text-right' : 'text-left'}`}>
+                          {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
                     )
@@ -275,16 +275,16 @@ export default function AdminMessages() {
 
                 <div className="p-4 bg-[#F0F2F5] border-t border-admin-border/60">
                   <form onSubmit={handleSendWaReply} className="flex gap-2">
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={replyText}
                       onChange={(e) => setReplyText(e.target.value)}
-                      placeholder="Type a message..." 
+                      placeholder="Type a message..."
                       className="flex-1 px-4 py-2.5 rounded-full border border-admin-border focus:outline-none focus:border-[#25D366] focus:ring-1 focus:ring-[#25D366]/50 text-[13px]"
                       disabled={sendingReply}
                     />
-                    <button 
-                      type="submit" 
+                    <button
+                      type="submit"
                       disabled={!replyText.trim() || sendingReply}
                       className="w-10 h-10 rounded-full bg-[#25D366] text-white flex items-center justify-center disabled:opacity-50 hover:bg-[#20bd5a] transition-colors"
                     >
