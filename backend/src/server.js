@@ -24,6 +24,7 @@ import wishlistsRoutes from './routes/wishlists.routes.js'
 import contactRoutes from './routes/contact.routes.js'
 import categoriesRoutes from './routes/categories.routes.js'
 import whatsappRoutes from './routes/whatsapp.routes.js'
+import settingsRoutes from './routes/settings.routes.js'
 
 import pool from './db/pool.js'
 
@@ -192,6 +193,7 @@ app.use('/api', wishlistsRoutes)           // handles /api/wishlist
 app.use('/api', contactRoutes)             // handles /api/contact and /api/admin/messages
 app.use('/api/categories', categoriesRoutes) // handles /api/categories
 app.use('/api/whatsapp', whatsappRoutes)     // handles /api/whatsapp webhook and messages
+app.use('/api/settings', settingsRoutes)     // handles /api/settings and /api/admin/settings
 app.use('/api/admin/reviews', productRoutes)
 
 // 3. Centralized error handling
@@ -212,6 +214,7 @@ async function verifyDatabase(pool) {
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expiry BIGINT`)
     await pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255)`)
     await pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS reset_token_expiry BIGINT`)
+    await pool.query(`ALTER TABLE promotions ADD COLUMN IF NOT EXISTS show_on_ui BOOLEAN NOT NULL DEFAULT false`)
     
     // Ensure wishlists table exists
     await pool.query(`
@@ -281,6 +284,13 @@ async function verifyDatabase(pool) {
       )
     `)
 
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS site_settings (
+        key VARCHAR(100) PRIMARY KEY,
+        value JSONB NOT NULL
+      )
+    `)
+
     // Unique constraints — ignore errors if they already exist
     try {
       await pool.query(`ALTER TABLE users ADD CONSTRAINT users_email_unique UNIQUE (email)`)
@@ -326,3 +336,4 @@ app.listen(PORT, async () => {
     process.exit(0)
   })
 })
+// End of server.js

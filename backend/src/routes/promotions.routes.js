@@ -17,7 +17,8 @@ const promotionSchema = z.object({
   start_date: z.string().optional().nullable(),
   expires_at: z.string().optional().nullable(),
   usage_limit: z.number().int().optional().nullable(),
-  applicable_product_ids: z.array(z.string()).optional().default([])
+  applicable_product_ids: z.array(z.string()).optional().default([]),
+  show_on_ui: z.boolean().optional().default(false)
 })
 
 function formatPromo(p) {
@@ -33,7 +34,8 @@ function formatPromo(p) {
     limit: p.usage_limit,
     startDate: p.start_date ? new Date(p.start_date).toISOString().split('T')[0] : null,
     expiresAt: p.expires_at ? new Date(p.expires_at).toISOString().split('T')[0] : null,
-    applicableProductIds: p.applicable_product_ids
+    applicableProductIds: p.applicable_product_ids,
+    showOnUi: p.show_on_ui
   }
 }
 
@@ -111,8 +113,8 @@ router.post('/admin/promotions', requireAdmin, asyncHandler(async (req, res) => 
   }
 
   const result = await pool.query(
-    `INSERT INTO promotions (code, type, discount_value, min_order, description, status, start_date, expires_at, usage_limit, applicable_product_ids)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+    `INSERT INTO promotions (code, type, discount_value, min_order, description, status, start_date, expires_at, usage_limit, applicable_product_ids, show_on_ui)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
      RETURNING *`,
     [
       body.code,
@@ -124,7 +126,8 @@ router.post('/admin/promotions', requireAdmin, asyncHandler(async (req, res) => 
       body.start_date ? new Date(body.start_date) : null,
       body.expires_at ? new Date(body.expires_at) : null,
       body.usage_limit,
-      JSON.stringify(body.applicable_product_ids)
+      JSON.stringify(body.applicable_product_ids),
+      body.show_on_ui
     ]
   )
 
@@ -161,8 +164,8 @@ router.put('/admin/promotions/:id', requireAdmin, asyncHandler(async (req, res) 
 
   const result = await pool.query(
     `UPDATE promotions SET
-      code = $1, type = $2, discount_value = $3, min_order = $4, description = $5, status = $6, start_date = $7, expires_at = $8, usage_limit = $9, applicable_product_ids = $10
-     WHERE id = $11
+      code = $1, type = $2, discount_value = $3, min_order = $4, description = $5, status = $6, start_date = $7, expires_at = $8, usage_limit = $9, applicable_product_ids = $10, show_on_ui = $11
+     WHERE id = $12
      RETURNING *`,
     [
       body.code,
@@ -175,6 +178,7 @@ router.put('/admin/promotions/:id', requireAdmin, asyncHandler(async (req, res) 
       body.expires_at ? new Date(body.expires_at) : null,
       body.usage_limit,
       JSON.stringify(body.applicable_product_ids),
+      body.show_on_ui,
       id
     ]
   )

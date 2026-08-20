@@ -12,6 +12,7 @@ import { getProducts, getApprovedSiteReviews, submitSiteReview, subscribeNewslet
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { PromoBanner } from '@/components/ui'
 
 // 6 Core Trust Pillars
 const TRUST_POINTS = [
@@ -177,6 +178,7 @@ export default function Home() {
 
   return (
     <div className="bg-slate-50/50 min-h-screen">
+      <PromoBanner />
       {/* ── 1. Hero Carousel (#hero) ────────────────────────────────────────────── */}
       <section id="hero" className="grid grid-cols-1 grid-rows-1 w-full overflow-hidden bg-[#000516]">
         <AnimatePresence mode="wait">

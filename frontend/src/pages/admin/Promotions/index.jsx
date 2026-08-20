@@ -81,6 +81,8 @@ export default function AdminPromotions() {
       p.description.toLowerCase().includes(search.toLowerCase())
   )
 
+  const activePromotions = promotions.filter(p => p.status === 'active')
+
   // ── Pause / Resume handler ──────────────────────────────────────────────────
   const handleToggleStatus = async (promoId) => {
     const promo = promotions.find((p) => p.id === promoId)
@@ -96,14 +98,49 @@ export default function AdminPromotions() {
         min_order: promo.minOrder,
         description: promo.description,
         status: nextStatus,
+        start_date: promo.startDate || null,
         expires_at: promo.expiresAt || null,
         usage_limit: promo.limit || null,
-        applicable_product_ids: promo.applicableProductIds || []
+        applicable_product_ids: promo.applicableProductIds || [],
+        show_on_ui: promo.showOnUi || false
       })
       setPromotions((prev) => prev.map((p) => (p.id === promoId ? updated : p)))
       addToast({ message: `Coupon status updated to ${nextStatus}.`, type: 'success' })
     } catch (err) {
       addToast({ message: err.message || 'Failed to update coupon status', type: 'error' })
+    } finally {
+      setActionLoadingId(null)
+    }
+  }
+
+  // ── Show on UI handler ──────────────────────────────────────────────────────
+  const handleToggleShowOnUi = async (promoId, currentVal) => {
+    const promo = promotions.find((p) => p.id === promoId)
+    if (!promo) return
+
+    setActionLoadingId(`ui-${promoId}`)
+    try {
+      console.log('Sending update for promo:', promoId, 'with show_on_ui:', !currentVal)
+      const updated = await updateAdminPromotion(promoId, {
+        code: promo.code,
+        type: promo.type,
+        discount_value: promo.value,
+        min_order: promo.minOrder,
+        description: promo.description,
+        status: promo.status,
+        start_date: promo.startDate || null,
+        expires_at: promo.expiresAt || null,
+        usage_limit: promo.limit || null,
+        applicable_product_ids: promo.applicableProductIds || [],
+        show_on_ui: !currentVal
+      })
+      console.log('Update successful:', updated)
+      setPromotions((prev) => prev.map((p) => (p.id === promoId ? updated : p)))
+      addToast({ message: `Coupon visibility updated.`, type: 'success' })
+    } catch (err) {
+      console.error('Toggle failed:', err)
+      alert('Error updating toggle: ' + err.message)
+      addToast({ message: err.message || 'Failed to update visibility', type: 'error' })
     } finally {
       setActionLoadingId(null)
     }
@@ -183,7 +220,8 @@ export default function AdminPromotions() {
       start_date: formStartDate || null,
       expires_at: formExpires || null,
       usage_limit: formLimit ? Number(formLimit) : null,
-      applicable_product_ids: formProducts
+      applicable_product_ids: formProducts,
+      show_on_ui: editingPromo ? editingPromo.showOnUi : false
     }
 
     try {
@@ -394,7 +432,7 @@ export default function AdminPromotions() {
         {loading ? (
           <SeafoodLoader text="Loading promotions..." className="py-8" />
         ) : (
-          <AdminTable headers={['Code', 'Type', 'Value', 'Min. Order', 'Uses', 'Status', 'Expires', 'Actions']}>
+          <AdminTable headers={['Code', 'Type', 'Value', 'Min. Order', 'Uses', 'Status', 'Expires', 'Show on UI', 'Actions']}>
             {filtered.map((p) => (
               <Tr key={p.id}>
                 <Td>
@@ -420,6 +458,17 @@ export default function AdminPromotions() {
                 </Td>
                 <Td><StatusBadge status={p.status} /></Td>
                 <Td>{p.expiresAt ? formatDate(p.expiresAt) : <span className="text-admin-text-sub">—</span>}</Td>
+                <Td>
+                  <label className={`relative inline-flex items-center cursor-pointer ${actionLoadingId === `ui-${p.id}` ? 'opacity-50 pointer-events-none' : ''}`}>
+                    <input 
+                      type="checkbox" 
+                      className="sr-only peer" 
+                      checked={!!p.showOnUi}
+                      onChange={() => handleToggleShowOnUi(p.id, !!p.showOnUi)}
+                    />
+                    <div className="w-9 h-5 bg-gray-300 rounded-full peer peer-focus:ring-2 peer-focus:ring-admin-navy/20 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-admin-navy"></div>
+                  </label>
+                </Td>
                 <Td>
                   <div className="flex gap-1">
                     <AdminBtn size="sm" variant="secondary" icon="edit" onClick={() => handleEditClick(p)}>

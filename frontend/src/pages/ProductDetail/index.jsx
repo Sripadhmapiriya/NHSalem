@@ -17,7 +17,6 @@ import { getProductById, getProducts } from '@/services/api'
 
 const PRODUCT_TABS = [
   { id: 'description', label: 'Description', icon: 'article' },
-  { id: 'nutrition', label: 'Nutritional Info', icon: 'nutrition' },
   { id: 'reviews', label: 'Reviews', icon: 'star' },
 ]
 
@@ -346,26 +345,6 @@ export default function ProductDetail() {
             <TabPanel id="description" activeTab={activeTab}>
               <div className="max-w-3xl text-body-lg text-on-surface-variant leading-relaxed">
                 <p>{product.description}</p>
-              </div>
-            </TabPanel>
-
-            <TabPanel id="nutrition" activeTab={activeTab}>
-              <div className="max-w-md">
-                {product.nutritionPer100g ? (
-                  <div className="bg-white rounded-[20px] shadow-card p-6">
-                    <p className="text-headline-sm font-semibold text-on-surface mb-4">Nutrition per 100g</p>
-                    <div className="space-y-3">
-                      {Object.entries(product.nutritionPer100g).map(([k, v]) => (
-                        <div key={k} className="flex justify-between border-b border-outline-variant/30 pb-2">
-                          <span className="text-body-md text-on-surface-variant capitalize">{k}</span>
-                          <span className="text-label-md font-semibold text-on-surface">{v}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-body-lg text-on-surface-variant">Nutritional information coming soon.</p>
-                )}
               </div>
             </TabPanel>
 

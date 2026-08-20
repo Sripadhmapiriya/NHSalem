@@ -2,6 +2,7 @@ import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useRef, useEffect, Suspense } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import useAdminAuthStore from '@/store/adminAuthStore'
+import { ToastContainer } from '@/components/ui'
 
 const NAV_ITEMS = [
   { to: '/admin/dashboard',      icon: 'space_dashboard',   label: 'Dashboard' },
@@ -203,6 +204,9 @@ export default function AdminLayout() {
           </Suspense>
         </main>
       </div>
+
+      {/* Toast notifications for Admin Panel */}
+      <ToastContainer />
     </div>
   )
 }

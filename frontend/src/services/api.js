@@ -143,6 +143,11 @@ export async function validateCoupon(code, orderTotal) {
   return handleResponse(response)
 }
 
+export async function getPublicPromoSettings() {
+  const response = await fetch(`${API_URL}/api/settings/promotions`)
+  return handleResponse(response)
+}
+
 // ── B2B ───────────────────────────────────────────────────────────────────────
 
 export async function submitBulkInquiry(data) {

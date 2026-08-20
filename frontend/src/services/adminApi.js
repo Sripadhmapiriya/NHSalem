@@ -215,6 +215,22 @@ export async function deleteAdminPromotion(id) {
   return handleResponse(response)
 }
 
+export async function getAdminPromoSettings() {
+  const response = await fetch(`${API_URL}/api/settings/admin/promotions`, {
+    headers: getHeaders(true)
+  })
+  return handleResponse(response)
+}
+
+export async function updateAdminPromoSettings(settings) {
+  const response = await fetch(`${API_URL}/api/settings/admin/promotions`, {
+    method: 'POST',
+    headers: getHeaders(true),
+    body: JSON.stringify(settings)
+  })
+  return handleResponse(response)
+}
+
 
 // ── Admin Orders ──────────────────────────────────────────────────────────────
 

@@ -15,9 +15,7 @@ const useAuthStore = create((set, get) => ({
 
   setUser: (user, token) => {
     try {
-      localStorage.removeItem('nh-salem-cart-v2')
-      localStorage.removeItem('nh-salem-cart') 
-      useCartStore.getState().clearCart()
+      // We do NOT clear the cart on login/reload anymore to preserve guest carts
       
       // Explicitly persist to localStorage
       localStorage.setItem('nh-salem-token', token)

@@ -3,11 +3,12 @@ import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import Button from '@/components/ui/Button'
 import ProductCard from '@/components/ui/ProductCard'
+import PromoBanner from '@/components/ui/PromoBanner'
 import { QuantityStepper } from '@/components/ui/Stepper'
 import useCart, { useCartStore } from '@/store/cartStore'
 import useToastStore from '@/store/toastStore'
 import useAuthStore from '@/store/authStore'
-import { validateCoupon, getProducts } from '@/services/api'
+import { validateCoupon, getProducts, getPublicPromoSettings } from '@/services/api'
 
 const QUICK_CATEGORIES = [
   { slug: 'fish', label: 'Fish', icon: 'set_meal' },
@@ -38,6 +39,7 @@ export default function Cart() {
   const [couponCode, setCouponCode] = useState('')
   const [couponLoading, setCouponLoading] = useState(false)
   const [couponError, setCouponError] = useState('')
+  const [showCouponInput, setShowCouponInput] = useState(true)
   const [removedItem, setRemovedItem] = useState(null)
   const [recentOrder, setRecentOrder] = useState(null)
   const [recommended, setRecommended] = useState([])
@@ -66,6 +68,17 @@ export default function Cart() {
         .catch(() => setRecommended([]))
     }
   }, [items.length])
+
+  // Check if coupon input should be visible based on master toggle
+  useEffect(() => {
+    getPublicPromoSettings()
+      .then((res) => {
+        if (res.success && res.banner) {
+          setShowCouponInput(res.banner.enabled)
+        }
+      })
+      .catch((err) => console.error('Failed to load promo settings for cart', err))
+  }, [])
 
   const handleRemove = (item) => {
     setRemovedItem({ ...item })
@@ -228,8 +241,9 @@ export default function Cart() {
   }
 
   return (
-    <div className="min-h-screen bg-surface-container-low py-8">
-      <div className="container-max">
+    <div className="min-h-screen bg-surface-container-low">
+      <PromoBanner />
+      <div className="container-max py-8">
         <div className="flex items-center gap-3 mb-8">
           <Link to="/" aria-label="Back to home">
             <span className="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors" style={{ fontSize: '24px' }} aria-hidden="true">arrow_back</span>
@@ -306,13 +320,14 @@ export default function Cart() {
 
           {/* Order Summary */}
           <div className="space-y-4">
-            {/* Coupon */}
-            <div className="bg-white rounded-[20px] shadow-card p-5">
-              <h2 className="text-label-md font-semibold text-on-surface mb-3 flex items-center gap-2">
-                <span className="material-symbols-outlined text-secondary" style={{ fontSize: '20px' }} aria-hidden="true">sell</span>
-                Apply Coupon
-              </h2>
-              {coupon ? (
+            {/* Coupon (Hidden if master toggle is OFF) */}
+            {showCouponInput && (
+              <div className="bg-white rounded-[20px] shadow-card p-5">
+                <h2 className="text-label-md font-semibold text-on-surface mb-3 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-secondary" style={{ fontSize: '20px' }} aria-hidden="true">sell</span>
+                  Apply Coupon
+                </h2>
+                {coupon ? (
                 <div className="flex items-center justify-between bg-success/10 rounded-[12px] px-4 py-3">
                   <div>
                     <p className="text-label-md font-semibold text-success">{coupon.code}</p>
@@ -351,10 +366,10 @@ export default function Cart() {
                   {couponError && (
                     <p role="alert" className="text-label-sm text-error pl-2">{couponError}</p>
                   )}
-                  <p className="text-label-sm text-on-surface-variant">Try: WELCOME200, FISH20, NHSALEM10</p>
                 </div>
               )}
             </div>
+            )}
 
             {/* Price breakdown */}
             <div className="bg-white rounded-[20px] shadow-card p-5">
