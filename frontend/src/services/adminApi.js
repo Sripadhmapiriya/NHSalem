@@ -101,6 +101,24 @@ export async function verifyAdminSession(token) {
   }
 }
 
+export async function adminForgotPassword(email) {
+  const response = await fetch(`${API_URL}/api/admin/auth/forgot-password`, {
+    method: 'POST',
+    headers: getHeaders(false),
+    body: JSON.stringify({ email })
+  })
+  return handleResponse(response).catch((err) => ({ success: false, message: err.message }))
+}
+
+export async function adminResetPassword(email, otp, newPassword) {
+  const response = await fetch(`${API_URL}/api/admin/auth/reset-password`, {
+    method: 'POST',
+    headers: getHeaders(false),
+    body: JSON.stringify({ email, otp, newPassword })
+  })
+  return handleResponse(response).catch((err) => ({ success: false, message: err.message }))
+}
+
 // ── Admin Dashboard Statistics ────────────────────────────────────────────────
 
 export async function uploadAdminImage(file) {

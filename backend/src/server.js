@@ -210,6 +210,8 @@ async function verifyDatabase(pool) {
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS status VARCHAR(50) NOT NULL DEFAULT 'active'`)
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255)`)
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expiry BIGINT`)
+    await pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255)`)
+    await pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS reset_token_expiry BIGINT`)
     
     // Ensure wishlists table exists
     await pool.query(`
@@ -264,6 +266,18 @@ async function verifyDatabase(pool) {
         state        VARCHAR(100),
         is_default   BOOLEAN DEFAULT FALSE,
         created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `)
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS whatsapp_messages (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        customer_phone VARCHAR(20) NOT NULL,
+        message_text TEXT NOT NULL,
+        direction VARCHAR(10) NOT NULL,
+        status VARCHAR(20) DEFAULT 'sent',
+        timestamp BIGINT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `)
 

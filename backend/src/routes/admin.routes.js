@@ -11,6 +11,8 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import multer from 'multer'
 import cloudinary from '../utils/cloudinary.js'
+import { sendMail } from '../utils/mailer.js'
+import { passwordResetCustomer } from '../utils/emailTemplates.js'
 
 // Ensure uploads directory exists to prevent multer 500 errors
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -540,6 +542,65 @@ router.get('/customers/:id', requireAdmin, asyncHandler(async (req, res) => {
       detail: err.message 
     })
   }
+}))
+
+// Password Reset Flow
+router.post('/auth/forgot-password', asyncHandler(async (req, res) => {
+  const { email } = req.body
+  if (!email) return res.status(400).json({ success: false, message: 'Email is required' })
+
+  const finalEmail = email.toLowerCase().trim()
+  const result = await pool.query('SELECT id, name, email FROM admins WHERE email = $1', [finalEmail])
+  const admin = result.rows[0]
+
+  if (!admin) {
+    return res.json({ success: true, message: 'If that email is registered, a reset link has been sent.' })
+  }
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString()
+  const expiry = Date.now() + 15 * 60 * 1000 // 15 minutes
+
+  await pool.query(
+    'UPDATE admins SET reset_token = $1, reset_token_expiry = $2 WHERE id = $3',
+    [otp, expiry, admin.id]
+  )
+
+  const html = passwordResetCustomer({ customerName: admin.name, otp })
+  await sendMail({ to: admin.email, subject: 'Admin Password Reset Verification Code', html })
+
+  res.json({ success: true, message: 'If that email is registered, a reset link has been sent.' })
+}))
+
+router.post('/auth/reset-password', asyncHandler(async (req, res) => {
+  const { email, otp, newPassword } = req.body
+  if (!email || !otp || !newPassword) {
+    return res.status(400).json({ success: false, message: 'Missing required fields' })
+  }
+
+  const finalEmail = email.toLowerCase().trim()
+  const result = await pool.query('SELECT id, reset_token, reset_token_expiry FROM admins WHERE email = $1', [finalEmail])
+  const admin = result.rows[0]
+
+  if (!admin || admin.reset_token !== otp) {
+    return res.status(400).json({ success: false, message: 'Invalid or expired reset code' })
+  }
+
+  if (Date.now() > admin.reset_token_expiry) {
+    return res.status(400).json({ success: false, message: 'Reset code has expired. Please request a new one.' })
+  }
+
+  if (newPassword.length < 8) {
+    return res.status(400).json({ success: false, message: 'Password must be at least 8 characters' })
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, 10)
+  
+  await pool.query(
+    'UPDATE admins SET password_hash = $1, reset_token = NULL, reset_token_expiry = NULL WHERE id = $2',
+    [passwordHash, admin.id]
+  )
+
+  res.json({ success: true, message: 'Password has been reset successfully. You can now login.' })
 }))
 
 export default router

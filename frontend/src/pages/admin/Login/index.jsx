@@ -5,13 +5,131 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { motion, AnimatePresence } from 'framer-motion'
 import useAdminAuthStore from '@/store/adminAuthStore'
-import { adminLogin } from '@/services/adminApi'
+import { adminLogin, adminForgotPassword, adminResetPassword } from '@/services/adminApi'
 
 const schema = z.object({
   email: z.string().email('Enter a valid institutional email'),
   password: z.string().min(1, 'Security key is required'),
   rememberDevice: z.boolean().optional(),
 })
+
+function AdminForgotPasswordForm({ setMode }) {
+  const [step, setStep] = useState(1) // 1: request otp, 2: verify otp & reset
+  const [loading, setLoading] = useState(false)
+  const [serverError, setServerError] = useState('')
+  const [serverSuccess, setServerSuccess] = useState('')
+  
+  const [email, setEmail] = useState('')
+  const [otp, setOtp] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+
+  const handleRequestOtp = async (e) => {
+    e.preventDefault()
+    if (!email) return setServerError('Email is required')
+    
+    setLoading(true)
+    setServerError('')
+    const result = await adminForgotPassword(email)
+    setLoading(false)
+    
+    if (result.success) {
+      setServerSuccess('Reset code sent! Please check your email inbox.')
+      setStep(2)
+    } else {
+      setServerError(result.message)
+    }
+  }
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault()
+    if (!otp || !newPassword) return setServerError('OTP and new password are required')
+    if (newPassword.length < 8) return setServerError('Password must be at least 8 characters')
+    
+    setLoading(true)
+    setServerError('')
+    const result = await adminResetPassword(email, otp, newPassword)
+    setLoading(false)
+    
+    if (result.success) {
+      setServerSuccess('Password reset successful! You can now log in.')
+      setServerError('')
+      setTimeout(() => setMode('login'), 2000)
+    } else {
+      setServerError(result.message)
+    }
+  }
+
+  return (
+    <div className="space-y-5">
+      {step === 1 ? (
+        <form onSubmit={handleRequestOtp} className="space-y-5">
+          <div>
+            <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.12em] mb-1.5">
+              Institutional Email
+            </label>
+            <div className="flex items-center gap-3 px-4 py-3.5 rounded-full border bg-admin-seafoam border-admin-border focus-within:border-admin-navy focus-within:ring-2 focus-within:ring-admin-navy/15 transition-all duration-150">
+              <span className="material-symbols-outlined text-admin-text-sub flex-shrink-0" style={{ fontSize: '18px' }}>alternate_email</span>
+              <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="name@nhsalem.com" disabled={loading} className="flex-1 bg-transparent text-sm font-medium text-admin-text placeholder:text-admin-text-sub/50 focus:outline-none disabled:opacity-60" />
+            </div>
+          </div>
+          <button type="submit" disabled={loading} className="w-full py-4 px-8 rounded-full font-bold text-sm tracking-wide text-white bg-[#0B1E3D] hover:bg-[#152742] disabled:opacity-70 transition-all duration-300">
+            {loading ? 'Sending...' : 'Send Reset Link'}
+          </button>
+        </form>
+      ) : (
+        <form onSubmit={handleResetPassword} className="space-y-5">
+          <div>
+            <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.12em] mb-1.5">
+              6-Digit Verification Code
+            </label>
+            <div className="flex items-center gap-3 px-4 py-3.5 rounded-full border bg-admin-seafoam border-admin-border focus-within:border-admin-navy focus-within:ring-2 focus-within:ring-admin-navy/15 transition-all duration-150">
+              <span className="material-symbols-outlined text-admin-text-sub flex-shrink-0" style={{ fontSize: '18px' }}>pin</span>
+              <input type="text" required maxLength={6} value={otp} onChange={e => setOtp(e.target.value)} placeholder="123456" disabled={loading} className="flex-1 bg-transparent text-sm font-medium text-admin-text placeholder:text-admin-text-sub/50 focus:outline-none disabled:opacity-60" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.12em] mb-1.5">
+              New Security Key
+            </label>
+            <div className="flex items-center gap-3 px-4 py-3.5 rounded-full border bg-admin-seafoam border-admin-border focus-within:border-admin-navy focus-within:ring-2 focus-within:ring-admin-navy/15 transition-all duration-150">
+              <span className="material-symbols-outlined text-admin-text-sub flex-shrink-0" style={{ fontSize: '18px' }}>lock</span>
+              <input type={showPassword ? 'text' : 'password'} required value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="New strong key" disabled={loading} className="flex-1 bg-transparent text-sm font-medium text-admin-text placeholder:text-admin-text-sub/50 focus:outline-none disabled:opacity-60" />
+              <button type="button" onClick={() => setShowPassword(v => !v)} className="text-admin-text-sub hover:text-admin-navy transition-colors">
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>{showPassword ? 'visibility_off' : 'visibility'}</span>
+              </button>
+            </div>
+          </div>
+          <button type="submit" disabled={loading} className="w-full py-4 px-8 rounded-full font-bold text-sm tracking-wide text-white bg-[#0B1E3D] hover:bg-[#152742] disabled:opacity-70 transition-all duration-300">
+            {loading ? 'Resetting...' : 'Reset Security Key'}
+          </button>
+        </form>
+      )}
+
+      {/* Messages */}
+      <AnimatePresence>
+        {serverError && (
+          <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} className="flex items-start gap-2 px-4 py-3 rounded-[12px] bg-admin-coral/8 border border-admin-coral/25 mt-4">
+            <span className="material-symbols-outlined text-admin-coral flex-shrink-0 mt-0.5" style={{ fontSize: '16px' }}>warning</span>
+            <p className="text-[12px] font-medium text-admin-coral leading-snug">{serverError}</p>
+          </motion.div>
+        )}
+        {serverSuccess && (
+          <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} className="flex items-start gap-2 px-4 py-3 rounded-[12px] bg-green-50 border border-green-200 mt-4">
+            <span className="material-symbols-outlined text-green-600 flex-shrink-0 mt-0.5" style={{ fontSize: '16px' }}>check_circle</span>
+            <p className="text-[12px] font-medium text-green-700 leading-snug">{serverSuccess}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="text-center pt-2">
+        <button type="button" onClick={() => setMode('login')} className="text-xs font-semibold text-admin-gold hover:text-admin-gold-light hover:underline transition-colors">
+          Back to Login
+        </button>
+      </div>
+    </div>
+  )
+}
 
 /**
  * Admin Login Page
@@ -29,6 +147,7 @@ export default function AdminLogin() {
     }
   }, [admin, navigate])
 
+  const [mode, setMode] = useState('login')
   const [showPassword, setShowPassword] = useState(false)
   const [submitState, setSubmitState] = useState('idle') // 'idle' | 'loading' | 'success' | 'error'
   const [serverError, setServerError] = useState('')
@@ -36,11 +155,17 @@ export default function AdminLogin() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(schema),
     defaultValues: { email: '', password: '', rememberDevice: false },
   })
+
+  const fillDemoAdmin = () => {
+    setValue('email', 'admin@nhsalem.com')
+    setValue('password', 'admin123')
+  }
 
   const onSubmit = async ({ email, password }) => {
     setSubmitState('loading')
@@ -124,6 +249,7 @@ export default function AdminLogin() {
           </div>
 
           {/* Form */}
+          {mode === 'login' ? (
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
 
             {/* Institutional Email */}
@@ -163,8 +289,9 @@ export default function AdminLogin() {
                 <label htmlFor="admin-password" className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.12em]">
                   Security Key
                 </label>
-                <button
+                  <button
                   type="button"
+                  onClick={() => setMode('forgot_password')}
                   className="text-[11px] font-semibold text-admin-gold hover:text-admin-gold-light transition-colors duration-150 focus:outline-none focus-visible:underline"
                 >
                   Forgot password?
@@ -294,7 +421,22 @@ export default function AdminLogin() {
               </AnimatePresence>
             </motion.button>
 
+            {/* Demo Admin Button */}
+            <div className="flex justify-center mt-2">
+              <button
+                type="button"
+                onClick={fillDemoAdmin}
+                className="py-2 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold rounded-full transition-colors flex items-center justify-center gap-1 w-full"
+              >
+                <span className="material-symbols-outlined text-[14px]">admin_panel_settings</span>
+                Demo Admin
+              </button>
+            </div>
+
           </form>
+          ) : (
+            <AdminForgotPasswordForm setMode={setMode} />
+          )}
 
           {/* Compliance footer inside card */}
           <div className="mt-7 pt-6 border-t border-admin-border/50">

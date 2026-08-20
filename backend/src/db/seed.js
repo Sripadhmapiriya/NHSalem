@@ -64,17 +64,7 @@ async function runSeed() {
       ['NH Salem User', 'user@nhsalem.com', '9876500000', userPasswordHash]
     )
 
-    // Seed mock customers
-    for (const c of ADMIN_CUSTOMERS) {
-      // Clean phone number format for storage
-      const phone = c.phone.replace(/[^0-9]/g, '').slice(-10) // get 10-digit number
-      await client.query(
-        `INSERT INTO users (name, email, phone, password_hash)
-         VALUES ($1, $2, $3, $4)
-         ON CONFLICT (email) DO NOTHING`,
-        [c.name, c.email, phone || null, userPasswordHash]
-      )
-    }
+    // Mock customers are intentionally no longer seeded as real users
 
     // Get user id mappings for linking reviews/orders
     const usersRes = await client.query('SELECT id, email FROM users')

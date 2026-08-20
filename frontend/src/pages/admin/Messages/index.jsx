@@ -55,7 +55,7 @@ export default function AdminMessages() {
     try {
       await updateAdminMessageStatus(id, status)
       setMessages(prev => prev.map(m => m.id === id ? { ...m, status } : m))
-      addToast({ message: \`Message marked as \${status}\`, type: 'success' })
+      addToast({ message: `Message marked as ${status}`, type: 'success' })
     } catch (err) {
       addToast({ message: 'Failed to update status', type: 'error' })
     }
@@ -136,13 +136,13 @@ export default function AdminMessages() {
         <div className="flex bg-white rounded-[10px] p-1 border border-admin-border/60 shadow-sm self-start">
           <button
             onClick={() => setActiveTab('whatsapp')}
-            className={\`px-4 py-2 rounded-[8px] text-sm font-bold transition-all \${activeTab === 'whatsapp' ? 'bg-admin-seafoam text-admin-navy shadow-[0_2px_8px_rgba(0,0,0,0.04)]' : 'text-admin-text-sub hover:text-admin-navy'}\`}
+            className={`px-4 py-2 rounded-[8px] text-sm font-bold transition-all ${activeTab === 'whatsapp' ? 'bg-admin-seafoam text-admin-navy shadow-[0_2px_8px_rgba(0,0,0,0.04)]' : 'text-admin-text-sub hover:text-admin-navy'}`}
           >
             WhatsApp
           </button>
           <button
             onClick={() => setActiveTab('web')}
-            className={\`px-4 py-2 rounded-[8px] text-sm font-bold transition-all \${activeTab === 'web' ? 'bg-admin-seafoam text-admin-navy shadow-[0_2px_8px_rgba(0,0,0,0.04)]' : 'text-admin-text-sub hover:text-admin-navy'}\`}
+            className={`px-4 py-2 rounded-[8px] text-sm font-bold transition-all ${activeTab === 'web' ? 'bg-admin-seafoam text-admin-navy shadow-[0_2px_8px_rgba(0,0,0,0.04)]' : 'text-admin-text-sub hover:text-admin-navy'}`}
           >
             Web Inquiries
           </button>
@@ -150,7 +150,7 @@ export default function AdminMessages() {
       </div>
 
       {activeTab === 'web' && (
-        <AdminCard subtitle={\`\${filtered.length} message\${filtered.length !== 1 ? 's' : ''}\`}>
+        <AdminCard subtitle={`${filtered.length} message${filtered.length !== 1 ? 's' : ''}`}>
           <div className="flex gap-1.5 flex-wrap px-5 pt-4 pb-2 border-b border-admin-border/40">
             {['all', 'unread', 'read', 'archived'].map((status) => {
               const count = status === 'all' ? messages.length : messages.filter(m => m.status === status).length
@@ -158,14 +158,14 @@ export default function AdminMessages() {
                 <button
                   key={status}
                   onClick={() => setStatusFilter(status)}
-                  className={\`px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all \${
+                  className={`px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ${
                     statusFilter === status
                       ? 'bg-admin-navy border-admin-navy text-white shadow-sm'
                       : 'bg-white border-admin-border text-admin-text-sub hover:border-admin-navy/40'
-                  }\`}
+                  }`}
                 >
                   <span className="capitalize">{status}</span>
-                  <span className={\`ml-1.5 px-1.5 py-0.5 rounded-full text-[9px] \${statusFilter === status ? 'bg-white/20 text-white' : 'bg-admin-seafoam text-admin-text'}\`}>{count}</span>
+                  <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[9px] ${statusFilter === status ? 'bg-white/20 text-white' : 'bg-admin-seafoam text-admin-text'}`}>{count}</span>
                 </button>
               )
             })}
@@ -226,7 +226,7 @@ export default function AdminMessages() {
                     <div 
                       key={phone} 
                       onClick={() => setActiveWaPhone(phone)}
-                      className={\`p-4 border-b border-admin-border/40 cursor-pointer transition-colors \${activeWaPhone === phone ? 'bg-admin-seafoam' : 'hover:bg-admin-seafoam/50'}\`}
+                      className={`p-4 border-b border-admin-border/40 cursor-pointer transition-colors ${activeWaPhone === phone ? 'bg-admin-seafoam' : 'hover:bg-admin-seafoam/50'}`}
                     >
                       <div className="flex justify-between items-center mb-1">
                         <span className="font-bold text-[13px] text-admin-navy">{phone}</span>
@@ -261,11 +261,11 @@ export default function AdminMessages() {
                   {activeConversation?.map(m => {
                     const isOutbound = m.direction === 'outbound'
                     return (
-                      <div key={m.id} className={\`flex flex-col max-w-[75%] \${isOutbound ? 'self-end' : 'self-start'}\`}>
-                        <div className={\`p-3 rounded-2xl shadow-sm text-[13px] \${isOutbound ? 'bg-[#D9FDD3] rounded-tr-none text-black' : 'bg-white rounded-tl-none text-black border border-admin-border/50'}\`}>
+                      <div key={m.id} className={`flex flex-col max-w-[75%] ${isOutbound ? 'self-end' : 'self-start'}`}>
+                        <div className={`p-3 rounded-2xl shadow-sm text-[13px] ${isOutbound ? 'bg-[#D9FDD3] rounded-tr-none text-black' : 'bg-white rounded-tl-none text-black border border-admin-border/50'}`}>
                           {m.message_text}
                         </div>
-                        <span className={\`text-[10px] text-admin-text-sub mt-1 \${isOutbound ? 'text-right' : 'text-left'}\`}>
+                        <span className={`text-[10px] text-admin-text-sub mt-1 ${isOutbound ? 'text-right' : 'text-left'}`}>
                           {new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                         </span>
                       </div>

@@ -233,3 +233,14 @@ CREATE TABLE IF NOT EXISTS contact_messages (
   status VARCHAR(50) DEFAULT 'unread', -- 'unread', 'read', 'archived'
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- 22. WhatsApp Messages Table
+CREATE TABLE IF NOT EXISTS whatsapp_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  customer_phone VARCHAR(20) NOT NULL,
+  message_text TEXT NOT NULL,
+  direction VARCHAR(10) NOT NULL, -- 'inbound' | 'outbound'
+  status VARCHAR(20) DEFAULT 'sent',
+  timestamp BIGINT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

@@ -88,14 +88,9 @@ function EmailForm({ onSuccess, setMode }) {
     }
   }
 
-  const fillDemo = (role) => {
-    if (role === 'admin') {
-      setValue('email', 'admin@nhsalem.com')
-      setValue('password', 'admin123')
-    } else {
-      setValue('email', 'user@nhsalem.com')
-      setValue('password', 'password123')
-    }
+  const fillDemo = () => {
+    setValue('email', 'user@nhsalem.com')
+    setValue('password', 'password123')
   }
 
   const inputCls = (hasError) =>
@@ -205,19 +200,11 @@ function EmailForm({ onSuccess, setMode }) {
       </button>
 
       {/* Demo Credentials */}
-      <div className="flex gap-2 mt-3">
+      <div className="flex justify-center mt-3">
         <button
           type="button"
-          onClick={() => fillDemo('admin')}
-          className="flex-1 py-1.5 px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold rounded-full transition-colors flex items-center justify-center gap-1"
-        >
-          <span className="material-symbols-outlined text-[14px]">admin_panel_settings</span>
-          Demo Admin
-        </button>
-        <button
-          type="button"
-          onClick={() => fillDemo('user')}
-          className="flex-1 py-1.5 px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold rounded-full transition-colors flex items-center justify-center gap-1"
+          onClick={() => fillDemo()}
+          className="w-full py-1.5 px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold rounded-full transition-colors flex items-center justify-center gap-1"
         >
           <span className="material-symbols-outlined text-[14px]">person</span>
           Demo User
@@ -254,14 +241,9 @@ function PhoneForm({ onSuccess, setMode }) {
     }
   }
 
-  const fillDemo = (role) => {
-    if (role === 'admin') {
-      setValue('phone', '9876543211') // Admin doesn't have a specific phone usually, let's keep text hint
-      setValue('password', 'admin123')
-    } else {
-      setValue('phone', '9876543210')
-      setValue('password', 'password123')
-    }
+  const fillDemo = () => {
+    setValue('phone', '9876543210')
+    setValue('password', 'password123')
   }
 
   const inputCls = (hasError) =>
@@ -380,7 +362,7 @@ function PhoneForm({ onSuccess, setMode }) {
       <div className="flex justify-center mt-3">
         <button
           type="button"
-          onClick={() => fillDemo('user')}
+          onClick={() => fillDemo()}
           className="w-full py-1.5 px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold rounded-full transition-colors flex items-center justify-center gap-1"
         >
           <span className="material-symbols-outlined text-[14px]">person</span>
