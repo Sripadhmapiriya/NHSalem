@@ -407,6 +407,30 @@ export default function Cart() {
                 Proceed to Checkout
               </Button>
             </div>
+
+            {/* Important Guidelines */}
+            <div className="bg-surface-container-low rounded-[20px] p-5 border border-outline-variant/50">
+              <h3 className="text-label-md font-semibold text-on-surface mb-3 flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary" style={{ fontSize: '20px' }}>info</span>
+                Important Information
+              </h3>
+              <div className="space-y-3">
+                <div className="flex gap-3">
+                  <span className="material-symbols-outlined text-green-600 mt-0.5" style={{ fontSize: '18px' }}>moped</span>
+                  <div>
+                    <p className="text-label-sm font-bold text-on-surface">Delivery Within 8 KM</p>
+                    <p className="text-body-sm text-on-surface-variant leading-tight">Maximum delivery range is 8 KM. Applicable delivery charges will apply.</p>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <span className="material-symbols-outlined text-orange-600 mt-0.5" style={{ fontSize: '18px' }}>storefront</span>
+                  <div>
+                    <p className="text-label-sm font-bold text-on-surface">Market Price Applies</p>
+                    <p className="text-body-sm text-on-surface-variant leading-tight">Price depends on the daily market price.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -231,10 +231,37 @@ export default function ProductDetail() {
 
 
 
-            {/* Storage Info */}
-            <div className="flex items-center gap-3 p-4 bg-blue-50 text-blue-900 rounded-[16px] border border-blue-100">
-              <span className="material-symbols-outlined text-blue-600">ac_unit</span>
-              <p className="text-sm font-semibold tracking-wide">Frozen & stored at -18°C for maximum freshness</p>
+            {/* Important Guidelines */}
+            <div className="flex flex-col gap-4 p-5 bg-surface-container-low rounded-[20px] border border-outline-variant/30">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
+                  <span className="material-symbols-outlined text-blue-600" style={{ fontSize: '18px' }}>ac_unit</span>
+                </div>
+                <div>
+                  <p className="text-label-md font-bold text-on-surface">Keep Deep Frozen at -18°C</p>
+                  <p className="text-body-sm text-on-surface-variant mt-0.5">Once the packet is opened, please use the product completely. Do not refreeze after opening.</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0 mt-0.5">
+                  <span className="material-symbols-outlined text-green-600" style={{ fontSize: '18px' }}>moped</span>
+                </div>
+                <div>
+                  <p className="text-label-md font-bold text-on-surface">Delivery Within 8 KM</p>
+                  <p className="text-body-sm text-on-surface-variant mt-0.5">Maximum delivery range is 8 KM. Applicable delivery charges will apply.</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center shrink-0 mt-0.5">
+                  <span className="material-symbols-outlined text-orange-600" style={{ fontSize: '18px' }}>storefront</span>
+                </div>
+                <div>
+                  <p className="text-label-md font-bold text-on-surface">Market Price Applies</p>
+                  <p className="text-body-sm text-on-surface-variant mt-0.5">Price depends on the daily market price.</p>
+                </div>
+              </div>
             </div>
 
             {/* Variant selector - horizontal scroll on mobile */}
