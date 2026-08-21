@@ -88,7 +88,7 @@ export default function AdminProducts() {
             { label: 'Base Price', className: 'w-[10%] min-w-[90px]' },
             { label: 'Variants', className: 'w-[12%] min-w-[120px]' },
             { label: 'Rating', className: 'w-[10%] min-w-[100px] hidden xl:table-cell' },
-            { label: 'Badges', className: 'w-[10%] min-w-[90px]' },
+
             { label: 'Actions', className: 'w-[100px] sticky right-0 bg-white z-10 text-center shadow-[-4px_0_10px_rgba(0,0,0,0.02)]' }
           ]}
         >
@@ -142,24 +142,6 @@ export default function AdminProducts() {
                 </div>
               </Td>
 
-              <Td>
-                <div className="flex flex-col gap-1 max-h-[44px] overflow-hidden justify-center items-start">
-                  {p.badges?.slice(0, 2).map((b) => {
-                    const isPaid = b.type === 'paid' || b.label?.toLowerCase() === 'paid'
-                    const isNew = b.type === 'new'
-                    
-                    // Default to the badge's type, or 'active' if none exists
-                    const status = isPaid ? 'paid' : isNew ? 'new' : b.type || 'active'
-                    const tooltip = isPaid ? 'Paid Promotion' : ''
-                    
-                    return (
-                      <span key={b.type} title={tooltip}>
-                        <StatusBadge status={status} />
-                      </span>
-                    )
-                  })}
-                </div>
-              </Td>
               <Td className="w-[100px] sticky right-0 bg-white z-10 shadow-[-4px_0_10px_rgba(0,0,0,0.02)] p-0 border-l border-admin-border/30">
                 <div className="flex items-center justify-center gap-2 h-full px-2">
                   <button

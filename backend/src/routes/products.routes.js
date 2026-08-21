@@ -71,7 +71,12 @@ function formatProduct(p) {
     categoryThumbnail: p.category_thumbnail,
     badges: typeof p.badges === 'string' ? JSON.parse(p.badges) : p.badges,
     weights: finalWeights,
-    variants: finalVariants.length > 0 ? finalVariants : finalWeights,
+    variants: (finalVariants.length > 0 ? finalVariants : finalWeights).map(v => ({
+      label: v.label || 'Standard',
+      mrp: v.mrp ?? v.originalPrice ?? v.price ?? 0,
+      onlinePrice: v.onlinePrice ?? v.price ?? 0,
+      value: v.value
+    })),
     rating: Number(p.rating),
     reviewCount: Number(p.review_count),
     isBestSeller: p.is_bestseller,

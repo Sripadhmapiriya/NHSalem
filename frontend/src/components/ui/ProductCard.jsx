@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link } from 'react-router-dom'
+import Button from './Button'
 import Badge from './Badge'
 import useCartStore from '@/store/cartStore'
 import useWishlistStore from '@/store/wishlistStore'
@@ -118,27 +119,12 @@ export default function ProductCard({ product }) {
         </Link>
 
         {/* Badges (Max 2) */}
-        {/* Badges (Max 2) */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start pointer-events-none z-10">
-          {badges.slice(0, 2).map((badge) => {
-            let icon = 'sell';
-            let bgClass = 'bg-[rgba(255,255,255,0.15)]';
-
-            if (badge.type === 'fresh') { icon = 'eco'; bgClass = 'bg-[rgba(16,185,129,0.25)]'; }
-            else if (badge.type === 'deal') { icon = 'bolt'; bgClass = 'bg-[rgba(245,158,11,0.25)]'; }
-            else if (badge.type === 'limited') { icon = 'lens'; bgClass = 'bg-[rgba(59,130,246,0.25)]'; }
-            else if (badge.type === 'new') { icon = 'stars'; bgClass = 'bg-[rgba(168,85,247,0.25)]'; }
-
-            return (
-              <div
-                key={badge.type}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase text-white backdrop-blur-[10px] border border-[rgba(255,255,255,0.25)] shadow-[0_4px_12px_rgba(0,0,0,0.1)] [text-shadow:0_1px_2px_rgba(0,0,0,0.8)] ${bgClass}`}
-              >
-                <span className="material-symbols-outlined text-[12px]">{icon}</span>
-                {badge.label}
-              </div>
-            );
-          })}
+          {badges.slice(0, 2).map((badge) => (
+            <Badge key={badge.type} variant={badge.type}>
+              {badge.label}
+            </Badge>
+          ))}
         </div>
 
         {/* Wishlist */}

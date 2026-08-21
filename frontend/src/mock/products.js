@@ -20,8 +20,8 @@ export const PRODUCTS = [
     ],
     badges: [{ type: 'hot', label: 'HOT DEAL' }, { type: 'fresh', label: 'Fresh Today' }],
     weights: [
-      { label: '500g', price: 549, originalPrice: 699 },
-      { label: '1kg', price: 1049, originalPrice: 1299 },
+      { label: '500g', onlinePrice: 549, mrp: 699 },
+      { label: '1kg', onlinePrice: 1049, mrp: 1299 },
     ],
     rating: 4.9,
     reviewCount: 3102,

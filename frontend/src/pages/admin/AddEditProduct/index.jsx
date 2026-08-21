@@ -250,17 +250,12 @@ export default function AdminAddEditProduct() {
     setVariants(variants.filter((_, i) => i !== index))
   }
 
-  useEffect(() => {
-    if (existing) {
-      setVariants(existing.variants || existing.weights || [])
-    }
-  }, [existing])
-
   const {
     register,
     handleSubmit,
     setValue,
     control,
+    reset,
     formState: { isDirty, errors },
   } = useForm({
     defaultValues: existing
@@ -279,6 +274,44 @@ export default function AdminAddEditProduct() {
       }
       : { category: 'fish', stockStatus: 'in_stock' },
   })
+
+  useEffect(() => {
+    if (existing) {
+      setVariants(existing.variants || existing.weights || [])
+      reset({
+        name: existing.name || '',
+        localName: existing.localName || '',
+        tagline: existing.tagline || '',
+        description: existing.description || '',
+        category: existing.category || 'fish',
+        catchTime: existing.catchTime || '',
+        howToCook: existing.howToCook || '',
+        gallery_image_1: existing.gallery_image_1 || '',
+        gallery_image_2: existing.gallery_image_2 || '',
+        image: existing.image || '',
+        stockStatus: existing.stockStatus || 'in_stock',
+      })
+    } else {
+      setVariants([])
+      reset({
+        name: '',
+        localName: '',
+        tagline: '',
+        description: '',
+        category: 'fish',
+        catchTime: '',
+        howToCook: '',
+        gallery_image_1: '',
+        gallery_image_2: '',
+        image: '',
+        stockStatus: 'in_stock',
+      })
+      setSelectedBadges([])
+      setLocalPreviewThumb(null)
+      setLocalPreview1(null)
+      setLocalPreview2(null)
+    }
+  }, [existing, reset])
 
   const currentImageThumb = useWatch({ control, name: 'image' })
   const displayImageThumb = localPreviewThumb || currentImageThumb
