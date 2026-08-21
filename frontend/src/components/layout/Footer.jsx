@@ -99,7 +99,7 @@ export default function Footer() {
             >
               <span className="material-symbols-outlined text-[#fed255] text-sm shrink-0 select-none leading-none pt-0.5" aria-hidden="true">location_on</span>
               <div className="leading-normal flex-1 group-hover:text-[#fed255] group-hover:underline transition-colors">
-                <span className="text-white font-semibold group-hover:text-[#fed255]">Registered Office:</span> No: 4/174/F, Cheran Nagar, Kondappanaickenpatti, Salem – 636008
+                <span className="text-white font-semibold group-hover:text-[#fed255]">Registered Office Address:</span> No: 4/174/F, Cheran Nagar, Kondappanaickenpatti, Salem – 636008
               </div>
             </a>
 
@@ -107,7 +107,7 @@ export default function Footer() {
             <div className="flex items-start gap-2 w-full max-w-md">
               <span className="material-symbols-outlined text-[#fed255] text-sm shrink-0 select-none leading-none pt-0.5" aria-hidden="true">storefront</span>
               <div className="leading-normal flex-1">
-                <span className="text-white font-semibold">Marketed & Distributed by:</span> NH Salem and Snacks
+                <span className="text-white font-semibold">Marketed & Distributed by:</span> NHSalem seafoods and snacks
               </div>
             </div>
 
