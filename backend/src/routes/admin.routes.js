@@ -6,33 +6,15 @@ import pool from '../db/pool.js'
 import { generateAdminToken } from '../utils/jwt.js'
 import { requireAdmin } from '../middleware/adminAuth.js'
 import asyncHandler from '../utils/asyncHandler.js'
-import fs from 'fs'
-import path from 'path'
-import { fileURLToPath } from 'url'
 import multer from 'multer'
 import cloudinary from '../utils/cloudinary.js'
 import { sendMail } from '../utils/mailer.js'
 import { passwordResetCustomer } from '../utils/emailTemplates.js'
 
-// Ensure uploads directory exists to prevent multer 500 errors
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const uploadDir = path.join(__dirname, '../../public/uploads')
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true })
-}
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir)
-  },
-  filename: function (req, file, cb) {
-    const ext = path.extname(file.originalname)
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-    cb(null, file.fieldname + '-' + uniqueSuffix + ext)
-  }
-})
-
-const upload = multer({ storage: storage })
+// Images are streamed straight to Cloudinary — never written to local disk.
+// (Vercel's serverless functions have no persistent filesystem, so disk
+// storage silently breaks in production even though it works locally.)
+const upload = multer({ storage: multer.memoryStorage() })
 
 const router = express.Router()
 
@@ -79,15 +61,40 @@ router.get('/auth/me', requireAdmin, asyncHandler(async (req, res) => {
   res.json({ success: true, admin })
 }))
 
-// Upload Image
+// Upload Image — streamed directly to Cloudinary, returns a permanent CDN URL
 router.post('/upload', requireAdmin, upload.single('image'), asyncHandler(async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ success: false, message: 'No file provided' })
   }
-  
-  // Directly save locally since Cloudinary is not configured yet
-  const localUrl = `http://localhost:4000/uploads/${req.file.filename}`
-  res.json({ success: true, url: localUrl })
+
+  const uploadFromBuffer = (buffer) =>
+    new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'nh-salem/products',
+          resource_type: 'image',
+          // Auto-optimize format & quality (e.g. serves WebP/AVIF to supporting
+          // browsers) so product photos load fast even on slow connections.
+          transformation: [{ fetch_format: 'auto', quality: 'auto' }],
+        },
+        (error, result) => {
+          if (error) return reject(error)
+          resolve(result)
+        }
+      )
+      stream.end(buffer)
+    })
+
+  try {
+    const result = await uploadFromBuffer(req.file.buffer)
+    res.json({ success: true, url: result.secure_url })
+  } catch (err) {
+    console.error('Cloudinary upload failed:', err.message)
+    res.status(502).json({
+      success: false,
+      message: 'Image upload failed. Please check Cloudinary credentials are configured in the environment.',
+    })
+  }
 }))
 
 // Dashboard stats
@@ -127,7 +134,7 @@ router.get('/dashboard/stats', requireAdmin, asyncHandler(async (req, res) => {
   const results = await Promise.all(kpiPromises)
 
   const activeCustomers = Number(results[0].rows[0].count)
-  
+
   let topProducts = results[1].rows.map(r => ({
     name: r.name,
     sales: Number(r.sales),
@@ -160,7 +167,7 @@ router.get('/dashboard/stats', requireAdmin, asyncHandler(async (req, res) => {
 
   const cancelledCount = cancelledByActor.reduce((sum, row) => sum + row.count, 0)
   const cancelledValue = cancelledByActor.reduce((sum, row) => sum + row.value, 0)
-  
+
   const cancelReasons = results[4].rows.map(r => ({
     reason: r.reason,
     count: Number(r.count)
@@ -238,7 +245,7 @@ router.get('/customers', requireAdmin, asyncHandler(async (req, res) => {
      
      ORDER BY raw_joined DESC`
   )
-  
+
   res.json({
     success: true,
     customers: result.rows.map(r => ({
@@ -338,15 +345,15 @@ router.get('/customers/:id/orders', requireAdmin, asyncHandler(async (req, res) 
        ORDER BY placed_at DESC`,
       [id]
     )
-    
+
     if (ordersRes.rows.length === 0) {
       return res.status(404).json({ success: false, error: 'Customer not found' })
     }
-    
+
     ordersRows = ordersRes.rows
     const firstOrder = ordersRows[0]
     const addressObj = typeof firstOrder.address === 'string' ? JSON.parse(firstOrder.address) : firstOrder.address
-    
+
     // We can also get joinedAt from SQL query:
     const joinedAtRes = await pool.query(
       `SELECT TO_CHAR(MIN(placed_at), 'YYYY-MM-DD') as joined_at FROM orders 
@@ -457,9 +464,9 @@ router.get('/customers/:id', requireAdmin, asyncHandler(async (req, res) => {
     console.log('Fetching customer:', id) // debug log
 
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
-    
+
     let customer
-    
+
     if (isUuid) {
       // Step 1: Get customer basic info
       const customerRes = await pool.query(
@@ -476,9 +483,9 @@ router.get('/customers/:id', requireAdmin, asyncHandler(async (req, res) => {
       // Check if it's a guest in orders
       let guestQuery
       if (isUuid) {
-         guestQuery = `SELECT address->>'name' as name, address->>'email' as email, address->>'phone' as phone, MIN(placed_at) as created_at FROM orders WHERE user_id = $1 GROUP BY address->>'name', address->>'email', address->>'phone' LIMIT 1`
+        guestQuery = `SELECT address->>'name' as name, address->>'email' as email, address->>'phone' as phone, MIN(placed_at) as created_at FROM orders WHERE user_id = $1 GROUP BY address->>'name', address->>'email', address->>'phone' LIMIT 1`
       } else {
-         guestQuery = `SELECT address->>'name' as name, address->>'email' as email, address->>'phone' as phone, MIN(placed_at) as created_at FROM orders WHERE 'guest-' || md5(COALESCE(address->>'email', address->>'name', '')) = $1 GROUP BY address->>'name', address->>'email', address->>'phone' LIMIT 1`
+        guestQuery = `SELECT address->>'name' as name, address->>'email' as email, address->>'phone' as phone, MIN(placed_at) as created_at FROM orders WHERE 'guest-' || md5(COALESCE(address->>'email', address->>'name', '')) = $1 GROUP BY address->>'name', address->>'email', address->>'phone' LIMIT 1`
       }
       const ordersUser = await pool.query(guestQuery, [id])
       if (!ordersUser.rows.length) {
@@ -509,7 +516,7 @@ router.get('/customers/:id', requireAdmin, asyncHandler(async (req, res) => {
       )
       ordersRows = ordersRes.rows
     }
-    
+
     const orders = await getCustomerOrdersDetailed(ordersRows)
     console.log(`Customer ${id} - ordersRows length: ${ordersRows.length}, processed orders length: ${orders.length}`)
 
@@ -522,7 +529,7 @@ router.get('/customers/:id', requireAdmin, asyncHandler(async (req, res) => {
     }
     const statsRes = await pool.query(statsQuery, [id])
     const stats = statsRes.rows[0]
-    
+
     console.log(`Customer ${id} - stats:`, stats)
 
     res.json({
@@ -534,12 +541,12 @@ router.get('/customers/:id', requireAdmin, asyncHandler(async (req, res) => {
       },
       orders,
     })
-    
+
   } catch (err) {
     console.error('Customer detail error:', err.message, err.stack)
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to fetch customer',
-      detail: err.message 
+      detail: err.message
     })
   }
 }))
@@ -594,7 +601,7 @@ router.post('/auth/reset-password', asyncHandler(async (req, res) => {
   }
 
   const passwordHash = await bcrypt.hash(newPassword, 10)
-  
+
   await pool.query(
     'UPDATE admins SET password_hash = $1, reset_token = NULL, reset_token_expiry = NULL WHERE id = $2',
     [passwordHash, admin.id]

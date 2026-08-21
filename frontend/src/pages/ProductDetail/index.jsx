@@ -17,6 +17,7 @@ import { getProductById, getProducts } from '@/services/api'
 
 const PRODUCT_TABS = [
   { id: 'description', label: 'Description', icon: 'article' },
+  { id: 'nutrition', label: 'Nutritional Info', icon: 'nutrition' },
   { id: 'reviews', label: 'Reviews', icon: 'star' },
 ]
 
@@ -53,7 +54,13 @@ export default function ProductDetail() {
   const currentWeight = product?.variants?.[selectedWeight] || product?.weights?.[selectedWeight] || { label: '500g', price: product?.basePrice }
   const cartItem = product ? getItem(product.id, currentWeight.label) : null
   const wishlisted = product ? isWishlisted(product.id) : false
-  const allImages = product ? (product.images?.length > 1 ? product.images : [product.image, product.gallery_image_1, product.gallery_image_2].filter(Boolean)) : []
+  const allImages = product
+    ? (product.images?.length > 1
+      ? product.images
+      : [product.gallery_image_1, product.gallery_image_2].filter(Boolean).length > 0
+        ? [product.gallery_image_1, product.gallery_image_2].filter(Boolean)
+        : [product.image].filter(Boolean))
+    : []
 
   const handleAddToCart = useCallback(() => {
     if (!product) return
@@ -251,8 +258,8 @@ export default function ProductDetail() {
                       onClick={() => setSelectedWeight(i)}
                       aria-pressed={selectedWeight === i}
                       className={`px-4 py-2.5 rounded-md border-2 text-label-md font-semibold transition-all flex-shrink-0 ${selectedWeight === i
-                          ? 'bg-secondary-container text-on-secondary-container border-secondary-container'
-                          : 'bg-white text-on-surface-variant border-outline-variant hover:border-primary'
+                        ? 'bg-secondary-container text-on-secondary-container border-secondary-container'
+                        : 'bg-white text-on-surface-variant border-outline-variant hover:border-primary'
                         }`}
                     >
                       {w.label}
@@ -345,6 +352,26 @@ export default function ProductDetail() {
             <TabPanel id="description" activeTab={activeTab}>
               <div className="max-w-3xl text-body-lg text-on-surface-variant leading-relaxed">
                 <p>{product.description}</p>
+              </div>
+            </TabPanel>
+
+            <TabPanel id="nutrition" activeTab={activeTab}>
+              <div className="max-w-md">
+                {product.nutritionPer100g ? (
+                  <div className="bg-white rounded-[20px] shadow-card p-6">
+                    <p className="text-headline-sm font-semibold text-on-surface mb-4">Nutrition per 100g</p>
+                    <div className="space-y-3">
+                      {Object.entries(product.nutritionPer100g).map(([k, v]) => (
+                        <div key={k} className="flex justify-between border-b border-outline-variant/30 pb-2">
+                          <span className="text-body-md text-on-surface-variant capitalize">{k}</span>
+                          <span className="text-label-md font-semibold text-on-surface">{v}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-body-lg text-on-surface-variant">Nutritional information coming soon.</p>
+                )}
               </div>
             </TabPanel>
 

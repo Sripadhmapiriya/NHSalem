@@ -72,7 +72,7 @@ export default function ProductCard({ product }) {
         payload: {
           id,
           name,
-          image: categoryThumbnail || image,
+          image: image || categoryThumbnail,
           weight: currentVariant.label,
           price: currentVariant.price,
           quantity: 1,
@@ -84,7 +84,7 @@ export default function ProductCard({ product }) {
     addItem({
       id,
       name,
-      image: categoryThumbnail || image,
+      image: image || categoryThumbnail,
       weight: currentVariant.label,
       price: currentVariant.price,
       quantity: 1,
@@ -110,7 +110,7 @@ export default function ProductCard({ product }) {
       <div className="relative overflow-hidden aspect-[4/3] w-full bg-slate-50">
         <Link to={`/product/${id}`} aria-label={`View ${name}`}>
           <img
-            src={categoryThumbnail || image}
+            src={image || categoryThumbnail}
             alt={name}
             loading="lazy"
             className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
@@ -124,15 +124,15 @@ export default function ProductCard({ product }) {
           {badges.slice(0, 2).map((badge) => {
             let icon = 'sell';
             let bgClass = 'bg-[rgba(255,255,255,0.15)]';
-            
+
             if (badge.type === 'fresh') { icon = 'eco'; bgClass = 'bg-[rgba(16,185,129,0.25)]'; }
             else if (badge.type === 'deal') { icon = 'bolt'; bgClass = 'bg-[rgba(245,158,11,0.25)]'; }
             else if (badge.type === 'limited') { icon = 'lens'; bgClass = 'bg-[rgba(59,130,246,0.25)]'; }
             else if (badge.type === 'new') { icon = 'stars'; bgClass = 'bg-[rgba(168,85,247,0.25)]'; }
 
             return (
-              <div 
-                key={badge.type} 
+              <div
+                key={badge.type}
                 className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase text-white backdrop-blur-[10px] border border-[rgba(255,255,255,0.25)] shadow-[0_4px_12px_rgba(0,0,0,0.1)] [text-shadow:0_1px_2px_rgba(0,0,0,0.8)] ${bgClass}`}
               >
                 <span className="material-symbols-outlined text-[12px]">{icon}</span>
@@ -181,11 +181,10 @@ export default function ProductCard({ product }) {
                 key={v.label}
                 onClick={() => setSelectedVariant(i)}
                 aria-pressed={selectedVariant === i}
-                className={`px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all flex-shrink-0 ${
-                  selectedVariant === i
+                className={`px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all flex-shrink-0 ${selectedVariant === i
                     ? 'bg-slate-900 text-white shadow-sm'
                     : 'bg-white text-slate-500 border border-slate-200 hover:border-slate-400 hover:bg-slate-50'
-                }`}
+                  }`}
               >
                 {v.label}
               </button>

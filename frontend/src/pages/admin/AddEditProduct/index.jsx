@@ -128,7 +128,7 @@ const CustomSelect = ({ label, options, value, onChange, error, required }) => {
       <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">
         {label} {required && <span className="text-admin-coral">*</span>}
       </label>
-      <div 
+      <div
         className={`relative w-full px-3 py-2.5 rounded-[10px] border bg-admin-seafoam text-[13px] text-admin-text focus:outline-none focus:ring-2 focus:ring-admin-navy/10 pr-10 cursor-pointer select-none ${error ? 'border-admin-coral' : 'border-admin-border hover:border-admin-navy'}`}
         onClick={() => setOpen(!open)}
       >
@@ -180,6 +180,11 @@ export default function AdminAddEditProduct() {
     existing?.badges?.map((b) => b.type) || []
   )
   const [saving, setSaving] = useState(false)
+  const [thumbUploadMode, setThumbUploadMode] = useState('url')
+  const [uploadingThumb, setUploadingThumb] = useState(false)
+  const [localPreviewThumb, setLocalPreviewThumb] = useState(null)
+  const [imageErrorThumb, setImageErrorThumb] = useState(false)
+
   const [image1UploadMode, setImage1UploadMode] = useState('url')
   const [uploadingImage1, setUploadingImage1] = useState(false)
   const [localPreview1, setLocalPreview1] = useState(null)
@@ -238,22 +243,25 @@ export default function AdminAddEditProduct() {
   } = useForm({
     defaultValues: existing
       ? {
-          name:           existing.name,
-          localName:      existing.localName,
-          tagline:        existing.tagline,
-          description:    existing.description,
-          category:       existing.category,
-          basePrice:      existing.basePrice,
-          freshnessScore: existing.freshnessScore,
-          catchTime:      existing.catchTime,
-          howToCook:      existing.howToCook,
-          gallery_image_1: existing.gallery_image_1 || existing.image,
-          gallery_image_2: existing.gallery_image_2,
-          stockStatus:    existing.stockStatus || 'in_stock',
-        }
+        name: existing.name,
+        localName: existing.localName,
+        tagline: existing.tagline,
+        description: existing.description,
+        category: existing.category,
+        basePrice: existing.basePrice,
+        freshnessScore: existing.freshnessScore,
+        catchTime: existing.catchTime,
+        howToCook: existing.howToCook,
+        gallery_image_1: existing.gallery_image_1,
+        gallery_image_2: existing.gallery_image_2,
+        image: existing.image,
+        stockStatus: existing.stockStatus || 'in_stock',
+      }
       : { category: 'fish', freshnessScore: 90, stockStatus: 'in_stock' },
   })
 
+  const currentImageThumb = useWatch({ control, name: 'image' })
+  const displayImageThumb = localPreviewThumb || currentImageThumb
   const currentImage1 = useWatch({ control, name: 'gallery_image_1' })
   const displayImage1 = localPreview1 || currentImage1
   const currentImage2 = useWatch({ control, name: 'gallery_image_2' })
@@ -497,7 +505,7 @@ export default function AdminAddEditProduct() {
                   />
                 </div>
 
-                </div>
+              </div>
             </AdminCard>
 
             {/* Product Variants */}
@@ -603,12 +611,69 @@ export default function AdminAddEditProduct() {
 
           {/* Sidebar */}
           <div className="space-y-5">
+            {/* Thumbnail — shown on product cards (Home, Category listing, etc.) */}
+            <AdminCard title="Thumbnail (Required — shown on product cards)">
+              <div className="p-4">
+                <p className="text-[12px] text-admin-text-sub mb-3">
+                  This image is used on product cards across the site (Home page, category listings, search results). Upload once per product — it's reused everywhere that product appears as a card.
+                </p>
+                <div className="mb-4">
+                  {displayImageThumb && !imageErrorThumb ? (
+                    <img src={displayImageThumb} alt="Thumbnail preview" className="w-full h-40 object-cover rounded-[10px] border border-admin-border" onError={() => setImageErrorThumb(true)} />
+                  ) : displayImageThumb && imageErrorThumb ? (
+                    <div className="w-full h-40 bg-admin-coral/10 border border-admin-coral border-dashed rounded-[10px] flex flex-col items-center justify-center text-admin-coral">
+                      <span className="material-symbols-outlined mb-1" style={{ fontSize: '32px' }}>broken_image</span>
+                      <span className="text-[11px] font-bold uppercase tracking-wider">Invalid Image URL</span>
+                    </div>
+                  ) : (
+                    <div className="w-full h-40 bg-admin-seafoam border border-admin-border border-dashed rounded-[10px] flex items-center justify-center text-admin-text-sub">
+                      <span className="material-symbols-outlined" style={{ fontSize: '32px' }}>image</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex gap-2 mb-4 bg-admin-seafoam/50 p-1 rounded-full border border-admin-border/50">
+                  <button type="button" onClick={() => setThumbUploadMode('url')} className={`flex-1 text-[11px] font-bold uppercase tracking-wider py-1.5 rounded-full transition-all select-none ${thumbUploadMode === 'url' ? 'bg-admin-navy text-white shadow-sm' : 'text-admin-text hover:bg-black/5'}`}>URL</button>
+                  <button type="button" onClick={() => setThumbUploadMode('upload')} className={`flex-1 text-[11px] font-bold uppercase tracking-wider py-1.5 rounded-full transition-all select-none ${thumbUploadMode === 'upload' ? 'bg-admin-navy text-white shadow-sm' : 'text-admin-text hover:bg-black/5'}`}>Upload</button>
+                </div>
+
+                {thumbUploadMode === 'url' ? (
+                  <div>
+                    <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">Image URL</label>
+                    <input {...register('image')} placeholder="https://…" className="w-full px-3 py-2.5 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] focus:outline-none focus:border-admin-navy" />
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">Choose File</label>
+                    <input type="file" accept="image/*" onChange={async (e) => {
+                      const file = e.target.files?.[0]
+                      if (!file) return
+                      setLocalPreviewThumb(URL.createObjectURL(file))
+                      setImageErrorThumb(false)
+                      setUploadingThumb(true)
+                      try {
+                        const res = await uploadAdminImage(file)
+                        if (res.success) {
+                          setValue('image', res.url, { shouldDirty: true })
+                          setLocalPreviewThumb(null)
+                          addToast({ message: 'Thumbnail uploaded successfully!', type: 'success' })
+                        } else addToast({ message: 'Failed to upload image', type: 'error' })
+                      } catch (err) { addToast({ message: err.message, type: 'error' }) }
+                      finally { setUploadingThumb(false) }
+                    }} className="w-full text-[13px] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[11px] file:font-bold file:uppercase file:tracking-wider file:bg-admin-navy file:text-white hover:file:bg-admin-navy/90 focus:outline-none cursor-pointer" />
+                    {uploadingThumb && <p className="text-[11px] text-admin-gold mt-2 font-bold animate-pulse">Uploading...</p>}
+                    <input type="hidden" {...register('image')} />
+                  </div>
+                )}
+              </div>
+            </AdminCard>
+
             {/* Gallery Image 1 */}
-            <AdminCard title="Product Photo 1 (Required)">
+            <AdminCard title="Product Photo 1 (Required — shown on product page)">
               <div className="p-4">
                 <div className="mb-4">
                   {displayImage1 && !imageError1 ? (
-                    <img src={displayImage1} alt="Preview" className="w-full h-40 object-cover rounded-[10px] border border-admin-border" onError={() => setImageError1(true)}/>
+                    <img src={displayImage1} alt="Preview" className="w-full h-40 object-cover rounded-[10px] border border-admin-border" onError={() => setImageError1(true)} />
                   ) : displayImage1 && imageError1 ? (
                     <div className="w-full h-40 bg-admin-coral/10 border border-admin-coral border-dashed rounded-[10px] flex flex-col items-center justify-center text-admin-coral">
                       <span className="material-symbols-outlined mb-1" style={{ fontSize: '32px' }}>broken_image</span>
@@ -629,27 +694,27 @@ export default function AdminAddEditProduct() {
                 {image1UploadMode === 'url' ? (
                   <div>
                     <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">Image URL</label>
-                    <input {...register('gallery_image_1')} placeholder="https://…" className="w-full px-3 py-2.5 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] focus:outline-none focus:border-admin-navy"/>
+                    <input {...register('gallery_image_1')} placeholder="https://…" className="w-full px-3 py-2.5 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] focus:outline-none focus:border-admin-navy" />
                   </div>
                 ) : (
                   <div>
                     <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">Choose File</label>
                     <input type="file" accept="image/*" onChange={async (e) => {
-                        const file = e.target.files?.[0]
-                        if (!file) return
-                        setLocalPreview1(URL.createObjectURL(file))
-                        setImageError1(false)
-                        setUploadingImage1(true)
-                        try {
-                          const res = await uploadAdminImage(file)
-                          if (res.success) {
-                            setValue('gallery_image_1', res.url, { shouldDirty: true })
-                            setLocalPreview1(null)
-                            addToast({ message: 'Image uploaded successfully!', type: 'success' })
-                          } else addToast({ message: 'Failed to upload image', type: 'error' })
-                        } catch (err) { addToast({ message: err.message, type: 'error' }) } 
-                        finally { setUploadingImage1(false) }
-                      }} className="w-full text-[13px] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[11px] file:font-bold file:uppercase file:tracking-wider file:bg-admin-navy file:text-white hover:file:bg-admin-navy/90 focus:outline-none cursor-pointer"/>
+                      const file = e.target.files?.[0]
+                      if (!file) return
+                      setLocalPreview1(URL.createObjectURL(file))
+                      setImageError1(false)
+                      setUploadingImage1(true)
+                      try {
+                        const res = await uploadAdminImage(file)
+                        if (res.success) {
+                          setValue('gallery_image_1', res.url, { shouldDirty: true })
+                          setLocalPreview1(null)
+                          addToast({ message: 'Image uploaded successfully!', type: 'success' })
+                        } else addToast({ message: 'Failed to upload image', type: 'error' })
+                      } catch (err) { addToast({ message: err.message, type: 'error' }) }
+                      finally { setUploadingImage1(false) }
+                    }} className="w-full text-[13px] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[11px] file:font-bold file:uppercase file:tracking-wider file:bg-admin-navy file:text-white hover:file:bg-admin-navy/90 focus:outline-none cursor-pointer" />
                     {uploadingImage1 && <p className="text-[11px] text-admin-gold mt-2 font-bold animate-pulse">Uploading...</p>}
                     <input type="hidden" {...register('gallery_image_1')} />
                   </div>
@@ -657,12 +722,12 @@ export default function AdminAddEditProduct() {
               </div>
             </AdminCard>
 
-{/* Gallery Image 2 */}
+            {/* Gallery Image 2 */}
             <AdminCard title="Product Photo 2 (Optional)">
               <div className="p-4">
                 <div className="mb-4">
                   {displayImage2 && !imageError2 ? (
-                    <img src={displayImage2} alt="Preview" className="w-full h-40 object-cover rounded-[10px] border border-admin-border" onError={() => setImageError2(true)}/>
+                    <img src={displayImage2} alt="Preview" className="w-full h-40 object-cover rounded-[10px] border border-admin-border" onError={() => setImageError2(true)} />
                   ) : displayImage2 && imageError2 ? (
                     <div className="w-full h-40 bg-admin-coral/10 border border-admin-coral border-dashed rounded-[10px] flex flex-col items-center justify-center text-admin-coral">
                       <span className="material-symbols-outlined mb-1" style={{ fontSize: '32px' }}>broken_image</span>
@@ -683,27 +748,27 @@ export default function AdminAddEditProduct() {
                 {image2UploadMode === 'url' ? (
                   <div>
                     <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">Image URL</label>
-                    <input {...register('gallery_image_2')} placeholder="https://…" className="w-full px-3 py-2.5 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] focus:outline-none focus:border-admin-navy"/>
+                    <input {...register('gallery_image_2')} placeholder="https://…" className="w-full px-3 py-2.5 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] focus:outline-none focus:border-admin-navy" />
                   </div>
                 ) : (
                   <div>
                     <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">Choose File</label>
                     <input type="file" accept="image/*" onChange={async (e) => {
-                        const file = e.target.files?.[0]
-                        if (!file) return
-                        setLocalPreview2(URL.createObjectURL(file))
-                        setImageError2(false)
-                        setUploadingImage2(true)
-                        try {
-                          const res = await uploadAdminImage(file)
-                          if (res.success) {
-                            setValue('gallery_image_2', res.url, { shouldDirty: true })
-                            setLocalPreview2(null)
-                            addToast({ message: 'Image uploaded successfully!', type: 'success' })
-                          } else addToast({ message: 'Failed to upload image', type: 'error' })
-                        } catch (err) { addToast({ message: err.message, type: 'error' }) } 
-                        finally { setUploadingImage2(false) }
-                      }} className="w-full text-[13px] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[11px] file:font-bold file:uppercase file:tracking-wider file:bg-admin-navy file:text-white hover:file:bg-admin-navy/90 focus:outline-none cursor-pointer"/>
+                      const file = e.target.files?.[0]
+                      if (!file) return
+                      setLocalPreview2(URL.createObjectURL(file))
+                      setImageError2(false)
+                      setUploadingImage2(true)
+                      try {
+                        const res = await uploadAdminImage(file)
+                        if (res.success) {
+                          setValue('gallery_image_2', res.url, { shouldDirty: true })
+                          setLocalPreview2(null)
+                          addToast({ message: 'Image uploaded successfully!', type: 'success' })
+                        } else addToast({ message: 'Failed to upload image', type: 'error' })
+                      } catch (err) { addToast({ message: err.message, type: 'error' }) }
+                      finally { setUploadingImage2(false) }
+                    }} className="w-full text-[13px] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[11px] file:font-bold file:uppercase file:tracking-wider file:bg-admin-navy file:text-white hover:file:bg-admin-navy/90 focus:outline-none cursor-pointer" />
                     {uploadingImage2 && <p className="text-[11px] text-admin-gold mt-2 font-bold animate-pulse">Uploading...</p>}
                     <input type="hidden" {...register('gallery_image_2')} />
                   </div>

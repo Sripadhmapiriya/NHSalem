@@ -1,9 +1,13 @@
 import { v2 as cloudinary } from 'cloudinary'
 
+if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+  console.warn('⚠️  Cloudinary env vars are not fully set — image uploads will fail until CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET are added to .env')
+}
+
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'demo', // default demo config for now
-  api_key: process.env.CLOUDINARY_API_KEY || 'api_key',
-  api_secret: process.env.CLOUDINARY_API_SECRET || 'api_secret'
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 })
 
 export default cloudinary
