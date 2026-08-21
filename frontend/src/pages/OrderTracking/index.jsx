@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import useAuthStore from '@/store/authStore'
 import { motion } from 'framer-motion'
-import FreshnessScoreCard from '@/components/ui/FreshnessScoreCard'
 import { SeafoodLoader } from '@/components/ui'
 import { getOrderStatus } from '@/services/api'
 
@@ -283,17 +282,6 @@ export default function OrderTracking() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
-          {/* Freshness Score */}
-          <FreshnessScoreCard
-            score={order.freshnessScore}
-            batchFreshness={order.freshnessScore >= 95 ? 'Excellent' : 'Very Good'}
-            metrics={[
-              { icon: 'ac_unit', label: 'Pack Temp', value: 'Frozen -18°C' },
-              { icon: 'verified', label: 'QC Status', value: 'Passed' },
-            ]}
-          />
-
-          {/* Order Details */}
           <div className="bg-white rounded-[28px] shadow-card border border-outline-variant/30 p-6 flex flex-col justify-between">
             <div>
               <h2 className="text-headline-sm text-on-surface font-serif mb-5">Order Details</h2>

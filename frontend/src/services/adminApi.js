@@ -424,3 +424,10 @@ export async function deleteAdminCity(id) {
   return handleResponse(response)
 }
 
+// ── Thumbnails ──────────────────────────────────────────────────────────────
+export async function getThumbnailLibrary() {
+  const response = await fetch(`${API_URL}/api/admin/thumbnails`, {
+    headers: getHeaders(true)
+  })
+  return handleResponse(response)
+}

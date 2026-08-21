@@ -29,7 +29,6 @@ export default function ProductCard({ product }) {
     badges = [],
     weights = [],
     variants = [],
-    basePrice,
     rating,
     reviewCount,
     unit,
@@ -41,9 +40,9 @@ export default function ProductCard({ product }) {
     ? variants
     : ((weights && weights.length > 0)
       ? weights
-      : (unit ? [{ label: unit, price: basePrice }] : []))
+      : [])
 
-  const currentVariant = finalVariants[selectedVariant] || { label: unit || '500g', price: basePrice }
+  const currentVariant = finalVariants[selectedVariant] || finalVariants[0] || { label: unit || '500g', mrp: 0, onlinePrice: 0 }
   const cartItem = getItem(id, currentVariant.label)
   const wishlisted = isWishlisted(id)
 
@@ -74,7 +73,7 @@ export default function ProductCard({ product }) {
           name,
           image: image || categoryThumbnail,
           weight: currentVariant.label,
-          price: currentVariant.price,
+          price: currentVariant.onlinePrice,
           quantity: 1,
         }
       })
@@ -86,7 +85,7 @@ export default function ProductCard({ product }) {
       name,
       image: image || categoryThumbnail,
       weight: currentVariant.label,
-      price: currentVariant.price,
+      price: currentVariant.onlinePrice,
       quantity: 1,
     })
     addToast({ message: `${name} added to cart!`, type: 'success' })
@@ -199,15 +198,15 @@ export default function ProductCard({ product }) {
         <div className="pt-2 border-t border-slate-100 mt-1">
           <div className="flex items-center gap-2 mb-2">
             <p className="text-lg font-black text-slate-900">
-              ₹{currentVariant.price?.toLocaleString()}
+              ₹{currentVariant.onlinePrice?.toLocaleString()}
             </p>
-            {currentVariant.originalPrice && currentVariant.originalPrice > currentVariant.price && (
+            {currentVariant.mrp && currentVariant.mrp > currentVariant.onlinePrice && (
               <div className="flex items-center gap-1.5">
                 <p className="text-sm text-slate-400 line-through font-medium">
-                  ₹{currentVariant.originalPrice.toLocaleString()}
+                  ₹{currentVariant.mrp.toLocaleString()}
                 </p>
                 <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">
-                  {Math.round(((currentVariant.originalPrice - currentVariant.price) / currentVariant.originalPrice) * 100)}% OFF
+                  {Math.round(((currentVariant.mrp - currentVariant.onlinePrice) / currentVariant.mrp) * 100)}% OFF
                 </span>
               </div>
             )}

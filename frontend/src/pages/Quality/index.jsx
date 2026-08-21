@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import Button from '@/components/ui/Button'
-import FreshnessScoreCard from '@/components/ui/FreshnessScoreCard'
 import Modal from '@/components/ui/Modal'
 
 const LOGISTICS_STEPS = [
@@ -138,17 +137,7 @@ export default function Quality() {
             ))}
           </div>
 
-          {/* Live example */}
-          <div className="mt-12 max-w-lg mx-auto">
-            <h3 className="text-headline-sm text-on-surface text-center mb-4">Live Example</h3>
-            <FreshnessScoreCard
-              score={94}
-              batchFreshness="Excellent"
-              metrics={[
-                { icon: 'scale', label: 'Weight Integrity', value: 'Verified' },
-              ]}
-            />
-          </div>
+
         </div>
       </section>
 

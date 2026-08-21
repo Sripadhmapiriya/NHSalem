@@ -3,7 +3,7 @@ import { motion, useInView, useAnimation } from 'framer-motion'
 
 /**
  * ProgressRing — animated SVG circular progress ring
- * Used in FreshnessScoreCard and OrderTracking
+ * Used in OrderTracking
  * Animates stroke-dashoffset on scroll-into-view
  */
 export default function ProgressRing({

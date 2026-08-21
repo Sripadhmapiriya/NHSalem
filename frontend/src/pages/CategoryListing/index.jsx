@@ -495,7 +495,7 @@ export default function CategoryListing() {
       const finalVars = (p.variants && p.variants.length > 0)
         ? p.variants
         : ((p.weights && p.weights.length > 0) ? p.weights : [])
-      const price = finalVars.length > 0 ? finalVars[0].price : p.basePrice
+      const price = finalVars.length > 0 ? finalVars[0].onlinePrice : 0
       if (price > max) max = price
     })
     return max || 9999
@@ -511,7 +511,7 @@ export default function CategoryListing() {
         const finalVars = (p.variants && p.variants.length > 0)
           ? p.variants
           : ((p.weights && p.weights.length > 0) ? p.weights : [])
-        const price = finalVars.length > 0 ? finalVars[0].price : p.basePrice
+        const price = finalVars.length > 0 ? finalVars[0].onlinePrice : 0
         if (price > max) max = price
       })
       setPriceMax(max || 9999)
@@ -541,8 +541,8 @@ export default function CategoryListing() {
       const finalVars = (p.variants && p.variants.length > 0)
         ? p.variants
         : ((p.weights && p.weights.length > 0) ? p.weights : [])
-      if (finalVars.length > 0) return finalVars[0].price
-      return p.basePrice
+      if (finalVars.length > 0) return finalVars[0].onlinePrice
+      return 0
     }
 
     let results = [...allProducts]

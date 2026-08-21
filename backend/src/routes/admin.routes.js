@@ -321,7 +321,6 @@ async function getCustomerOrdersDetailed(ordersRows) {
     discount: Number(orderRow.discount),
     shipping: Number(orderRow.shipping),
     total: Number(orderRow.total),
-    freshnessScore: orderRow.freshness_score,
     catchTime: orderRow.catch_time,
     paymentMethod: orderRow.payment_method,
     paymentStatus: orderRow.payment_status,
@@ -608,6 +607,15 @@ router.post('/auth/reset-password', asyncHandler(async (req, res) => {
   )
 
   res.json({ success: true, message: 'Password has been reset successfully. You can now login.' })
+}))
+// ── Thumbnails ──────────────────────────────────────────────────────────────
+router.get('/thumbnails', requireAdmin, asyncHandler(async (req, res) => {
+  const result = await pool.query('SELECT name, image_url FROM product_thumbnails')
+  const thumbnails = {}
+  result.rows.forEach(row => {
+    thumbnails[row.name] = row.image_url
+  })
+  res.json({ success: true, thumbnails })
 }))
 
 export default router

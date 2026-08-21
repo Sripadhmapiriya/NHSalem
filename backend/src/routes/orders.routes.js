@@ -76,7 +76,6 @@ async function formatOrderDetails(orderRow) {
     discount: Number(orderRow.discount),
     shipping: Number(orderRow.shipping),
     total: Number(orderRow.total),
-    freshnessScore: orderRow.freshness_score,
     catchTime: orderRow.catch_time,
     paymentMethod: orderRow.payment_method,
     paymentStatus: orderRow.payment_status,
@@ -151,7 +150,6 @@ async function getOrdersDetailed(ordersRows) {
     discount: Number(orderRow.discount),
     shipping: Number(orderRow.shipping),
     total: Number(orderRow.total),
-    freshnessScore: orderRow.freshness_score,
     catchTime: orderRow.catch_time,
     paymentMethod: orderRow.payment_method,
     paymentStatus: orderRow.payment_status,
@@ -224,8 +222,8 @@ router.post('/orders', asyncHandler(async (req, res) => {
 
   const orderInsertRes = await pool.query(
     `INSERT INTO orders (
-      order_number, user_id, status, address, delivery_slot, payment_method, payment_status, subtotal, discount, shipping, total, coupon_code, freshness_score, catch_time, estimated_delivery, razorpay_order_id, razorpay_payment_id
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+      order_number, user_id, status, address, delivery_slot, payment_method, payment_status, subtotal, discount, shipping, total, coupon_code, catch_time, estimated_delivery, razorpay_order_id, razorpay_payment_id
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
      RETURNING id`,
     [
       orderNumber,
@@ -240,7 +238,6 @@ router.post('/orders', asyncHandler(async (req, res) => {
       shipping,
       total,
       validCouponCode,
-      95,
       '2h ago',
       estimatedDelivery,
       req.body.razorpayOrderId || null,

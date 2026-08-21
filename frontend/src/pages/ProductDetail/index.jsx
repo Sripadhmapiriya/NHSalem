@@ -5,7 +5,6 @@ import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import Chip from '@/components/ui/Chip'
 import Tabs, { TabPanel } from '@/components/ui/Tabs'
-import FreshnessScoreCard from '@/components/ui/FreshnessScoreCard'
 import ProductCard from '@/components/ui/ProductCard'
 import { PageSkeleton } from '@/components/ui/Skeleton'
 import Modal from '@/components/ui/Modal'
@@ -51,7 +50,7 @@ export default function ProductDetail() {
     })
   }, [productId])
 
-  const currentWeight = product?.variants?.[selectedWeight] || product?.weights?.[selectedWeight] || { label: '500g', price: product?.basePrice }
+  const currentWeight = product?.variants?.[selectedWeight] || product?.weights?.[selectedWeight] || { label: '500g', mrp: 0, onlinePrice: 0 }
   const cartItem = product ? getItem(product.id, currentWeight.label) : null
   const wishlisted = product ? isWishlisted(product.id) : false
   const allImages = product
@@ -73,7 +72,7 @@ export default function ProductDetail() {
           name: product.name,
           image: product.image,
           weight: currentWeight.label,
-          price: currentWeight.price,
+          price: currentWeight.onlinePrice,
           quantity: 1,
         }
       })
@@ -85,7 +84,7 @@ export default function ProductDetail() {
       name: product.name,
       image: product.image,
       weight: currentWeight.label,
-      price: currentWeight.price,
+      price: currentWeight.onlinePrice,
       quantity: 1,
     })
     addToast({ message: `${product.name} added to cart!`, type: 'success' })
@@ -230,16 +229,7 @@ export default function ProductDetail() {
               </div>
             )}
 
-            {/* Freshness Score Card */}
-            {product.freshnessScore && (
-              <FreshnessScoreCard
-                score={product.freshnessScore}
-                batchFreshness={product.freshnessScore >= 95 ? 'Excellent' : product.freshnessScore >= 88 ? 'Very Good' : 'Good'}
-                metrics={[
-                  { icon: 'scale', label: 'Weight Integrity', value: 'Verified' },
-                ]}
-              />
-            )}
+
 
             {/* Storage Info */}
             <div className="flex items-center gap-3 p-4 bg-blue-50 text-blue-900 rounded-[16px] border border-blue-100">
@@ -271,9 +261,9 @@ export default function ProductDetail() {
 
             {/* Price (Desktop display) */}
             <div className="hidden md:flex items-baseline gap-3">
-              <p className="text-4xl font-black text-on-surface">₹{currentWeight?.price?.toLocaleString()}</p>
-              {currentWeight?.originalPrice && (
-                <p className="text-xl text-outline line-through">₹{currentWeight.originalPrice.toLocaleString()}</p>
+              <p className="text-4xl font-black text-on-surface">₹{currentWeight?.onlinePrice?.toLocaleString()}</p>
+              {currentWeight?.mrp && currentWeight?.mrp > currentWeight?.onlinePrice && (
+                <p className="text-xl text-outline line-through">₹{currentWeight.mrp.toLocaleString()}</p>
               )}
             </div>
 
@@ -282,7 +272,7 @@ export default function ProductDetail() {
               {/* Left price summary (Mobile only) */}
               <div className="md:hidden flex flex-col items-start">
                 <p className="text-2xl font-black text-on-surface">
-                  ₹{currentWeight?.price?.toLocaleString()}
+                  ₹{currentWeight?.onlinePrice?.toLocaleString()}
                 </p>
                 <p className="text-[10px] font-bold text-outline-variant uppercase">
                   {currentWeight?.label}

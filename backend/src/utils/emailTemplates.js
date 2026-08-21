@@ -464,7 +464,7 @@ export function productOfferUpdate({ updateType, subject, content, unsubscribeUr
       <h2>🐟 New Arrival: ${content.name}</h2>
       ${content.image_url ? `<img src="${content.image_url}" alt="${content.name}" style="width: 100%; max-height: 250px; object-fit: cover; border-radius: 6px; margin: 15px 0;" />` : ''}
       <p>${content.tagline || 'We have added a delicious new item to our collection. Try it fresh today!'}</p>
-      <p style="font-size: 18px; font-weight: 700; color: #166534;">Price: ₹${content.base_price?.toLocaleString()} (Category: ${content.category})</p>
+      <p style="font-size: 18px; font-weight: 700; color: #166534;">Price: ₹${content.online_price?.toLocaleString()} (Category: ${content.category})</p>
       <div style="text-align: center; margin-top: 20px;">
         <a href="${BASE_URL}" class="btn">Buy Now</a>
       </div>

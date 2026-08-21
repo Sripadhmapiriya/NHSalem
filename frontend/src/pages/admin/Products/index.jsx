@@ -88,7 +88,6 @@ export default function AdminProducts() {
             { label: 'Base Price', className: 'w-[10%] min-w-[90px]' },
             { label: 'Variants', className: 'w-[12%] min-w-[120px]' },
             { label: 'Rating', className: 'w-[10%] min-w-[100px] hidden xl:table-cell' },
-            { label: 'Freshness', className: 'w-[15%] min-w-[130px]' },
             { label: 'Badges', className: 'w-[10%] min-w-[90px]' },
             { label: 'Actions', className: 'w-[100px] sticky right-0 bg-white z-10 text-center shadow-[-4px_0_10px_rgba(0,0,0,0.02)]' }
           ]}
@@ -116,7 +115,7 @@ export default function AdminProducts() {
                 </div>
               </Td>
               <Td className="capitalize hidden xl:table-cell">{CATEGORY_MAP[p.category] || p.category}</Td>
-              <Td><span className="font-bold">{formatCurrency(p.basePrice)}</span></Td>
+              <Td><span className="font-bold">{formatCurrency(p.variants?.[0]?.onlinePrice || 0)}</span></Td>
               <Td>
                 {p.variants?.length > 0 ? (
                   <div className="flex items-center gap-1 overflow-hidden whitespace-nowrap">
@@ -142,14 +141,7 @@ export default function AdminProducts() {
                   )}
                 </div>
               </Td>
-              <Td>
-                <div className="flex items-center gap-2 whitespace-nowrap">
-                  <div className="h-1.5 w-[80px] bg-admin-border rounded-full overflow-hidden shrink-0">
-                    <div className="h-full bg-admin-success rounded-full" style={{ width: `${Math.max(0, Math.min(100, p.freshnessScore ?? 0))}%` }} />
-                  </div>
-                  <span className="text-[11px] font-semibold w-[24px] text-right">{p.freshnessScore ?? '—'}</span>
-                </div>
-              </Td>
+
               <Td>
                 <div className="flex flex-col gap-1 max-h-[44px] overflow-hidden justify-center items-start">
                   {p.badges?.slice(0, 2).map((b) => {

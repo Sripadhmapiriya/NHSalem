@@ -23,22 +23,26 @@ const productSchema = z.object({
   badges: z.array(z.any()).optional().default([]),
   weights: z.array(z.object({
     label: z.string(),
-    price: z.number(),
-    originalPrice: z.number().optional()
+    mrp: z.number(),
+    onlinePrice: z.number()
   })).optional().default([]),
   variants: z.array(z.object({
     label: z.string(),
-    price: z.number(),
-    originalPrice: z.number().optional(),
+    mrp: z.number(),
+    onlinePrice: z.number(),
     value: z.number().optional()
   })).optional().default([]),
-  basePrice: z.number(),
-  freshnessScore: z.number().optional().default(90),
   nutrition: z.any().optional().default({}),
   unit: z.string().optional().nullable(),
   stock_qty: z.number().optional().default(100),
   stockStatus: z.string().optional().default('in_stock'),
   is_active: z.boolean().optional().default(true)
+}).refine(data => {
+  const vars = data.variants.length > 0 ? data.variants : data.weights
+  return vars.every(v => v.onlinePrice <= v.mrp)
+}, {
+  message: "Online Price cannot be greater than MRP",
+  path: ["variants"]
 })
 
 const reviewSchema = z.object({
@@ -68,12 +72,10 @@ function formatProduct(p) {
     badges: typeof p.badges === 'string' ? JSON.parse(p.badges) : p.badges,
     weights: finalWeights,
     variants: finalVariants.length > 0 ? finalVariants : finalWeights,
-    basePrice: Number(p.base_price),
     rating: Number(p.rating),
     reviewCount: Number(p.review_count),
     isBestSeller: p.is_bestseller,
     catchTime: p.catch_time,
-    freshnessScore: p.freshness_score,
     nutritionPer100g: typeof p.nutrition === 'string' ? JSON.parse(p.nutrition) : p.nutrition,
     unit: p.unit,
     stock_qty: p.stock_qty,
@@ -134,22 +136,22 @@ router.get('/products', asyncHandler(async (req, res) => {
 
   if (minPrice) {
     paramCount++
-    sql += ` AND p.base_price >= $${paramCount}`
+    sql += ` AND (COALESCE(p.variants->0->>'onlinePrice', p.weights->0->>'onlinePrice'))::numeric >= $${paramCount}`
     params.push(Number(minPrice))
   }
 
   if (maxPrice) {
     paramCount++
-    sql += ` AND p.base_price <= $${paramCount}`
+    sql += ` AND (COALESCE(p.variants->0->>'onlinePrice', p.weights->0->>'onlinePrice'))::numeric <= $${paramCount}`
     params.push(Number(maxPrice))
   }
 
   if (sort === 'za') {
     sql += ' ORDER BY p.name DESC'
   } else if (sort === 'price_asc') {
-    sql += ' ORDER BY p.base_price ASC'
+    sql += ` ORDER BY (COALESCE(p.variants->0->>'onlinePrice', p.weights->0->>'onlinePrice'))::numeric ASC`
   } else if (sort === 'price_desc') {
-    sql += ' ORDER BY p.base_price DESC'
+    sql += ` ORDER BY (COALESCE(p.variants->0->>'onlinePrice', p.weights->0->>'onlinePrice'))::numeric DESC`
   } else if (sort === 'rating') {
     sql += ' ORDER BY p.rating DESC'
   } else if (sort === 'newest') {
@@ -253,17 +255,18 @@ router.post('/products/:id/reviews', requireUser, asyncHandler(async (req, res) 
   res.status(201).json({ success: true, message: 'Thanks! Your review is being reviewed and will appear once approved.' })
 }))
 
-// ── Admin Endpoints ──
+// ── Admin Endpoints ─────────────────────────────────────────────────────────
 
 // POST /api/admin/products
 router.post('/admin/products', requireAdmin, asyncHandler(async (req, res) => {
+  const { sync_thumbnail_to_all } = req.body
   const p = productSchema.parse(req.body)
   const slug = await generateUniqueSlug(p.name)
 
   const result = await pool.query(
     `INSERT INTO products (
-      slug, category, name, local_name, tagline, description, how_to_cook, image, images, gallery_image_1, gallery_image_2, badges, weights, base_price, freshness_score, catch_time, nutrition, unit, stock_qty, stock_status, is_active, variants
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
+      slug, category, name, local_name, tagline, description, how_to_cook, image, images, gallery_image_1, gallery_image_2, badges, weights, catch_time, nutrition, unit, stock_qty, stock_status, is_active, variants
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
      RETURNING *`,
     [
       slug,
@@ -279,8 +282,6 @@ router.post('/admin/products', requireAdmin, asyncHandler(async (req, res) => {
       p.gallery_image_2,
       JSON.stringify(p.badges),
       JSON.stringify(p.weights || p.variants || []),
-      p.basePrice,
-      p.freshnessScore,
       p.catchTime,
       JSON.stringify(p.nutrition),
       p.unit,
@@ -298,11 +299,22 @@ router.post('/admin/products', requireAdmin, asyncHandler(async (req, res) => {
     content: {
       name: p.name,
       tagline: p.tagline,
-      base_price: p.basePrice,
       category: p.category,
+      online_price: (p.variants && p.variants[0]) ? p.variants[0].onlinePrice : 0,
       image_url: p.image
     }
   }).catch(err => console.error('Product announcement broadcast failed:', err))
+
+  if (p.image) {
+    await pool.query(
+      `INSERT INTO product_thumbnails (name, image_url, updated_at) VALUES ($1, $2, NOW()) 
+       ON CONFLICT (name) DO UPDATE SET image_url = $2, updated_at = NOW()`,
+      [p.name, p.image]
+    )
+    if (sync_thumbnail_to_all) {
+      await pool.query(`UPDATE products SET image = $1, updated_at = NOW() WHERE name = $2`, [p.image, p.name])
+    }
+  }
 
   res.status(201).json(formatProduct(result.rows[0]))
 }))
@@ -310,6 +322,7 @@ router.post('/admin/products', requireAdmin, asyncHandler(async (req, res) => {
 // PUT /api/admin/products/:id
 router.put('/admin/products/:id', requireAdmin, asyncHandler(async (req, res) => {
   const { id } = req.params
+  const { sync_thumbnail_to_all } = req.body
   const p = productSchema.parse(req.body)
 
   const check = await pool.query('SELECT slug FROM products WHERE id = $1', [id])
@@ -321,8 +334,8 @@ router.put('/admin/products/:id', requireAdmin, asyncHandler(async (req, res) =>
 
   const result = await pool.query(
     `UPDATE products SET
-      slug = $1, category = $2, name = $3, local_name = $4, tagline = $5, description = $6, how_to_cook = $7, image = $8, images = $9, gallery_image_1 = $10, gallery_image_2 = $11, badges = $12, weights = $13, base_price = $14, freshness_score = $15, catch_time = $16, nutrition = $17, unit = $18, stock_qty = $19, stock_status = $20, is_active = $21, variants = $22, updated_at = NOW()
-     WHERE id = $23
+      slug = $1, category = $2, name = $3, local_name = $4, tagline = $5, description = $6, how_to_cook = $7, image = $8, images = $9, gallery_image_1 = $10, gallery_image_2 = $11, badges = $12, weights = $13, catch_time = $14, nutrition = $15, unit = $16, stock_qty = $17, stock_status = $18, is_active = $19, variants = $20, updated_at = NOW()
+     WHERE id = $21
      RETURNING *`,
     [
       newSlug,
@@ -338,8 +351,6 @@ router.put('/admin/products/:id', requireAdmin, asyncHandler(async (req, res) =>
       p.gallery_image_2,
       JSON.stringify(p.badges),
       JSON.stringify(p.weights || p.variants || []),
-      p.basePrice,
-      p.freshnessScore,
       p.catchTime,
       JSON.stringify(p.nutrition),
       p.unit,
@@ -350,6 +361,17 @@ router.put('/admin/products/:id', requireAdmin, asyncHandler(async (req, res) =>
       id
     ]
   )
+
+  if (p.image) {
+    await pool.query(
+      `INSERT INTO product_thumbnails (name, image_url, updated_at) VALUES ($1, $2, NOW()) 
+       ON CONFLICT (name) DO UPDATE SET image_url = $2, updated_at = NOW()`,
+      [p.name, p.image]
+    )
+    if (sync_thumbnail_to_all) {
+      await pool.query(`UPDATE products SET image = $1, updated_at = NOW() WHERE name = $2`, [p.image, p.name])
+    }
+  }
 
   res.json(formatProduct(result.rows[0]))
 }))

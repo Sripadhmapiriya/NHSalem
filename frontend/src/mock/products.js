@@ -23,11 +23,9 @@ export const PRODUCTS = [
       { label: '500g', price: 549, originalPrice: 699 },
       { label: '1kg', price: 1049, originalPrice: 1299 },
     ],
-    basePrice: 549,
     rating: 4.9,
     reviewCount: 3102,
     isBestSeller: false,
     catchTime: '2h ago',
-    freshnessScore: 98,
   }
 ];

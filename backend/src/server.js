@@ -216,6 +216,15 @@ async function verifyDatabase(pool) {
     await pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS reset_token_expiry BIGINT`)
     await pool.query(`ALTER TABLE promotions ADD COLUMN IF NOT EXISTS show_on_ui BOOLEAN NOT NULL DEFAULT false`)
     
+    // Add product_thumbnails table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS product_thumbnails (
+        name VARCHAR(255) PRIMARY KEY,
+        image_url VARCHAR(255) NOT NULL,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `)
+    
     // Ensure wishlists table exists
     await pool.query(`
       CREATE TABLE IF NOT EXISTS wishlists (
@@ -303,6 +312,61 @@ async function verifyDatabase(pool) {
       console.log('Unique constraint added: users_phone_unique')
     } catch (_) {
       // Already exists — ignore
+    }
+
+    // -- Data Migration for Pricing Simplification --
+    try {
+      const checkCol = await pool.query(`SELECT column_name FROM information_schema.columns WHERE table_name='products' AND column_name='base_price'`)
+      if (checkCol.rows.length > 0) {
+        console.log('Migrating products to new variant pricing structure...')
+        const allProducts = await pool.query('SELECT id, base_price, variants, weights FROM products')
+        for (const row of allProducts.rows) {
+          const basePrice = Number(row.base_price) || 0
+          let vars = []
+          if (row.variants) {
+            vars = typeof row.variants === 'string' ? JSON.parse(row.variants) : row.variants
+          } else if (row.weights) {
+            vars = typeof row.weights === 'string' ? JSON.parse(row.weights) : row.weights
+          }
+          
+          if (!Array.isArray(vars) || vars.length === 0) {
+            vars = [{ label: 'Standard', mrp: basePrice, onlinePrice: basePrice }]
+          } else {
+            vars = vars.map(v => {
+              const price = Number(v.price) || basePrice
+              const orig = Number(v.originalPrice) || price
+              return {
+                label: v.label || 'Standard',
+                mrp: orig,
+                onlinePrice: price,
+                value: v.value
+              }
+            })
+          }
+          await pool.query('UPDATE products SET variants = $1, weights = $1 WHERE id = $2', [JSON.stringify(vars), row.id])
+        }
+        console.log('Dropping base_price column...')
+        await pool.query('ALTER TABLE products DROP COLUMN base_price')
+      }
+    } catch (migErr) {
+      console.error('Pricing migration failed:', migErr)
+    }
+
+    // -- Data Migration for Freshness Score Removal --
+    try {
+      const checkProdCol = await pool.query(`SELECT column_name FROM information_schema.columns WHERE table_name='products' AND column_name='freshness_score'`)
+      if (checkProdCol.rows.length > 0) {
+        console.log('Dropping freshness_score column from products...')
+        await pool.query('ALTER TABLE products DROP COLUMN freshness_score')
+      }
+      
+      const checkOrderCol = await pool.query(`SELECT column_name FROM information_schema.columns WHERE table_name='orders' AND column_name='freshness_score'`)
+      if (checkOrderCol.rows.length > 0) {
+        console.log('Dropping freshness_score column from orders...')
+        await pool.query('ALTER TABLE orders DROP COLUMN freshness_score')
+      }
+    } catch (migErr) {
+      console.error('Freshness Score migration failed:', migErr)
     }
 
     console.log('✅ Startup DB Verification complete')

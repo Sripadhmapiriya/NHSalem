@@ -45,12 +45,10 @@ CREATE TABLE IF NOT EXISTS products (
   images JSONB NOT NULL DEFAULT '[]',
   badges JSONB NOT NULL DEFAULT '[]',
   weights JSONB NOT NULL DEFAULT '[]',
-  base_price NUMERIC(10,2) NOT NULL,
   rating NUMERIC(2,1) NOT NULL DEFAULT 0,
   review_count INT NOT NULL DEFAULT 0,
   is_bestseller BOOLEAN NOT NULL DEFAULT FALSE,
   catch_time VARCHAR(100),
-  freshness_score INT NOT NULL DEFAULT 90,
   nutrition JSONB DEFAULT '{}',
   unit VARCHAR(50),
   stock_qty INT NOT NULL DEFAULT 100,
@@ -106,7 +104,6 @@ CREATE TABLE IF NOT EXISTS orders (
   shipping NUMERIC(10,2) NOT NULL DEFAULT 0,
   total NUMERIC(10,2) NOT NULL,
   coupon_code VARCHAR(100),
-  freshness_score INT NOT NULL DEFAULT 95,
   catch_time VARCHAR(100) DEFAULT '2h ago',
   placed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   estimated_delivery TIMESTAMPTZ
@@ -243,4 +240,11 @@ CREATE TABLE IF NOT EXISTS whatsapp_messages (
   status VARCHAR(20) DEFAULT 'sent',
   timestamp BIGINT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 23. Product Thumbnails Table
+CREATE TABLE IF NOT EXISTS product_thumbnails (
+  name VARCHAR(255) PRIMARY KEY,
+  image_url VARCHAR(255) NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

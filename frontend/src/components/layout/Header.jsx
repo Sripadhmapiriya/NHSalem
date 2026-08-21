@@ -286,7 +286,7 @@ function Header({ onLoginClick, mobileMenuOpen, setMobileMenuOpen }) {
                             <div className="min-w-0">
                               <p className="text-label-md text-on-surface font-semibold truncate">{p.name}</p>
                               <p className="text-label-sm text-on-surface-variant">
-                                ₹{p.basePrice?.toLocaleString()}
+                                ₹{p.variants?.[0]?.onlinePrice?.toLocaleString()}
                               </p>
                             </div>
                           </button>

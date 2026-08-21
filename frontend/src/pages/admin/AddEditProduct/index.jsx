@@ -4,7 +4,8 @@ import { useForm, useWatch, Controller } from 'react-hook-form'
 import useProductStore from '@/store/productStore'
 import useToastStore from '@/store/toastStore'
 import { AdminPage, AdminCard, AdminBtn } from '@/admin/AdminUI'
-import { uploadAdminImage } from '@/services/adminApi'
+import { useAdminConfirm } from '@/admin/useAdminConfirm'
+import { uploadAdminImage, getThumbnailLibrary } from '@/services/adminApi'
 
 const CATEGORIES = ['fish', 'prawns-shrimp', 'crabs', 'lobster', 'dried-fish', 'combos']
 
@@ -165,6 +166,7 @@ export default function AdminAddEditProduct() {
   const navigate = useNavigate()
   const { addToast } = useToastStore()
   const { addProduct, updateProduct, getProduct, fetchProducts, products } = useProductStore()
+  const { confirm, ConfirmModal } = useAdminConfirm()
 
   const isNew = !id || id === 'new'
 
@@ -173,6 +175,22 @@ export default function AdminAddEditProduct() {
       fetchProducts()
     }
   }, [products.length, fetchProducts])
+
+  const [thumbnailLibrary, setThumbnailLibrary] = useState({})
+  
+  useEffect(() => {
+    const fetchLibrary = async () => {
+      try {
+        const res = await getThumbnailLibrary()
+        if (res.success && res.thumbnails) {
+          setThumbnailLibrary(res.thumbnails)
+        }
+      } catch (err) {
+        console.error('Failed to load thumbnail library:', err)
+      }
+    }
+    fetchLibrary()
+  }, [])
 
   const existing = isNew ? null : getProduct(id)
 
@@ -199,29 +217,33 @@ export default function AdminAddEditProduct() {
   const [variants, setVariants] = useState(existing?.variants || existing?.weights || [])
   const [newVarLabel, setNewVarLabel] = useState('')
   const [newVarValue, setNewVarValue] = useState('')
-  const [newVarPrice, setNewVarPrice] = useState('')
-  const [newVarOrigPrice, setNewVarOrigPrice] = useState('')
+  const [newVarOnlinePrice, setNewVarOnlinePrice] = useState('')
+  const [newVarMrp, setNewVarMrp] = useState('')
 
   const handleAddVariant = () => {
     if (!newVarLabel.trim()) {
       addToast({ message: 'Variant label is required', type: 'warning' })
       return
     }
-    if (!newVarPrice.trim()) {
-      addToast({ message: 'Variant price is required', type: 'warning' })
+    if (!newVarOnlinePrice.trim() || !newVarMrp.trim()) {
+      addToast({ message: 'Both MRP and Online Price are required', type: 'warning' })
+      return
+    }
+    if (Number(newVarOnlinePrice) > Number(newVarMrp)) {
+      addToast({ message: 'Online Price cannot be greater than MRP', type: 'warning' })
       return
     }
     const newVar = {
       label: newVarLabel.trim(),
       value: newVarValue ? Number(newVarValue) : undefined,
-      price: Number(newVarPrice),
-      originalPrice: newVarOrigPrice ? Number(newVarOrigPrice) : undefined
+      onlinePrice: Number(newVarOnlinePrice),
+      mrp: Number(newVarMrp)
     }
     setVariants([...variants, newVar])
     setNewVarLabel('')
     setNewVarValue('')
-    setNewVarPrice('')
-    setNewVarOrigPrice('')
+    setNewVarOnlinePrice('')
+    setNewVarMrp('')
   }
 
   const handleRemoveVariant = (index) => {
@@ -248,8 +270,6 @@ export default function AdminAddEditProduct() {
         tagline: existing.tagline,
         description: existing.description,
         category: existing.category,
-        basePrice: existing.basePrice,
-        freshnessScore: existing.freshnessScore,
         catchTime: existing.catchTime,
         howToCook: existing.howToCook,
         gallery_image_1: existing.gallery_image_1,
@@ -257,7 +277,7 @@ export default function AdminAddEditProduct() {
         image: existing.image,
         stockStatus: existing.stockStatus || 'in_stock',
       }
-      : { category: 'fish', freshnessScore: 90, stockStatus: 'in_stock' },
+      : { category: 'fish', stockStatus: 'in_stock' },
   })
 
   const currentImageThumb = useWatch({ control, name: 'image' })
@@ -313,11 +333,25 @@ export default function AdminAddEditProduct() {
       return { type, label: found?.label ?? type }
     })
 
+    if (variants.length === 0) {
+      addToast({ message: 'At least one variant (e.g. 500g) with pricing is required', type: 'warning' })
+      return
+    }
+
     const payload = {
       ...data,
       badges,
       weights: variants,
-      variants: variants
+      variants: variants,
+      sync_thumbnail_to_all: false
+    }
+
+    if (payload.image && thumbnailLibrary[payload.name] && payload.image !== thumbnailLibrary[payload.name]) {
+      const confirmSync = await confirm({
+        title: `Update Thumbnail for all "${payload.name}"?`,
+        message: 'Click Confirm to update all variants with this name.\nClick Cancel to only update this specific variant.'
+      })
+      payload.sync_thumbnail_to_all = confirmSync
     }
 
     try {
@@ -355,8 +389,14 @@ export default function AdminAddEditProduct() {
         <AdminBtn
           variant="secondary"
           icon="arrow_back"
-          onClick={() => {
-            if (isDirty && !window.confirm('Discard unsaved changes?')) return
+          onClick={async () => {
+            if (isDirty) {
+              const shouldDiscard = await confirm({
+                title: 'Discard Unsaved Changes?',
+                message: 'You have unsaved changes. Are you sure you want to discard them and leave this page?'
+              })
+              if (!shouldDiscard) return
+            }
             navigate('/admin/products')
           }}
         >
@@ -364,6 +404,7 @@ export default function AdminAddEditProduct() {
         </AdminBtn>
       }
     >
+      <ConfirmModal />
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {/* Main fields */}
@@ -379,13 +420,44 @@ export default function AdminAddEditProduct() {
                       rules={{ required: 'Product name is required' }}
                       render={({ field }) => (
                         <CustomComboBox
-                          label="Product Name"
-                          required
-                          placeholder="e.g. Jumbo Tiger Prawns"
-                          options={PREDEFINED_PRODUCTS.map(p => p.en)}
+                          label="Product Name (English)"
+                          placeholder="e.g. Seer Fish / Vanjaram"
+                          options={[...new Set([...PREDEFINED_PRODUCTS.map(p => p.en), ...Object.keys(thumbnailLibrary)])]}
                           value={field.value}
-                          onChange={field.onChange}
+                          onChange={async (val) => {
+                            field.onChange(val)
+                            
+                            // Auto-fill thumbnail logic
+                            if (thumbnailLibrary[val]) {
+                              const currentImage = control._formValues.image
+                              if (!currentImage) {
+                                setValue('image', thumbnailLibrary[val], { shouldDirty: true })
+                                setLocalPreviewThumb(thumbnailLibrary[val])
+                                addToast({ message: 'Thumbnail auto-filled from library', type: 'success' })
+                              } else {
+                                const shouldFill = await confirm({
+                                  title: 'Product Found in Library',
+                                  message: 'A saved thumbnail exists for this product name. Do you want to auto-fill it and replace your current image?'
+                                })
+                                if (shouldFill) {
+                                  setValue('image', thumbnailLibrary[val], { shouldDirty: true })
+                                  setLocalPreviewThumb(thumbnailLibrary[val])
+                                  addToast({ message: 'Thumbnail auto-filled from library', type: 'success' })
+                                }
+                              }
+                            }
+                            
+                            // Try to auto-fill localName
+                            const predefined = PREDEFINED_PRODUCTS.find(p => p.en === val)
+                            if (predefined) {
+                              const currentLocal = control._formValues.localName
+                              if (!currentLocal) {
+                                setValue('localName', predefined.ta, { shouldDirty: true })
+                              }
+                            }
+                          }}
                           error={errors.name}
+                          required
                         />
                       )}
                     />
@@ -461,38 +533,7 @@ export default function AdminAddEditProduct() {
                     />
                   </div>
 
-                  {/* Base Price */}
-                  <div>
-                    <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">
-                      Base Price (₹) <span className="text-admin-coral">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      {...register('basePrice', {
-                        required: 'Base price is required',
-                        valueAsNumber: true,
-                        min: { value: 1, message: 'Price must be greater than 0' },
-                      })}
-                      className={`w-full px-3 py-2.5 rounded-[10px] border bg-admin-seafoam text-[13px] focus:outline-none ${errors.basePrice ? 'border-admin-coral' : 'border-admin-border focus:border-admin-navy'}`}
-                    />
-                    {errors.basePrice && <p className="text-[11px] text-admin-coral mt-1">{errors.basePrice.message}</p>}
                   </div>
-
-                  {/* Freshness Score */}
-                  <div>
-                    <label className="block text-[11px] font-bold text-admin-text uppercase tracking-[0.1em] mb-1.5">
-                      Freshness Score (0–100)
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      max={100}
-                      {...register('freshnessScore', { valueAsNumber: true })}
-                      className="w-full px-3 py-2.5 rounded-[10px] border border-admin-border bg-admin-seafoam text-[13px] focus:outline-none focus:border-admin-navy"
-                    />
-                  </div>
-                </div>
 
                 {/* Description */}
                 <div>
@@ -512,8 +553,8 @@ export default function AdminAddEditProduct() {
             <AdminCard title="Product Variants">
               <div className="p-5 space-y-4">
                 <p className="text-[12px] text-admin-text-sub">
-                  Define different options for this product (e.g. label: "1 piece (~600g)", price: ₹699, originalPrice: ₹799).
-                  If no variants are defined, the product card will fall back to the default unit and base price.
+                  Define different options for this product (e.g. label: "1 piece (~600g)", MRP: ₹799, Online Price: ₹699).
+                  Every product must have at least one variant.
                 </p>
 
                 {/* Add Variant Form */}
@@ -532,25 +573,25 @@ export default function AdminAddEditProduct() {
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-admin-text uppercase tracking-[0.05em] mb-1">
-                      Price (₹)
+                      MRP (₹) *
                     </label>
                     <input
                       type="number"
-                      value={newVarPrice}
-                      onChange={(e) => setNewVarPrice(e.target.value)}
-                      placeholder="e.g. 450"
+                      value={newVarMrp}
+                      onChange={(e) => setNewVarMrp(e.target.value)}
+                      placeholder="e.g. 500"
                       className="w-full px-2.5 py-2 rounded-[8px] border border-admin-border bg-white text-[12px] focus:outline-none focus:border-admin-navy"
                     />
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-admin-text uppercase tracking-[0.05em] mb-1">
-                      Original Price (₹ - Optional)
+                      Online Price (₹) *
                     </label>
                     <input
                       type="number"
-                      value={newVarOrigPrice}
-                      onChange={(e) => setNewVarOrigPrice(e.target.value)}
-                      placeholder="e.g. 500"
+                      value={newVarOnlinePrice}
+                      onChange={(e) => setNewVarOnlinePrice(e.target.value)}
+                      placeholder="e.g. 450"
                       className="w-full px-2.5 py-2 rounded-[8px] border border-admin-border bg-white text-[12px] focus:outline-none focus:border-admin-navy"
                     />
                   </div>
@@ -571,8 +612,8 @@ export default function AdminAddEditProduct() {
                       <thead>
                         <tr className="bg-admin-seafoam text-[11px] font-bold text-admin-text uppercase tracking-wider border-b border-admin-border/60">
                           <th className="px-4 py-2.5">Label</th>
-                          <th className="px-4 py-2.5">Price</th>
-                          <th className="px-4 py-2.5">Original Price</th>
+                          <th className="px-4 py-2.5">MRP (₹)</th>
+                          <th className="px-4 py-2.5">Online Price (₹)</th>
                           <th className="px-4 py-2.5 text-right">Actions</th>
                         </tr>
                       </thead>
@@ -580,10 +621,8 @@ export default function AdminAddEditProduct() {
                         {variants.map((v, idx) => (
                           <tr key={idx} className="hover:bg-admin-seafoam/20">
                             <td className="px-4 py-2.5 font-semibold">{v.label}</td>
-                            <td className="px-4 py-2.5">₹{v.price}</td>
-                            <td className="px-4 py-2.5 text-admin-text-sub">
-                              {v.originalPrice ? `₹${v.originalPrice}` : '—'}
-                            </td>
+                            <td className="px-4 py-2.5 line-through text-admin-text-sub">₹{v.mrp}</td>
+                            <td className="px-4 py-2.5 font-bold text-admin-navy">₹{v.onlinePrice}</td>
                             <td className="px-4 py-2.5 text-right">
                               <button
                                 type="button"

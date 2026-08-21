@@ -8,7 +8,7 @@ export { default as Input, SearchInput } from './Input'
 export { default as Card } from './Card'
 export { default as StatCard } from './StatCard'
 export { default as ProductCard } from './ProductCard'
-export { default as FreshnessScoreCard } from './FreshnessScoreCard'
+
 export { default as ProgressRing } from './ProgressRing'
 export { default as Accordion, AccordionItem } from './Accordion'
 export { default as Modal } from './Modal'

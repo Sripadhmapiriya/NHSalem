@@ -107,8 +107,8 @@ async function runSeed() {
 
       await client.query(
         `INSERT INTO products (
-          slug, category, name, tagline, description, how_to_cook, image, images, badges, weights, base_price, rating, review_count, is_bestseller, catch_time, freshness_score, nutrition, unit, stock_qty, is_active, variants
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
+          slug, category, name, tagline, description, how_to_cook, image, images, badges, weights, rating, review_count, is_bestseller, catch_time, nutrition, unit, stock_qty, is_active, variants
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
          ON CONFLICT (slug) DO NOTHING`,
         [
           p.slug,
@@ -121,12 +121,10 @@ async function runSeed() {
           JSON.stringify(p.images || []),
           JSON.stringify(p.badges || []),
           JSON.stringify(p.weights || []),
-          p.basePrice || 0,
           p.rating || 0,
           p.reviewCount || 0,
           p.isBestSeller || false,
           p.catchTime || null,
-          p.freshnessScore || 90,
           JSON.stringify(p.nutritionPer100g || {}),
           p.unit || null,
           p.stock_qty ?? 100,
@@ -274,8 +272,8 @@ async function runSeed() {
       // Insert Order
       const res = await client.query(
         `INSERT INTO orders (
-          order_number, user_id, status, address, delivery_slot, payment_method, payment_status, subtotal, discount, shipping, total, freshness_score, catch_time, placed_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+          order_number, user_id, status, address, delivery_slot, payment_method, payment_status, subtotal, discount, shipping, total, catch_time, placed_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
          RETURNING id`,
         [
           o.id,
@@ -297,7 +295,6 @@ async function runSeed() {
           0, // discount
           0, // shipping
           o.total,
-          95,
           '2h ago',
           o.placedAt ? new Date(o.placedAt) : new Date()
         ]
