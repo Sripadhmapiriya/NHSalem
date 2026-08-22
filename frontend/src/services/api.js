@@ -22,7 +22,15 @@ async function handleResponse(response) {
     const errorData = await response.json().catch(() => ({}))
     throw new Error(errorData.error || errorData.message || 'An error occurred')
   }
-  return response.json()
+  let data = await response.json()
+  
+  // Intercept and rewrite legacy localhost image URLs from DB to point to current API_URL
+  if (API_URL && !API_URL.includes('localhost')) {
+    const jsonStr = JSON.stringify(data).replace(/http:\/\/localhost:\d+/g, API_URL)
+    data = JSON.parse(jsonStr)
+  }
+  
+  return data
 }
 
 // ==========================================

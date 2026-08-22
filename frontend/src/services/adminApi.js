@@ -20,7 +20,14 @@ async function handleResponse(response) {
     const errData = await response.json().catch(() => ({}))
     throw new Error(errData.message || 'Something went wrong')
   }
-  return response.json()
+  let data = await response.json()
+  
+  if (API_URL && !API_URL.includes('localhost')) {
+    const jsonStr = JSON.stringify(data).replace(/http:\/\/localhost:\d+/g, API_URL)
+    data = JSON.parse(jsonStr)
+  }
+  
+  return data
 }
 
 // ==========================================
