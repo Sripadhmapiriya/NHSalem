@@ -168,15 +168,10 @@ export default function ProductDetail() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.35 }}
-                  className="w-full h-full object-cover transition-transform duration-[2500ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-108"
+                  className="w-full h-full object-contain p-4 transition-transform duration-[2500ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-108"
                 />
               </AnimatePresence>
-              {/* Badges overlay */}
-              <div className="absolute top-4 left-4 flex flex-col gap-1.5 max-w-[45%]">
-                {product.badges?.map((b) => (
-                  <Badge key={b.type} variant={b.type}>{b.label}</Badge>
-                ))}
-              </div>
+
             </div>
             {/* Thumbnail strip */}
             {allImages.length > 1 && (
@@ -190,7 +185,7 @@ export default function ProductDetail() {
                     className={`w-20 h-16 rounded-[12px] overflow-hidden border-2 transition-all ${selectedImage === i ? 'border-primary' : 'border-transparent hover:border-outline-variant'
                       }`}
                   >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
+                    <img src={img} alt="" className="w-full h-full object-contain p-1 bg-slate-50" />
                   </button>
                 ))}
               </div>

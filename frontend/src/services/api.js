@@ -62,10 +62,9 @@ export async function getProducts(opts = {}) {
   if (opts.sort) params.append('sort', opts.sort)
 
   if (opts.filters) {
-    const { badges, minPrice, maxPrice } = opts.filters
-    if (badges?.length) params.append('badges', badges.join(','))
-    if (minPrice != null) params.append('minPrice', String(minPrice))
-    if (maxPrice != null) params.append('maxPrice', String(maxPrice))
+    const { minPrice, maxPrice } = opts.filters
+    if (minPrice !== undefined) params.append('minPrice', String(minPrice))
+    if (maxPrice !== undefined) params.append('maxPrice', String(maxPrice))
   }
 
   const response = await fetch(`${API_URL}/api/products?${params.toString()}`)

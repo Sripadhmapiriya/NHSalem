@@ -18,14 +18,6 @@ const CATEGORY_LABELS = {
   'combos': 'Combos'
 }
 
-const ALL_BADGES = [
-  { type: 'fresh', label: 'Fresh Today' },
-  { type: 'hot', label: 'HOT DEAL' },
-  { type: 'new', label: 'New Catch' },
-  { type: 'premium', label: 'Premium' },
-  { type: 'limited', label: 'LIMITED TIME' },
-]
-
 const PREDEFINED_PRODUCTS = [
   { en: "Leather Jacket", ta: "கிளாத்தி" },
   { en: "Koduvai (Boneless) / Barramundi", ta: "கொடுவா (Boneless)" },
@@ -194,9 +186,7 @@ export default function AdminAddEditProduct() {
 
   const existing = isNew ? null : getProduct(id)
 
-  const [selectedBadges, setSelectedBadges] = useState(
-    existing?.badges?.map((b) => b.type) || []
-  )
+
   const [saving, setSaving] = useState(false)
   const [thumbUploadMode, setThumbUploadMode] = useState('url')
   const [uploadingThumb, setUploadingThumb] = useState(false)
@@ -306,7 +296,6 @@ export default function AdminAddEditProduct() {
         image: '',
         stockStatus: 'in_stock',
       })
-      setSelectedBadges([])
       setLocalPreviewThumb(null)
       setLocalPreview1(null)
       setLocalPreview2(null)
@@ -334,37 +323,11 @@ export default function AdminAddEditProduct() {
     }
   }, [watchedName, setValue])
 
-  // Re-run setSelectedBadges when existing changes/loads
-  useEffect(() => {
-    if (existing?.badges) {
-      setSelectedBadges(existing.badges.map(b => b.type))
-    }
-  }, [existing])
-
-  if (!isNew && !existing) {
-    return (
-      <AdminPage>
-        <div className="text-center py-10 font-semibold text-admin-navy">
-          Loading product...
-        </div>
-      </AdminPage>
-    )
-  }
-
-  const toggleBadge = (type) => {
-    setSelectedBadges((prev) =>
-      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
-    )
-  }
 
   const onSubmit = async (data) => {
     setSaving(true)
 
-    // Map selected badge types back to { type, label }
-    const badges = selectedBadges.map((type) => {
-      const found = ALL_BADGES.find((ab) => ab.type === type)
-      return { type, label: found?.label ?? type }
-    })
+
 
     if (variants.length === 0) {
       addToast({ message: 'At least one variant (e.g. 500g) with pricing is required', type: 'warning' })
@@ -373,7 +336,6 @@ export default function AdminAddEditProduct() {
 
     const payload = {
       ...data,
-      badges,
       weights: variants,
       variants: variants,
       sync_thumbnail_to_all: false
@@ -848,29 +810,7 @@ export default function AdminAddEditProduct() {
               </div>
             </AdminCard>
 
-            {/* Badges */}
-            <AdminCard title="Badges">
-              <div className="p-4 flex flex-wrap gap-2">
-                {ALL_BADGES.map((b) => {
-                  const isSelected = selectedBadges.includes(b.type)
-                  return (
-                    <button
-                      key={b.type}
-                      type="button"
-                      onClick={() => toggleBadge(b.type)}
-                      style={
-                        isSelected
-                          ? { backgroundColor: '#0B1E3D', color: '#ffffff', borderColor: '#0B1E3D' }
-                          : { backgroundColor: '#ffffff', color: '#4A5568', borderColor: '#D1DAE3' }
-                      }
-                      className="px-3 py-1.5 rounded-full border text-[12px] font-semibold cursor-pointer capitalize transition-all select-none hover:opacity-90"
-                    >
-                      {b.label}
-                    </button>
-                  )
-                })}
-              </div>
-            </AdminCard>
+
           </div>
         </div>
 

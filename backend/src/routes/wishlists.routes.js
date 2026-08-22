@@ -8,7 +8,7 @@ const router = express.Router()
 // ── GET /api/wishlist ────────────────────────────────────────────────────────
 router.get('/wishlist', requireUser, asyncHandler(async (req, res) => {
   const result = await pool.query(
-    `SELECT w.product_id, p.name, p.slug, p.image, p.rating, p.review_count, p.badges, p.unit, p.weights, p.variants
+    `SELECT w.product_id, p.name, p.slug, p.image, p.rating, p.review_count, p.unit, p.weights, p.variants
      FROM wishlists w
      JOIN products p ON w.product_id = p.id
      WHERE w.user_id = $1
@@ -24,7 +24,7 @@ router.get('/wishlist', requireUser, asyncHandler(async (req, res) => {
     image: row.image,
     rating: Number(row.rating),
     reviewCount: Number(row.review_count),
-    badges: typeof row.badges === 'string' ? JSON.parse(row.badges) : row.badges,
+
     unit: row.unit,
     weights: typeof row.weights === 'string' ? JSON.parse(row.weights) : row.weights,
     variants: typeof row.variants === 'string' ? JSON.parse(row.variants) : row.variants,

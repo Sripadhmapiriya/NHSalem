@@ -45,13 +45,6 @@ const SORT_OPTIONS = [
   { id: 'za', label: 'Alphabetical: Z to A' },
 ]
 
-const CATCH_TYPES = [
-  { id: 'fresh', label: 'Fresh', icon: 'eco', color: '#4ADE80', bg: 'bg-[#4ADE80]/10', text: 'text-[#4ADE80]' },
-  { id: 'hot', label: 'Deal', icon: 'bolt', color: '#FB7185', bg: 'bg-[#FB7185]/10', text: 'text-[#FB7185]' },
-  { id: 'new', label: 'New', icon: 'auto_awesome', color: '#A78BFA', bg: 'bg-[#A78BFA]/10', text: 'text-[#A78BFA]' },
-  { id: 'premium', label: 'Premium', icon: 'star', color: '#FBBF24', bg: 'bg-[#FBBF24]/10', text: 'text-[#FBBF24]' },
-]
-
 const PRICE_PRESETS = [
   { label: 'Under ₹500', min: 0, max: 500 },
   { label: '₹500–₹1,000', min: 500, max: 1000 },
@@ -107,8 +100,7 @@ function FilterPanel({
   toggleCategory,
   selectedWeights,
   toggleWeight,
-  selectedBadges,
-  toggleBadge,
+
   priceMin,
   priceMax,
   setPriceMin,
@@ -251,38 +243,7 @@ function FilterPanel({
           </div>
         </FilterGroup>
 
-        {/* Catch Type / Badges accordion */}
-        <FilterGroup title="Catch Type / Badge">
-          <div className="grid grid-cols-2 gap-2.5 w-full">
-            {CATCH_TYPES.map((item) => {
-              const isSelected = selectedBadges.includes(item.id)
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => toggleBadge(item.id)}
-                  className={`flex items-center gap-2 px-3 py-2.5 rounded-full border text-label-sm font-semibold transition-all duration-150 text-left select-none focus:outline-none w-full min-h-[44px] ${
-                    isSelected
-                      ? 'bg-primary border-primary text-white'
-                      : 'bg-white border-outline-variant text-on-surface-variant hover:border-primary/50'
-                  }`}
-                >
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${item.bg}`}>
-                    <span className={`material-symbols-outlined text-[13px] filled ${item.text}`} aria-hidden="true">
-                      {item.icon}
-                    </span>
-                  </div>
-                  <span className="flex-1 truncate leading-none">{item.label}</span>
-                  {isSelected && (
-                    <span className="material-symbols-outlined text-white flex-shrink-0 text-[15px]">
-                      check
-                    </span>
-                  )}
-                </button>
-              )
-            })}
-          </div>
-        </FilterGroup>
+
 
         {/* Price Range accordion */}
         <FilterGroup
@@ -462,7 +423,7 @@ export default function CategoryListing() {
   const [sort, setSort] = useState('price_asc')
   const [selectedCategories, setSelectedCategories] = useState([])
   const [selectedWeights, setSelectedWeights] = useState([])
-  const [selectedBadges, setSelectedBadges] = useState([])
+
   const [priceMin, setPriceMin] = useState(0)
   const [priceMax, setPriceMax] = useState(9999)
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -530,12 +491,6 @@ export default function CategoryListing() {
     )
   }, [])
 
-  const toggleBadge = useCallback((id) => {
-    setSelectedBadges((prev) =>
-      prev.includes(id) ? prev.filter((b) => b !== id) : [...prev, id]
-    )
-  }, [])
-
   const filteredProducts = useMemo(() => {
     const getProductPrice = (p) => {
       const finalVars = (p.variants && p.variants.length > 0)
@@ -575,13 +530,6 @@ export default function CategoryListing() {
       })
     }
 
-    // 3. Catch Type / Badge Filter
-    if (selectedBadges.length > 0) {
-      results = results.filter((p) =>
-        p.badges?.some((b) => selectedBadges.includes(b.type))
-      )
-    }
-
     // 4. Price Filter
     results = results.filter((p) => {
       const displayPrice = getProductPrice(p)
@@ -604,15 +552,15 @@ export default function CategoryListing() {
     }
 
     return results
-  }, [allProducts, selectedCategories, selectedWeights, selectedBadges, priceMin, priceMax, sort])
+  }, [allProducts, selectedCategories, selectedWeights, priceMin, priceMax, sort])
 
-  const activeCount = selectedCategories.length + selectedWeights.length + selectedBadges.length + (priceMin !== 0 || priceMax !== maxPriceLimit ? 1 : 0)
-  const hasActiveFilters = selectedCategories.length > 0 || selectedWeights.length > 0 || selectedBadges.length > 0 || priceMin !== 0 || priceMax !== maxPriceLimit
+  const activeCount = selectedCategories.length + selectedWeights.length + (priceMin !== 0 || priceMax !== maxPriceLimit ? 1 : 0)
+  const hasActiveFilters = selectedCategories.length > 0 || selectedWeights.length > 0 || priceMin !== 0 || priceMax !== maxPriceLimit
 
   const handleClearAll = useCallback(() => {
     setSelectedCategories([])
     setSelectedWeights([])
-    setSelectedBadges([])
+
     setPriceMin(0)
     setPriceMax(maxPriceLimit)
     if (categorySlug) {
@@ -658,8 +606,7 @@ export default function CategoryListing() {
                 toggleCategory={toggleCategory}
                 selectedWeights={selectedWeights}
                 toggleWeight={toggleWeight}
-                selectedBadges={selectedBadges}
-                toggleBadge={toggleBadge}
+
                 priceMin={priceMin}
                 priceMax={priceMax}
                 setPriceMin={setPriceMin}
@@ -744,11 +691,6 @@ export default function CategoryListing() {
                     Pack: {PACK_SIZES.find((p) => p.id === w)?.label || w}
                   </Chip>
                 ))}
-                {selectedBadges.map((b) => (
-                  <Chip key={b} selected removable onRemove={() => toggleBadge(b)}>
-                    {CATCH_TYPES.find((f) => f.id === b)?.label || b}
-                  </Chip>
-                ))}
                 {(priceMin !== 0 || priceMax !== maxPriceLimit) && (
                   <Chip selected removable onRemove={() => { setPriceMin(0); setPriceMax(maxPriceLimit) }}>
                     ₹{priceMin} – ₹{priceMax}
@@ -824,8 +766,7 @@ export default function CategoryListing() {
             toggleCategory={toggleCategory}
             selectedWeights={selectedWeights}
             toggleWeight={toggleWeight}
-            selectedBadges={selectedBadges}
-            toggleBadge={toggleBadge}
+
             priceMin={priceMin}
             priceMax={priceMax}
             setPriceMin={setPriceMin}

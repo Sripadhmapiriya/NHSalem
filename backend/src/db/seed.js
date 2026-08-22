@@ -107,8 +107,8 @@ async function runSeed() {
 
       await client.query(
         `INSERT INTO products (
-          slug, category, name, tagline, description, how_to_cook, image, images, badges, weights, rating, review_count, is_bestseller, catch_time, nutrition, unit, stock_qty, is_active, variants
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+          slug, category, name, tagline, description, how_to_cook, image, images, weights, rating, review_count, is_bestseller, catch_time, nutrition, unit, stock_qty, is_active, variants
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
          ON CONFLICT (slug) DO NOTHING`,
         [
           p.slug,
@@ -119,7 +119,6 @@ async function runSeed() {
           p.howToCook || null,
           p.image || null,
           JSON.stringify(p.images || []),
-          JSON.stringify(p.badges || []),
           JSON.stringify(p.weights || []),
           p.rating || 0,
           p.reviewCount || 0,

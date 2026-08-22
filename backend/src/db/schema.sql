@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS products (
   how_to_cook TEXT,
   image VARCHAR(255),
   images JSONB NOT NULL DEFAULT '[]',
-  badges JSONB NOT NULL DEFAULT '[]',
+
   weights JSONB NOT NULL DEFAULT '[]',
   rating NUMERIC(2,1) NOT NULL DEFAULT 0,
   review_count INT NOT NULL DEFAULT 0,

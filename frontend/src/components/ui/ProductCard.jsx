@@ -27,7 +27,7 @@ export default function ProductCard({ product }) {
     name,
     tagline,
     image,
-    badges = [],
+
     weights = [],
     variants = [],
     rating,
@@ -112,20 +112,10 @@ export default function ProductCard({ product }) {
           <img
             src={image || categoryThumbnail}
             alt={name}
-            loading="lazy"
-            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+            className="w-full h-full object-contain transition-transform duration-700 ease-out group-hover:scale-105 p-2"
           />
           <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-90" />
         </Link>
-
-        {/* Badges (Max 2) */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start pointer-events-none z-10">
-          {badges.slice(0, 2).map((badge) => (
-            <Badge key={badge.type} variant={badge.type}>
-              {badge.label}
-            </Badge>
-          ))}
-        </div>
 
         {/* Wishlist */}
         <motion.button

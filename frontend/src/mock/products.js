@@ -18,7 +18,7 @@ export const PRODUCTS = [
     images: [
       'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&q=80',
     ],
-    badges: [{ type: 'hot', label: 'HOT DEAL' }, { type: 'fresh', label: 'Fresh Today' }],
+
     weights: [
       { label: '500g', onlinePrice: 549, mrp: 699 },
       { label: '1kg', onlinePrice: 1049, mrp: 1299 },

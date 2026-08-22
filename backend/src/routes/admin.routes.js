@@ -7,14 +7,29 @@ import { generateAdminToken } from '../utils/jwt.js'
 import { requireAdmin } from '../middleware/adminAuth.js'
 import asyncHandler from '../utils/asyncHandler.js'
 import multer from 'multer'
-import cloudinary from '../utils/cloudinary.js'
+import fs from 'fs'
+import path from 'path'
 import { sendMail } from '../utils/mailer.js'
 import { passwordResetCustomer } from '../utils/emailTemplates.js'
 
-// Images are streamed straight to Cloudinary — never written to local disk.
-// (Vercel's serverless functions have no persistent filesystem, so disk
-// storage silently breaks in production even though it works locally.)
-const upload = multer({ storage: multer.memoryStorage() })
+// Ensure local uploads directory exists
+const uploadDir = path.join(process.cwd(), 'public', 'uploads')
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true })
+}
+
+// Images are saved locally for development or local deployment
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadDir)
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+    cb(null, uniqueSuffix + '-' + file.originalname.replace(/\s+/g, '-'))
+  }
+})
+
+const upload = multer({ storage: storage })
 
 const router = express.Router()
 
@@ -61,38 +76,23 @@ router.get('/auth/me', requireAdmin, asyncHandler(async (req, res) => {
   res.json({ success: true, admin })
 }))
 
-// Upload Image — streamed directly to Cloudinary, returns a permanent CDN URL
+// Upload Image — saved directly to the local filesystem
 router.post('/upload', requireAdmin, upload.single('image'), asyncHandler(async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ success: false, message: 'No file provided' })
   }
 
-  const uploadFromBuffer = (buffer) =>
-    new Promise((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream(
-        {
-          folder: 'nh-salem/products',
-          resource_type: 'image',
-          // Auto-optimize format & quality (e.g. serves WebP/AVIF to supporting
-          // browsers) so product photos load fast even on slow connections.
-          transformation: [{ fetch_format: 'auto', quality: 'auto' }],
-        },
-        (error, result) => {
-          if (error) return reject(error)
-          resolve(result)
-        }
-      )
-      stream.end(buffer)
-    })
-
   try {
-    const result = await uploadFromBuffer(req.file.buffer)
-    res.json({ success: true, url: result.secure_url })
+    // Return the local URL for the frontend to consume
+    const baseUrl = `${req.protocol}://${req.get('host')}`
+    const imageUrl = `${baseUrl}/uploads/${req.file.filename}`
+    
+    res.json({ success: true, url: imageUrl })
   } catch (err) {
-    console.error('Cloudinary upload failed:', err.message)
-    res.status(502).json({
+    console.error('Local upload failed:', err.message)
+    res.status(500).json({
       success: false,
-      message: 'Image upload failed. Please check Cloudinary credentials are configured in the environment.',
+      message: 'Image upload failed on the server.',
     })
   }
 }))

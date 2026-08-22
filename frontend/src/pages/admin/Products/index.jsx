@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import ConfirmModal from '@/components/ui/ConfirmModal'
 import useProductStore from '@/store/productStore'
 import {
   AdminPage,
@@ -34,6 +35,7 @@ export default function AdminProducts() {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
+  const [productToDelete, setProductToDelete] = useState(null)
 
   useEffect(() => {
     fetchProducts()
@@ -155,9 +157,7 @@ export default function AdminProducts() {
                     className="w-8 h-8 rounded-full flex items-center justify-center text-admin-coral hover:bg-red-50 border border-transparent hover:border-red-100 transition-all"
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (window.confirm('Are you sure you want to delete this product?')) {
-                        useProductStore.getState().deleteProduct(p.id)
-                      }
+                      setProductToDelete(p);
                     }}
                     title="Delete"
                   >
@@ -175,6 +175,20 @@ export default function AdminProducts() {
           onPageChange={setCurrentPage}
         />
       </AdminCard>
+
+      <ConfirmModal
+        isOpen={!!productToDelete}
+        onClose={() => setProductToDelete(null)}
+        title="Delete Product"
+        message={`Are you sure you want to delete "${productToDelete?.name}"? This action cannot be undone.`}
+        confirmText="Delete Product"
+        onConfirm={() => {
+          if (productToDelete) {
+            useProductStore.getState().deleteProduct(productToDelete.id)
+            setProductToDelete(null)
+          }
+        }}
+      />
     </AdminPage>
   )
 }

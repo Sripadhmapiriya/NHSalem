@@ -20,7 +20,6 @@ const productSchema = z.object({
   images: z.array(z.string()).optional().default([]),
   gallery_image_1: z.string().optional().nullable(),
   gallery_image_2: z.string().optional().nullable(),
-  badges: z.array(z.any()).optional().default([]),
   weights: z.array(z.object({
     label: z.string(),
     mrp: z.number(),
@@ -69,7 +68,6 @@ function formatProduct(p) {
     gallery_image_1: p.gallery_image_1,
     gallery_image_2: p.gallery_image_2,
     categoryThumbnail: p.category_thumbnail,
-    badges: typeof p.badges === 'string' ? JSON.parse(p.badges) : p.badges,
     weights: finalWeights,
     variants: (finalVariants.length > 0 ? finalVariants : finalWeights).map(v => ({
       label: v.label || 'Standard',
@@ -115,7 +113,7 @@ async function generateUniqueSlug(name, productId = null) {
 
 // ── GET /api/products ─────────────────────────────────────────────────────────
 router.get('/products', asyncHandler(async (req, res) => {
-  const { category, search, minPrice, maxPrice, sort, badges } = req.query
+  const { category, search, minPrice, maxPrice, sort } = req.query
 
   let sql = 'SELECT p.*, c.category_thumbnail FROM products p LEFT JOIN categories c ON p.category = c.slug WHERE p.is_active = true'
   const params = []
@@ -169,10 +167,7 @@ router.get('/products', asyncHandler(async (req, res) => {
   const result = await pool.query(sql, params)
   let products = result.rows.map(formatProduct)
 
-  if (badges) {
-    const badgeList = badges.split(',')
-    products = products.filter(p => p.badges?.some(b => badgeList.includes(b.type)))
-  }
+
 
   res.json(products)
 }))
@@ -270,8 +265,8 @@ router.post('/admin/products', requireAdmin, asyncHandler(async (req, res) => {
 
   const result = await pool.query(
     `INSERT INTO products (
-      slug, category, name, local_name, tagline, description, how_to_cook, image, images, gallery_image_1, gallery_image_2, badges, weights, catch_time, nutrition, unit, stock_qty, stock_status, is_active, variants
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+      slug, category, name, local_name, tagline, description, how_to_cook, image, images, gallery_image_1, gallery_image_2, weights, catch_time, nutrition, unit, stock_qty, stock_status, is_active, variants
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
      RETURNING *`,
     [
       slug,
@@ -285,7 +280,6 @@ router.post('/admin/products', requireAdmin, asyncHandler(async (req, res) => {
       JSON.stringify(p.images),
       p.gallery_image_1,
       p.gallery_image_2,
-      JSON.stringify(p.badges),
       JSON.stringify(p.weights || p.variants || []),
       p.catchTime,
       JSON.stringify(p.nutrition),
@@ -339,8 +333,8 @@ router.put('/admin/products/:id', requireAdmin, asyncHandler(async (req, res) =>
 
   const result = await pool.query(
     `UPDATE products SET
-      slug = $1, category = $2, name = $3, local_name = $4, tagline = $5, description = $6, how_to_cook = $7, image = $8, images = $9, gallery_image_1 = $10, gallery_image_2 = $11, badges = $12, weights = $13, catch_time = $14, nutrition = $15, unit = $16, stock_qty = $17, stock_status = $18, is_active = $19, variants = $20, updated_at = NOW()
-     WHERE id = $21
+      slug = $1, category = $2, name = $3, local_name = $4, tagline = $5, description = $6, how_to_cook = $7, image = $8, images = $9, gallery_image_1 = $10, gallery_image_2 = $11, weights = $12, catch_time = $13, nutrition = $14, unit = $15, stock_qty = $16, stock_status = $17, is_active = $18, variants = $19, updated_at = NOW()
+     WHERE id = $20
      RETURNING *`,
     [
       newSlug,
@@ -354,7 +348,6 @@ router.put('/admin/products/:id', requireAdmin, asyncHandler(async (req, res) =>
       JSON.stringify(p.images),
       p.gallery_image_1,
       p.gallery_image_2,
-      JSON.stringify(p.badges),
       JSON.stringify(p.weights || p.variants || []),
       p.catchTime,
       JSON.stringify(p.nutrition),
