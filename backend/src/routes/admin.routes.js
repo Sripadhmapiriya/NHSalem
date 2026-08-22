@@ -206,6 +206,31 @@ router.get('/dashboard/stats', requireAdmin, asyncHandler(async (req, res) => {
 }))
 
 // Get list of all customers/users
+router.get('/test-db', async (req, res) => {
+  try {
+    const q1 = await pool.query('SELECT * FROM users');
+    const q2 = await pool.query('SELECT * FROM newsletter_subscribers');
+    const q3 = await pool.query(`
+      SELECT 
+       'subscriber-' || id::text as id,
+       'Newsletter Subscriber' as name,
+       email as email,
+       '' as phone,
+       '-' as city,
+       0 as orders,
+       0 as "totalSpent",
+       TO_CHAR(created_at, 'YYYY-MM-DD') as "joinedAt",
+       'subscriber' as status,
+       '-' as "lastOrder",
+       created_at as raw_joined
+     FROM newsletter_subscribers
+    `);
+    res.json({ users: q1.rows, subs: q2.rows, unionQuery: q3.rows });
+  } catch (err) {
+    res.json({ error: err.message, stack: err.stack });
+  }
+});
+
 router.get('/customers', requireAdmin, asyncHandler(async (req, res) => {
   // Let's get distinct customers and aggregate spent / orders
   const result = await pool.query(
@@ -243,6 +268,24 @@ router.get('/customers', requireAdmin, asyncHandler(async (req, res) => {
      WHERE o2.user_id IS NULL OR NOT EXISTS (SELECT 1 FROM users u2 WHERE u2.id = o2.user_id)
      GROUP BY address->>'name', address->>'email', address->>'phone', address->>'city'
      
+     UNION ALL
+
+     SELECT 
+       'subscriber-' || id::text as id,
+       'Newsletter Subscriber' as name,
+       LOWER(TRIM(email)) as email,
+       '' as phone,
+       '-' as city,
+       0::bigint as orders,
+       0::numeric as "totalSpent",
+       TO_CHAR(created_at, 'YYYY-MM-DD') as "joinedAt",
+       'subscriber' as status,
+       '-' as "lastOrder",
+       created_at as raw_joined
+     FROM newsletter_subscribers
+     WHERE NOT EXISTS (SELECT 1 FROM users u3 WHERE LOWER(TRIM(u3.email)) = LOWER(TRIM(newsletter_subscribers.email)))
+       AND NOT EXISTS (SELECT 1 FROM orders o3 WHERE LOWER(TRIM(o3.address->>'email')) = LOWER(TRIM(newsletter_subscribers.email)))
+
      ORDER BY raw_joined DESC`
   )
 

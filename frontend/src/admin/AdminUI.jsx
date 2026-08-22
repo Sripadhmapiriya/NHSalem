@@ -2,6 +2,8 @@
  * Admin shared UI primitives
  * All components use only the admin-* Tailwind tokens from tailwind.config.js
  */
+import React from 'react'
+
 
 // ── Status Badge ───────────────────────────────────────────────────────────────
 const STATUS_STYLES = {
@@ -30,6 +32,7 @@ const STATUS_STYLES = {
   paid:             'bg-green-50 text-green-700 border-green-200',
   collected:        'bg-green-50 text-green-700 border-green-200',
   guest:            'bg-purple-50 text-purple-700 border-purple-200',
+  subscriber:       'bg-blue-50 text-blue-700 border-blue-200',
 }
 
 const STATUS_LABELS = {
@@ -55,6 +58,7 @@ const STATUS_LABELS = {
   paid:             'Paid',
   collected:        'Collected',
   guest:            'Guest',
+  subscriber:       'Subscriber',
 }
 
 export function StatusBadge({ status }) {
@@ -131,7 +135,9 @@ export function AdminCard({ title, subtitle, children, className = '', action })
 
 
 // ── Table ──────────────────────────────────────────────────────────────────────
-export function AdminTable({ headers, children, emptyMessage = 'No data available.', className = '' }) {
+export function AdminTable({ headers, children, emptyMessage = 'No data available.', emptyIcon = 'inbox', className = '' }) {
+  const isEmpty = React.Children.count(children) === 0
+
   return (
     <div className={`overflow-y-auto overflow-x-hidden max-w-full max-h-[calc(100vh-260px)] ${className}`}>
       <table className="w-full text-sm relative">
@@ -152,10 +158,13 @@ export function AdminTable({ headers, children, emptyMessage = 'No data availabl
           </tr>
         </thead>
         <tbody>
-          {children || (
+          {!isEmpty ? children : (
             <tr>
-              <td colSpan={headers.length} className="text-center px-5 py-10 text-sm text-admin-text-sub">
-                {emptyMessage}
+              <td colSpan={headers.length} className="text-center px-5 py-20 text-sm text-admin-text-sub">
+                <div className="flex flex-col items-center justify-center">
+                  <span className="material-symbols-outlined text-admin-border mb-3" style={{ fontSize: '48px' }}>{emptyIcon}</span>
+                  <p className="text-[13px] font-bold text-admin-navy">{emptyMessage}</p>
+                </div>
               </td>
             </tr>
           )}

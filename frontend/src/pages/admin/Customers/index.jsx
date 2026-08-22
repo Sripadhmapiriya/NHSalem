@@ -95,7 +95,7 @@ export default function AdminCustomers() {
           className="w-64"
         />
         <FilterBar
-          options={['all', 'active', 'guest', 'suspended']}
+          options={['all', 'active', 'guest', 'subscriber', 'suspended']}
           active={statusFilter}
           onSelect={setStatusFilter}
         />
@@ -106,7 +106,7 @@ export default function AdminCustomers() {
           <SeafoodLoader text="Loading customers..." className="py-8" />
         ) : (
           <>
-            <AdminTable headers={['Customer', 'City', 'Orders', 'Total Spent', 'Joined', 'Last Order', 'Status', '']}>
+            <AdminTable headers={['Customer', 'City', 'Orders', 'Total Spent', 'Joined', 'Last Order', 'Status', '']} emptyMessage="No customers yet." emptyIcon="group">
               {paginated.map((c) => (
                 <Tr 
                   key={c.id} 

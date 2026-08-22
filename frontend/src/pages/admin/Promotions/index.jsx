@@ -432,7 +432,7 @@ export default function AdminPromotions() {
         {loading ? (
           <SeafoodLoader text="Loading promotions..." className="py-8" />
         ) : (
-          <AdminTable headers={['Code', 'Type', 'Value', 'Min. Order', 'Uses', 'Status', 'Expires', 'Show on UI', 'Actions']}>
+          <AdminTable headers={['Code', 'Type', 'Value', 'Min. Order', 'Uses', 'Status', 'Expires', 'Show on UI', 'Actions']} emptyMessage="No promotions yet." emptyIcon="local_offer">
             {filtered.map((p) => (
               <Tr key={p.id}>
                 <Td>

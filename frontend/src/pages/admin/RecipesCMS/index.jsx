@@ -247,7 +247,7 @@ export default function AdminRecipesCMS() {
       </div>
 
       <AdminCard subtitle={`${filtered.length} recipe${filtered.length !== 1 ? 's' : ''}`}>
-        <AdminTable headers={['', 'Title', 'Category', 'Tags', 'Time', 'Difficulty', 'Actions']}>
+        <AdminTable headers={['', 'Title', 'Category', 'Tags', 'Time', 'Difficulty', 'Actions']} emptyMessage="No recipes created yet." emptyIcon="menu_book">
           {filtered.map((r) => (
             <Tr key={r.id}>
               {/* Thumbnail */}

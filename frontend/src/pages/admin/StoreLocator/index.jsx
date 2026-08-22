@@ -388,7 +388,7 @@ export default function AdminStoreLocator() {
             </AdminBtn>
           }
         >
-          <AdminTable headers={['City', 'Pincode', 'Stores', 'Slots', 'Status', '']}>
+          <AdminTable headers={['City', 'Pincode', 'Stores', 'Slots', 'Status', '']} emptyMessage="No service areas configured." emptyIcon="location_on">
             {paginatedLive.map((city) => (
               <Tr
                 key={city.id}

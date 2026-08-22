@@ -56,7 +56,7 @@ export default function AdminProducts() {
   const sorted = [...filtered].sort((a, b) => a.name.localeCompare(b.name))
 
   // Paginate products
-  const paginated = sorted.slice((currentPage - 1) * 10, currentPage * 10)
+  const paginated = sorted.slice((currentPage - 1) * 5, currentPage * 5)
 
   return (
     <AdminPage>
@@ -93,6 +93,8 @@ export default function AdminProducts() {
 
             { label: 'Actions', className: 'w-[100px] sticky right-0 bg-white z-10 text-center shadow-[-4px_0_10px_rgba(0,0,0,0.02)]' }
           ]}
+          emptyMessage="No products yet."
+          emptyIcon="set_meal"
         >
           {paginated.map((p) => (
             <Tr key={p.id} className="h-[72px]" onClick={() => navigate(`/admin/products/${p.id}/edit`)}>
@@ -171,7 +173,7 @@ export default function AdminProducts() {
         <Pagination
           currentPage={currentPage}
           totalItems={sorted.length}
-          itemsPerPage={10}
+          itemsPerPage={5}
           onPageChange={setCurrentPage}
         />
       </AdminCard>

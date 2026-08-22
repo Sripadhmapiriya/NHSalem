@@ -142,7 +142,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Top Products */}
         <AdminCard title="Top Products This Week" className="lg:col-span-2">
-          <AdminTable headers={['Product', 'Units Sold', 'Revenue']}>
+          <AdminTable headers={['Product', 'Units Sold', 'Revenue']} emptyMessage="No sales data available yet." emptyIcon="trending_up">
             {kpi.topProducts.map((p, i) => (
               <Tr key={p.name}>
                 <Td>

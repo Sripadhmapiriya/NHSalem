@@ -180,7 +180,7 @@ export default function AdminMessages() {
             </div>
           ) : (
             <>
-              <AdminTable headers={['Date', 'Sender', 'Contact Info', 'Message', 'Status', 'Actions']}>
+              <AdminTable headers={['Date', 'Sender', 'Contact Info', 'Message', 'Status', 'Actions']} emptyMessage="No messages yet." emptyIcon="mail">
                 {paginated.map((m) => (
                   <Tr key={m.id} className={m.status === 'unread' ? 'bg-admin-seafoam/20' : ''}>
                     <Td><span className="text-xs text-admin-text-sub">{new Date(m.created_at).toLocaleDateString()}</span></Td>

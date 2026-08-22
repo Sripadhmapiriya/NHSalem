@@ -111,7 +111,7 @@ export default function AdminOrders() {
           <SeafoodLoader text="Loading orders..." className="py-8" />
         ) : (
           <>
-            <AdminTable headers={['Order ID', 'Customer', 'City', 'Items', 'Payment', 'Total', 'Date', 'Status', '']}>
+            <AdminTable headers={['Order ID', 'Customer', 'City', 'Items', 'Payment', 'Total', 'Date', 'Status', '']} emptyMessage="No orders yet." emptyIcon="shopping_bag">
               {paginated.map((o) => {
                 const itemCount = o.items?.reduce((sum, item) => sum + item.quantity, 0) || 0
                 return (

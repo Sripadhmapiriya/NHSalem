@@ -405,7 +405,7 @@ export default function AdminWholesale() {
           {loading ? (
             <SeafoodLoader text="Loading wholesale inquiries..." className="py-8" />
           ) : (
-            <AdminTable headers={['Business', 'Contact', 'Industry', 'Qty / wk', 'Date', 'Stage', 'Actions']}>
+            <AdminTable headers={['Business', 'Contact', 'Industry', 'Qty / wk', 'Date', 'Stage', 'Actions']} emptyMessage="No wholesale inquiries yet." emptyIcon="storefront">
               {filtered.map((b) => (
                 <Tr
                   key={b.id}

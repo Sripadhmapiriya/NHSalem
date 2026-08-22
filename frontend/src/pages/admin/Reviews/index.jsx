@@ -236,7 +236,7 @@ export default function AdminReviews() {
           <SeafoodLoader text="Loading reviews..." className="py-8" />
         ) : (
           <>
-            <AdminTable headers={['Product', 'Reviewer', 'Rating', 'Review Details', 'Status', 'Actions']}>
+            <AdminTable headers={['Product', 'Reviewer', 'Rating', 'Review Details', 'Status', 'Actions']} emptyMessage="No reviews yet." emptyIcon="star_half">
               {paginated.map((r) => (
                 <Tr key={r.id}>
                   <Td><span className="font-semibold text-admin-navy">{r.product}</span></Td>
