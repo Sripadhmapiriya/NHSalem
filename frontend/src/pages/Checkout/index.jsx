@@ -21,7 +21,51 @@ const CHECKOUT_STEPS = [
   { id: 'summary', label: 'Order Summary', icon: 'receipt' },
 ]
 
-const DELIVERY_SLOTS = ['7–9 AM', '9–11 AM', '11 AM–1 PM', '5–7 PM', '7–9 PM']
+function generateDeliverySlots() {
+  const now = new Date()
+  
+  const getSlotsForDate = (date, isToday) => {
+    const day = date.getDay()
+    const isWeekend = day === 0 || day === 6
+    const startHour = isWeekend ? 6 : 10
+    const endHour = 18 // 6 PM
+    
+    const slots = []
+    const currentHour = now.getHours()
+    
+    for (let h = startHour; h < endHour; h += 2) {
+      if (!isToday || h > currentHour) {
+        const formatHour = (hour) => {
+          const ampm = hour >= 12 ? 'PM' : 'AM'
+          const displayHour = hour > 12 ? hour - 12 : hour
+          return `${displayHour} ${ampm}`
+        }
+        
+        const dateString = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+        const timeString = `${formatHour(h)} – ${formatHour(h+2)}`
+        
+        slots.push({
+          id: `${dateString} | ${timeString}`,
+          date: dateString,
+          time: timeString
+        })
+      }
+    }
+    return slots
+  }
+
+  let slots = getSlotsForDate(now, true)
+  
+  if (slots.length === 0) {
+    const tomorrow = new Date(now)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    slots = getSlotsForDate(tomorrow, false)
+  }
+  
+  return slots
+}
+
+const DELIVERY_SLOTS = generateDeliverySlots()
 
 const PAYMENT_METHODS = [
   { id: 'upi', label: 'UPI', icon: 'qr_code', description: 'GPay, PhonePe, BHIM, Paytm' },
@@ -350,22 +394,23 @@ export default function Checkout() {
                 >
                   <h2 className="text-headline-sm text-on-surface">Preferred Delivery Slot</h2>
                   <p className="text-body-md text-on-surface-variant">
-                    Select a delivery time window for today. All slots include our cold-chain guarantee.
+                    Select a delivery time window. All slots include our cold-chain guarantee.
                   </p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {DELIVERY_SLOTS.map((slot) => (
                       <button
-                        key={slot}
-                        onClick={() => setSelectedSlot(slot)}
-                        aria-pressed={selectedSlot === slot}
-                        className={`p-4 rounded-[16px] border-2 text-label-md font-semibold transition-all ${
-                          selectedSlot === slot
-                            ? 'bg-primary text-on-primary border-primary'
+                        key={slot.id}
+                        onClick={() => setSelectedSlot(slot.id)}
+                        aria-pressed={selectedSlot === slot.id}
+                        className={`p-4 rounded-[16px] border-2 transition-all flex flex-col items-center justify-center ${
+                          selectedSlot === slot.id
+                            ? 'bg-primary text-on-primary border-primary shadow-sm'
                             : 'bg-white text-on-surface border-outline-variant hover:border-primary'
                         }`}
                       >
                         <span className="material-symbols-outlined block mb-1" style={{ fontSize: '20px' }} aria-hidden="true">schedule</span>
-                        {slot}
+                        <span className={`text-[11px] font-medium uppercase tracking-wider mb-0.5 ${selectedSlot === slot.id ? 'text-on-primary/80' : 'text-on-surface-variant'}`}>{slot.date}</span>
+                        <span className="text-label-md font-bold">{slot.time}</span>
                       </button>
                     ))}
                   </div>

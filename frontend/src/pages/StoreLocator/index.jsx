@@ -68,7 +68,10 @@ export default function StoreLocator() {
                 </div>
                 <div>
                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Store Hours</h3>
-                  <p className="text-slate-700 font-medium">Open 7 days a week, 9:00 AM – 8:00 PM</p>
+                  <div className="text-slate-700 font-medium space-y-0.5">
+                    <p>Monday – Friday: 10:00 AM – 6:00 PM</p>
+                    <p>Saturday – Sunday: 6:00 AM – 6:00 PM</p>
+                  </div>
                 </div>
               </div>
               
