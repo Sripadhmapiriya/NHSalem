@@ -87,7 +87,7 @@ function formatProduct(p) {
   }
 }
 
-async function generateUniqueSlug(name, productId = null) {
+export async function generateUniqueSlug(name, productId = null) {
   let baseSlug = name
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')

@@ -11,6 +11,8 @@ import fs from 'fs'
 import path from 'path'
 import { sendMail } from '../utils/mailer.js'
 import { passwordResetCustomer } from '../utils/emailTemplates.js'
+import xlsx from 'xlsx'
+import { generateUniqueSlug } from './products.routes.js'
 
 // Ensure local uploads directory exists
 const uploadDir = path.join(process.cwd(), 'public', 'uploads')
@@ -662,3 +664,272 @@ router.get('/thumbnails', requireAdmin, asyncHandler(async (req, res) => {
 }))
 
 export default router
+
+// ── Bulk Import Endpoints ───────────────────────────────────────────────────
+
+// POST /api/admin/products/bulk-import/template
+router.post('/products/bulk-import/template', requireAdmin, (req, res) => {
+  const wsData = [
+    [
+      'Product Name',
+      'Local/Regional Name',
+      'Category',
+      'Tagline',
+      'Description',
+      'Thumbnail Filename',
+      'Photo 1 Filename',
+      'Photo 2 Filename',
+      'Weight Label',
+      'MRP',
+      'Online Price',
+      'Stock Status'
+    ],
+    [
+      'Premium Anchovy',
+      'Nethili',
+      'fish',
+      'Small Fish, Big Nutrition',
+      'Freshly caught anchovies.',
+      'anchovy.jpg',
+      '',
+      '',
+      '250g',
+      '300',
+      '250',
+      'in_stock'
+    ],
+    [
+      'Premium Anchovy',
+      '',
+      'fish',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '500g',
+      '600',
+      '480',
+      'in_stock'
+    ]
+  ]
+
+  const ws = xlsx.utils.aoa_to_sheet(wsData)
+  const wb = xlsx.utils.book_new()
+  xlsx.utils.book_append_sheet(wb, ws, 'Template')
+  
+  const buffer = xlsx.write(wb, { type: 'buffer', bookType: 'xlsx' })
+  
+  res.setHeader('Content-Disposition', 'attachment; filename="bulk_import_template.xlsx"')
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+  res.send(buffer)
+})
+
+// POST /api/admin/products/bulk-import
+router.post('/products/bulk-import', requireAdmin, upload.any(), async (req, res) => {
+  try {
+    const excelFile = req.files?.find(f => f.fieldname === 'file')
+    const uploadedImages = req.files?.filter(f => f.fieldname === 'images') || []
+
+    if (!excelFile) {
+      return res.status(400).json({ success: false, message: 'No Excel file uploaded' })
+    }
+
+  // Create a map of originalname -> local URL
+  const imageMap = {}
+  uploadedImages.forEach(img => {
+    imageMap[img.originalname] = `/uploads/${img.filename}`
+  })
+
+  // Fetch all categories for validation
+  const catResult = await pool.query('SELECT slug FROM categories')
+  const validCategories = new Set(catResult.rows.map(r => r.slug))
+
+  let workbook
+  try {
+    const fileBuffer = fs.readFileSync(excelFile.path)
+    workbook = xlsx.read(fileBuffer, { type: 'buffer' })
+  } catch (error) {
+    return res.status(400).json({ success: false, message: 'Invalid Excel file' })
+  }
+
+  const sheetName = workbook.SheetNames[0]
+  const rows = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: '' })
+
+  const validProducts = {}
+  const errors = []
+
+  // Helper to map image filename to url
+  const resolveImage = (val) => {
+    const trimmed = String(val || '').trim()
+    if (!trimmed) return ''
+    return imageMap[trimmed] || trimmed
+  }
+
+  // Robust column lookup (ignores case, newlines, extra spaces)
+  const getCol = (row, possibleNames) => {
+    const key = Object.keys(row).find(k => {
+      const normalizedKey = k.toLowerCase().replace(/[\n\r\s]+/g, ' ').trim()
+      return possibleNames.some(pn => normalizedKey === pn.toLowerCase())
+    })
+    return key ? row[key] : undefined
+  }
+
+  rows.forEach((row, index) => {
+    const rowNum = index + 2 // +1 for 0-index, +1 for header
+    const name = String(getCol(row, ['Product Name']) || '').trim()
+    if (!name) {
+      errors.push(`Row ${rowNum}: Product Name is required`)
+      return
+    }
+
+    const category = String(getCol(row, ['Category']) || '').trim()
+    if (!validProducts[name] && !category) {
+      errors.push(`Row ${rowNum}: Category is required for new product "${name}"`)
+      return
+    }
+
+    if (category && !validCategories.has(category)) {
+      errors.push(`Row ${rowNum}: Invalid category "${category}" for product "${name}"`)
+      return
+    }
+
+    const weightLabel = String(getCol(row, ['Weight Label']) || '').trim()
+    const mrp = Number(getCol(row, ['MRP']))
+    const onlinePrice = Number(getCol(row, ['Online Price']))
+
+    if (!weightLabel) errors.push(`Row ${rowNum}: Weight Label is required`)
+    if (isNaN(mrp) || mrp <= 0) errors.push(`Row ${rowNum}: Valid MRP is required`)
+    if (isNaN(onlinePrice) || onlinePrice <= 0) errors.push(`Row ${rowNum}: Valid Online Price is required`)
+
+    const warnings = []
+    if (onlinePrice > mrp) {
+      warnings.push('Online Price is greater than MRP')
+    }
+
+    if (!validProducts[name]) {
+      validProducts[name] = {
+        name,
+        localName: String(getCol(row, ['Local/Regional Name', 'Local Name']) || '').trim(),
+        category,
+        tagline: String(getCol(row, ['Tagline']) || '').trim(),
+        description: String(getCol(row, ['Description']) || '').trim(),
+        image: resolveImage(getCol(row, ['Thumbnail URL', 'Thumbnail Filename', 'Thumbnail'])),
+        gallery_image_1: resolveImage(getCol(row, ['Photo 1 URL', 'Photo 1 Filename', 'Photo 1'])),
+        gallery_image_2: resolveImage(getCol(row, ['Photo 2 URL', 'Photo 2 Filename', 'Photo 2'])),
+        stockStatus: String(getCol(row, ['Stock Status']) || '').trim() || 'in_stock',
+        weights: [],
+        rowErrors: [],
+        rowWarnings: []
+      }
+    }
+
+    if (warnings.length > 0) {
+      validProducts[name].rowWarnings.push(`Row ${rowNum}: ${warnings.join(', ')}`)
+    }
+
+    if (weightLabel && !isNaN(mrp) && !isNaN(onlinePrice)) {
+      validProducts[name].weights.push({
+        label: weightLabel,
+        value: parseInt(weightLabel) || 0,
+        originalPrice: mrp,
+        price: onlinePrice
+      })
+    }
+  })
+
+  const previewList = Object.values(validProducts).map(p => {
+    if (!p.image && p.weights.length > 0) {
+      p.rowErrors.push('Missing Thumbnail URL on first row')
+    }
+    return p
+  })
+
+  previewList.forEach(p => {
+    if (p.rowErrors.length > 0) {
+      errors.push(`Product "${p.name}": ${p.rowErrors.join(', ')}`)
+    }
+  })
+
+    res.json({
+      success: true,
+      preview: {
+        valid: previewList,
+        errors: errors
+      }
+    })
+  } catch (error) {
+    console.error('CRASH IN BULK IMPORT:', error)
+    res.status(500).json({ success: false, message: error.message, stack: error.stack })
+  }
+})
+
+// POST /api/admin/products/bulk-import/confirm
+router.post('/products/bulk-import/confirm', requireAdmin, asyncHandler(async (req, res) => {
+  const { products } = req.body
+  if (!Array.isArray(products) || products.length === 0) {
+    return res.status(400).json({ success: false, message: 'No products provided' })
+  }
+
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
+    let createdCount = 0
+    let updatedCount = 0
+
+    for (const p of products) {
+      const existRes = await client.query('SELECT id FROM products WHERE name = $1', [p.name])
+      
+      const images = []
+      if (p.gallery_image_1) images.push(p.gallery_image_1)
+      if (p.gallery_image_2) images.push(p.gallery_image_2)
+
+      if (existRes.rows.length > 0) {
+        const id = existRes.rows[0].id
+        await client.query(
+          `UPDATE products SET 
+            category = COALESCE($2, category),
+            local_name = COALESCE($3, local_name),
+            tagline = COALESCE($4, tagline),
+            description = COALESCE($5, description),
+            image = COALESCE($6, image),
+            images = $7,
+            gallery_image_1 = COALESCE($8, gallery_image_1),
+            gallery_image_2 = COALESCE($9, gallery_image_2),
+            weights = $10,
+            variants = $10,
+            stock_status = COALESCE($11, stock_status)
+           WHERE id = $1`,
+          [
+            id, p.category || null, p.localName || null, p.tagline || null, p.description || null,
+            p.image || null, JSON.stringify(images), p.gallery_image_1 || null, p.gallery_image_2 || null,
+            JSON.stringify(p.weights), p.stockStatus || null
+          ]
+        )
+        updatedCount++
+      } else {
+        const slug = await generateUniqueSlug(p.name)
+        await client.query(
+          `INSERT INTO products (
+            slug, category, name, local_name, tagline, description, image, images, gallery_image_1, gallery_image_2, weights, variants, stock_status
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+          [
+            slug, p.category, p.name, p.localName, p.tagline, p.description, p.image,
+            JSON.stringify(images), p.gallery_image_1, p.gallery_image_2,
+            JSON.stringify(p.weights), JSON.stringify(p.weights), p.stockStatus
+          ]
+        )
+        createdCount++
+      }
+    }
+
+    await client.query('COMMIT')
+    res.json({ success: true, message: `Successfully processed ${products.length} products (${createdCount} created, ${updatedCount} updated).` })
+  } catch (err) {
+    await client.query('ROLLBACK')
+    console.error('Bulk import error:', err)
+    res.status(500).json({ success: false, message: 'Transaction failed. All changes rolled back.', error: err.message })
+  } finally {
+    client.release()
+  }
+}))

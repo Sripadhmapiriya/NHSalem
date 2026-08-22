@@ -438,3 +438,28 @@ export async function getThumbnailLibrary() {
   })
   return handleResponse(response)
 }
+
+// ==========================================
+// Bulk Import Products
+// ==========================================
+
+export const previewBulkImport = async (formData) => {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('nh-salem-admin-token') : null
+  const response = await fetch(`${API_URL}/api/admin/products/bulk-import`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    },
+    body: formData // multipart/form-data
+  })
+  return handleResponse(response)
+}
+
+export const confirmBulkImport = async (products) => {
+  const response = await fetch(`${API_URL}/api/admin/products/bulk-import/confirm`, {
+    method: 'POST',
+    headers: getHeaders(true),
+    body: JSON.stringify({ products })
+  })
+  return handleResponse(response)
+}

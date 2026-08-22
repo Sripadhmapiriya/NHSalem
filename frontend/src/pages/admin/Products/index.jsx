@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ConfirmModal from '@/components/ui/ConfirmModal'
+import BulkImportModal from './BulkImportModal'
 import useProductStore from '@/store/productStore'
+import useToastStore from '@/store/toastStore'
+import { getImageUrl } from '@/services/api'
 import {
   AdminPage,
   AdminCard,
@@ -36,6 +39,7 @@ export default function AdminProducts() {
   const [category, setCategory] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
   const [productToDelete, setProductToDelete] = useState(null)
+  const [isBulkImportOpen, setIsBulkImportOpen] = useState(false)
 
   useEffect(() => {
     fetchProducts()
@@ -76,9 +80,14 @@ export default function AdminProducts() {
             onSelect={setCategory}
           />
         </div>
-        <AdminBtn icon="add" onClick={() => navigate('/admin/products/new')}>
-          Add Product
-        </AdminBtn>
+        <div className="flex gap-2">
+          <AdminBtn icon="upload_file" variant="secondary" onClick={() => setIsBulkImportOpen(true)}>
+            Bulk Import
+          </AdminBtn>
+          <AdminBtn icon="add" onClick={() => navigate('/admin/products/new')}>
+            Add Product
+          </AdminBtn>
+        </div>
       </div>
 
       <AdminCard subtitle={`${sorted.length} products`}>
@@ -101,7 +110,7 @@ export default function AdminProducts() {
               <Td className="p-0">
                 <div className="flex items-center gap-3 px-4 py-2">
                   {p.image
-                    ? <img src={p.image} alt={p.name} className="w-10 h-10 rounded-[8px] object-cover border border-admin-border/50 shrink-0" />
+                    ? <img src={getImageUrl(p.image)} alt={p.name} className="w-10 h-10 rounded-[8px] object-cover border border-admin-border/50 shrink-0" />
                     : <div className="w-10 h-10 rounded-[8px] bg-admin-seafoam border border-admin-border/50 flex items-center justify-center shrink-0"><span className="material-symbols-outlined text-admin-text-sub" style={{ fontSize: '20px' }}>image</span></div>
                   }
                   <div className="flex flex-col overflow-hidden">
@@ -191,6 +200,16 @@ export default function AdminProducts() {
           }
         }}
       />
+
+      {isBulkImportOpen && (
+        <BulkImportModal
+          onClose={() => setIsBulkImportOpen(false)}
+          onSuccess={(message) => {
+            useToastStore.getState().addToast({ message, type: 'success' })
+            fetchProducts()
+          }}
+        />
+      )}
     </AdminPage>
   )
 }

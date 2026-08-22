@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import Button from './Button'
 import Badge from './Badge'
 import useCartStore from '@/store/cartStore'
+import { getImageUrl } from '@/services/api'
 import useWishlistStore from '@/store/wishlistStore'
 import useAuthStore from '@/store/authStore'
 import useToastStore from '@/store/toastStore'
@@ -110,7 +111,7 @@ export default function ProductCard({ product }) {
       <div className="relative overflow-hidden aspect-[4/3] w-full bg-slate-50">
         <Link to={`/product/${id}`} aria-label={`View ${name}`}>
           <img
-            src={image || categoryThumbnail}
+            src={getImageUrl(image) || categoryThumbnail}
             alt={name}
             className="w-full h-full object-contain transition-transform duration-700 ease-out group-hover:scale-105 p-2"
           />

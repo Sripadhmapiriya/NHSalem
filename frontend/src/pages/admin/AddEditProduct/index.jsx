@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useForm, useWatch, Controller } from 'react-hook-form'
 import useProductStore from '@/store/productStore'
 import useToastStore from '@/store/toastStore'
+import { getImageUrl } from '@/services/api'
 import { AdminPage, AdminCard, AdminBtn } from '@/admin/AdminUI'
 import { useAdminConfirm } from '@/admin/useAdminConfirm'
 import { uploadAdminImage, getThumbnailLibrary } from '@/services/adminApi'
@@ -303,12 +304,13 @@ export default function AdminAddEditProduct() {
   }, [existing, reset])
 
   const currentImageThumb = useWatch({ control, name: 'image' })
-  const displayImageThumb = localPreviewThumb || currentImageThumb
+  const displayImageThumb = localPreviewThumb || getImageUrl(currentImageThumb)
   const currentImage1 = useWatch({ control, name: 'gallery_image_1' })
-  const displayImage1 = localPreview1 || currentImage1
+  const displayImage1 = localPreview1 || getImageUrl(currentImage1)
   const currentImage2 = useWatch({ control, name: 'gallery_image_2' })
-  const displayImage2 = localPreview2 || currentImage2
+  const displayImage2 = localPreview2 || getImageUrl(currentImage2)
 
+  useEffect(() => { setImageErrorThumb(false) }, [displayImageThumb])
   useEffect(() => { setImageError1(false) }, [displayImage1])
   useEffect(() => { setImageError2(false) }, [displayImage2])
 

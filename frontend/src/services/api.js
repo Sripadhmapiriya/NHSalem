@@ -1,7 +1,14 @@
 import { useCartStore } from '@/store/cartStore'
 import useAuthStore from '@/store/authStore'
 
-const API_URL = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && window.location.hostname !== 'localhost' ? '' : 'http://localhost:4000')
+export const API_URL = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && window.location.hostname !== 'localhost' ? '' : 'http://localhost:4000')
+
+export function getImageUrl(path) {
+  if (!path) return ''
+  if (path.startsWith('http')) return path
+  if (path.startsWith('/uploads')) return `${API_URL}${path}`
+  return path
+}
 
 function getHeaders(authRequired = false) {
   const headers = {
